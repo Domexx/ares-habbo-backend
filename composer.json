@@ -17,29 +17,32 @@
     "require": {
         "ext-json": "*",
         "doctrine/orm": "^2.7.3",
-        "lcobucci/jwt": "^3.3.2",
+        "javihgil/doctrine-pagination": "^1.1@dev",
         "league/container": "dev-master",
         "monolog/monolog": "^1.24",
-        "nesbot/carbon": "^2.0@dev",
         "phlak/config": "dev-master",
-        "respect/validation": "dev-master",
-        "slim/http-cache": "1.x-dev",
+        "phpfastcache/phpfastcache": "dev-master",
+        "predis/predis": "^2.0@dev",
+        "rakit/validation": "dev-master",
+        "rbdwllr/psr-jwt": "dev-master",
         "slim/psr7": "^0.5.0",
         "slim/slim": "^4.5.0",
-        "symfony/polyfill-uuid": "^1.17@dev",
-        "symfony/var-dumper": "^5.2@dev",
+        "statical/statical": "dev-master",
+        "symfony/console": "^4.2",
         "tuupola/cors-middleware": "dev-master",
-        "vlucas/phpdotenv": "^5.0@dev"
+        "vlucas/phpdotenv": "^5.0@dev",
+        "ext-curl": "*"
     },
     "config": {
         "sort-packages": true,
+        "optimize-autoloader": true,
         "platform": {
             "php": "7.4"
         }
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "Ares\\": "src/"
         }
     },
     "minimum-stability": "dev"

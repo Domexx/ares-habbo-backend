@@ -1,3 +1,13 @@
 {
+  "general.failed": "Etwas ist schiefgelaufen",
+  "general.entity.exists": "%s existiert bereits",
+  "general.banned": "Du bist gebannt aus dem Grund: %s",
 
+  "validation.required": "%s ist ein Pflichtfeld",
+  "validation.email": "Das Feld muss eine gültige E-Mail sein",
+
+  "register.already.exists": "Username oder E-Mail ist schon vergeben",
+  "register.password.min": "Das Passwort muss mindestens 6 Zeichen lang sein",
+  "register.password.same": "Die Passwörter müssen übereinstimmen",
+  "register.failed": "Registration ist fehlgeschlagen"
 }

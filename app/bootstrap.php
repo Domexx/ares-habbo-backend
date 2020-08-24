@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Ares (https://ares.to)
  *
@@ -21,11 +20,20 @@ $container = new \League\Container\Container();
 
 // Enable Auto-wiring for our dependencies..
 $container->delegate(
-    new \League\Container\ReflectionContainer()
+    (new League\Container\ReflectionContainer)->cacheResolutions()
 );
+
+// Helper functions
+require_once __DIR__ . '/helpers.php';
 
 // Parse our providers
 require_once __DIR__ . '/providers.php';
+
+if ($_ENV['CACHE_ENABLED']) {
+    $container->addServiceProvider(
+        new \Ares\Framework\Provider\CacheServiceProvider()
+    );
+}
 
 // Create App instance
 $app = $container->get(App::class);;
@@ -37,8 +45,21 @@ $middleware($app);
 $routes = require __DIR__ . '/routes.php';
 $routes($app);
 
+// Sets our App Proxy
+$alias = 'App';
+$proxy = \Ares\Framework\Proxy\App::class;
+$manager = new Statical\Manager();
+$manager->addProxyInstance($alias, $proxy, $app);
+
 // Sets our Route-Cache
-$routeCollector = $app->getRouteCollector();
-$routeCollector->setCacheFile('../tmp/Cache/routing/route.cache.php');
+if ($_ENV['API_DEBUG'] == "production") {
+    $routeCollector = $app->getRouteCollector();
+
+    if(!file_exists(route_cache_dir())) {
+        mkdir(route_cache_dir(), 0755, true);
+    }
+
+    $routeCollector->setCacheFile(route_cache_dir() . '/route.cache.php');
+}
 
 return $app;

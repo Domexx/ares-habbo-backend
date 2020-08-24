@@ -2,7 +2,7 @@
 
 [![Discord](https://img.shields.io/discord/683417203546128387?color=%237289DA&label=Discord)](https://discord.gg/pN7ZMFw) [![CodeFactor](https://www.codefactor.io/repository/github/arescms/ares/badge)](https://www.codefactor.io/repository/github/arescms/ares)
 
-A blazing fast SPA for your Retro using Angular9 & Slim.
+A blazing fast SPA for your Retro using Angular10 & Slim.
 
 ---
 
@@ -92,8 +92,4 @@ Ares is a not for profit educational project.
 
 ## 7. Setup
 
-Generate JWT-Authentication Keys:
-
-1. openssl genrsa -out private.pem 512
-2. openssl rsa -in private.pem -outform PEM -pubout -out public.pem
-3. copy both files in app/Keys
+// Coming Soon

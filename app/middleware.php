@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Ares (https://ares.to)
  *
@@ -21,14 +20,14 @@ return function (App $app) {
         "origin" => [$_ENV['WEB_FRONTEND_LINK']],
         "methods" => ["GET", "POST", "PUT", "PATCH", "DELETE"],
         "headers.allow" => ["Content-Type", "Authorization", "If-Match", "If-Unmodified-Since", "Origin"],
-        "headers.expose" => ["Content-Type", "Etag", "Origin"],
+        "headers.expose" => ["Content-Type", "Etag", "Origin", "Last-Modified"],
         "credentials" => true,
         "cache" => $_ENV['TOKEN_DURATION']
     ]));
-    $app->add(\Slim\HttpCache\Cache::class);
-    $app->add(\App\Middleware\BodyParserMiddleware::class);
-    $app->add(\App\Middleware\ClaimMiddleware::class);
+    $app->add(\Ares\Framework\Middleware\BodyParserMiddleware::class);
+    $app->add(\Ares\Framework\Middleware\ClaimMiddleware::class);
     $app->addRoutingMiddleware();
 
-    $app->addErrorMiddleware(true, true, true, $logger);
+    $errorMiddleware = $app->addErrorMiddleware(true, true, true, $logger);
+    $errorMiddleware->setDefaultErrorHandler(\Ares\Framework\Handler\ErrorHandler::class);
 };
