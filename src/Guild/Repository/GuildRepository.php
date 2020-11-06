@@ -7,14 +7,10 @@
 
 namespace Ares\Guild\Repository;
 
-use Ares\Framework\Interfaces\SearchCriteriaInterface;
+use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Guild\Entity\Guild;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Jhg\DoctrinePagination\Collection\PaginatedArrayCollection;
-use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
-use Psr\Cache\InvalidArgumentException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 /**
  * Class GuildRepository
@@ -24,162 +20,111 @@ use Psr\Cache\InvalidArgumentException;
 class GuildRepository extends BaseRepository
 {
     /** @var string */
-    private const CACHE_PREFIX = 'ARES_GUILD_';
+    protected string $cachePrefix = 'ARES_GUILD_';
 
     /** @var string */
-    private const CACHE_COLLECTION_PREFIX = 'ARES_GUILD_COLLECTION_';
+    protected string $cacheCollectionPrefix = 'ARES_GUILD_COLLECTION_';
 
     /** @var string */
     protected string $entity = Guild::class;
 
     /**
-     * Get object by id.
+     * @param string $term
+     * @param int    $page
+     * @param int    $resultPerPage
      *
-     * @param int  $id
-     *
-     * @param bool $cachedEntity
-     *
+     * @return LengthAwarePaginator
+     * @throws DataObjectManagerException
+     */
+    public function searchGuilds(string $term, int $page, int $resultPerPage): LengthAwarePaginator
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                'guilds.id', 'guilds.user_id', 'guilds.name','guilds.description',
+                'guilds.room_id','guilds.badge','guilds.date_created',
+            ])->selectRaw('count(guilds_members.guild_id) as member_count')
+            ->leftJoin(
+                'guilds_members',
+                'guilds.id',
+                '=',
+                'guilds_members.guild_id'
+            )->where('guilds.name', 'LIKE', '%'.$term.'%')
+            ->groupBy('guilds.id')
+            ->orderBy('member_count', 'DESC');
+
+        return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
+    }
+
+    /**
      * @return Guild|null
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
      */
-    public function get(int $id, bool $cachedEntity = true): ?object
+    public function getMostMemberGuild(): ?Guild
     {
-        $entity = $this->cacheService->get(self::CACHE_PREFIX . $id);
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                'guilds.id', 'guilds.user_id', 'guilds.name','guilds.description',
+                'guilds.room_id','guilds.badge','guilds.date_created',
+            ])->selectRaw('count(guilds_members.guild_id) as member_count')
+            ->leftJoin(
+                'guilds_members',
+                'guilds.id',
+                '=',
+                'guilds_members.guild_id'
+            )->groupBy('guilds.id')
+            ->orderBy('member_count', 'DESC');
 
-        if ($entity && $cachedEntity) {
-            return unserialize($entity);
-        }
-
-        $entity = $this->find($id);
-
-        $this->cacheService->set(self::CACHE_PREFIX . $id, serialize($entity));
-
-        return $entity;
+        return $this->getList($searchCriteria)->first();
     }
 
     /**
-     * @param object $model
+     * @param int $page
+     * @param int $resultPerPage
      *
-     * @return object
-     * @throws InvalidArgumentException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws PhpfastcacheSimpleCacheException
+     * @return LengthAwarePaginator
+     * @throws DataObjectManagerException
      */
-    public function save(object $model): object
+    public function getPaginatedGuildList(int $page, int $resultPerPage): LengthAwarePaginator
     {
-        $this->getEntityManager()->persist($model);
-        $this->getEntityManager()->flush();
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                'guilds.id', 'guilds.user_id', 'guilds.name', 'guilds.description',
+                'guilds.room_id','guilds.badge','guilds.date_created',
+            ])->selectRaw('count(guilds_members.guild_id) as member_count')
+            ->leftJoin(
+                'guilds_members',
+                'guilds_members.guild_id',
+                '=',
+                'guilds.id'
+            )->groupBy('guilds.id')
+            ->orderBy('guilds.id')
+            ->addRelation('user');
 
-        $this->cacheService->set(self::CACHE_COLLECTION_PREFIX . $model->getId(), serialize($model));
-
-        return $model;
+        return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
 
     /**
-     * @param  object  $model
+     * @param int $id
      *
-     * @return Guild
-     * @throws ORMException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws OptimisticLockException|InvalidArgumentException
+     * @return mixed
+     * @throws DataObjectManagerException
      */
-    public function update(object $model): object
+    public function getGuild(int $id): ?Guild
     {
-        $this->getEntityManager()->flush();
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                'guilds.id', 'guilds.user_id', 'guilds.name','guilds.description',
+                'guilds.room_id','guilds.badge','guilds.date_created',
+            ])->selectRaw('count(guilds_members.guild_id) as member_count')
+            ->where('guilds.id', $id)
+            ->join(
+                'guilds_members',
+                'guilds.id',
+                '=',
+                'guilds_members.guild_id'
+            )->groupBy('guilds.id')
+            ->addRelation('user')
+            ->addRelation('room');
 
-        $this->cacheService->set(self::CACHE_PREFIX . $model->getId(), serialize($model));
-
-        return $model;
-    }
-
-    /**
-     * @param SearchCriteriaInterface $searchCriteria
-     *
-     * @param bool                    $cachedEntity
-     *
-     * @return array|object[]
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
-     */
-    public function getList(SearchCriteriaInterface $searchCriteria, bool $cachedEntity = true)
-    {
-        $cacheKey = $searchCriteria->getCacheKey();
-
-        $collection = $this->cacheService->get(self::CACHE_COLLECTION_PREFIX . $cacheKey);
-
-        if ($collection && $cachedEntity) {
-            return unserialize($collection);
-        }
-
-        $collection = $this->findBy(
-            $searchCriteria->getFilters(),
-            $searchCriteria->getOrders(),
-            $searchCriteria->getLimit(),
-            $searchCriteria->getOffset()
-        );
-
-        $this->cacheService->set(self::CACHE_COLLECTION_PREFIX . $cacheKey, serialize($collection));
-
-        return $collection;
-    }
-
-    /**
-     * Delete object by id.
-     *
-     * @param   int  $id
-     *
-     * @return bool
-     * @throws InvalidArgumentException
-     * @throws ORMException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws OptimisticLockException
-     */
-    public function delete(int $id): bool
-    {
-        $model = $this->get($id);
-
-        if (!$model) {
-            return false;
-        }
-
-        $this->getEntityManager()->remove($model);
-        $this->getEntityManager()->flush();
-
-        $this->cacheService->delete(self::CACHE_PREFIX . $id);
-
-        return true;
-    }
-
-    /**
-     * @param SearchCriteriaInterface $searchCriteria
-     *
-     * @param bool                    $cachedEntity
-     *
-     * @return PaginatedArrayCollection
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
-     */
-    public function paginate(SearchCriteriaInterface $searchCriteria, bool $cachedEntity = true): PaginatedArrayCollection
-    {
-        $cacheKey = $searchCriteria->getCacheKey();
-
-        $collection = $this->cacheService->get(self::CACHE_COLLECTION_PREFIX . $cacheKey);
-
-        if ($collection && $cachedEntity) {
-            return unserialize($collection);
-        }
-
-        $collection = $this->findPageBy(
-            $searchCriteria->getPage(),
-            $searchCriteria->getLimit(),
-            $searchCriteria->getFilters(),
-            $searchCriteria->getOrders()
-        );
-
-        $this->cacheService->set(self::CACHE_COLLECTION_PREFIX . $cacheKey, serialize($collection));
-
-        return $collection;
+        return $this->getList($searchCriteria)->first();
     }
 }

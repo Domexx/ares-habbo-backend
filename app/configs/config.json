@@ -1,0 +1,55 @@
+{
+  "hotel_settings": {
+    "start_credits": 3000,
+    "start_points": 3000,
+    "start_pixels": 4000,
+    "start_motto": "Ares is cool!",
+    "register": {
+      "max_accounts_per_ip": 3,
+      "looks": {
+        "fallback_look": "hd-180-1.ch-255-66.lg-280-110.sh-305-62.ha-1012-110.hr-828-61",
+        "boy": {
+          "1": "ea-1401-63.lg-275-73.hr-828-45.fa-1212-63.ch-255-64.hd-180-8.sh-290-91",
+          "2": "hd-209-1373.lg-3320-110-1408.hr-3163-42.sh-3524-110-92.ch-3077-64-1408",
+          "3": "hd-207-1.lg-3058-1428.hr-3162-1906.sh-3089-110.cc-3874-1897-1408",
+          "4": "he-1605-1408.lg-285-64.hr-155-42.ch-225-1408.hd-3095-8.sh-300-1408.cc-260-84"
+        },
+        "girl": {
+          "5": "ch-660-64.ea-1401-63.hd-600-8.hr-3920-33-1345.lg-700-73.fa-1212-63.sh-725-90",
+          "6": "sh-3089-110.hr-3789-61-61.ch-3539-92.lg-3019-110.hd-600-20",
+          "7": "sh-3252-90-90.hr-3273-1394-42.ch-3729-110-1408.hd-3096-10.lg-3058-110",
+          "8": "hr-3811-1394.ch-660-1331.he-1604-63.hd-625-4.lg-3216-1328"
+        }
+      }
+    },
+    "gift": {
+      "minAmount": 3000,
+      "maxAmount": 5000
+    },
+    "client": {
+      "rcon_host": "127.0.0.1",
+      "rcon_port": 3001
+    },
+    "news": {
+      "comment_size": 10
+    },
+    "profile": {
+      "entry_size": 10
+    }
+  },
+  "api_settings": {
+    "throttle": {
+      "rate_limit_requests": 8,
+      "rate_limit_per_second": 1
+    },
+    "validation": {
+      "required": "validation.required",
+      "email": "validation.email",
+      "password_confirmation:same": "register.password.same",
+      "password:min": "register.password.min"
+    },
+    "slug": {
+      "trim": true
+    }
+  }
+}

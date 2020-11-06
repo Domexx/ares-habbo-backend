@@ -24,7 +24,7 @@ class LocaleMiddleware implements MiddlewareInterface
     private const FALLBACK_LOCALE = 'en';
 
     /** @var string */
-    private const LOCALE_PATH_KEY = 1;
+    private const LOCALE_PATH_KEY = 0;
 
     /**
      * @var Locale

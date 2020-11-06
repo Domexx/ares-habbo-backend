@@ -42,6 +42,8 @@ class CustomResponse implements CustomResponseInterface
     private $data;
 
     /**
+     * Returns status as json.
+     *
      * @return string
      */
     public function getJson(): string
@@ -63,7 +65,7 @@ class CustomResponse implements CustomResponseInterface
     public function getStatus(): string
     {
         if (!$this->status) {
-            return 'ok';
+            return __('ok');
         }
 
         return $this->status;

@@ -7,58 +7,37 @@
 
 namespace Ares\Guild\Entity;
 
-use Ares\Framework\Entity\Entity;
+use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\DataObject;
+use Ares\Framework\Model\Query\Collection;
+use Ares\Guild\Entity\Contract\GuildMemberInterface;
+use Ares\Guild\Repository\GuildMemberRepository;
+use Ares\Guild\Repository\GuildRepository;
 use Ares\User\Entity\User;
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\OneToOne;
+use Ares\User\Repository\UserRepository;
 
 /**
  * Class GuildMember
  *
  * @package Ares\Guild\Entity
- *
- * @ORM\Entity
- * @ORM\Table(name="guilds_members")
- * @ORM\Cache(usage="NONSTRICT_READ_WRITE")
  */
-class GuildMember extends Entity
+class GuildMember extends DataObject implements GuildMemberInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private int $id;
+    /** @var string */
+    public const TABLE = 'guilds_members';
 
-    /**
-     * @OneToOne(targetEntity="\Ares\User\Entity\User", fetch="EAGER")
-     * @JoinColumn(name="user_id", referencedColumnName="id")
-     */
-    private ?User $member;
-
-    /**
-     * @OneToOne(targetEntity="\Ares\Guild\Entity\Guild", fetch="EAGER")
-     * @JoinColumn(name="guild_id", referencedColumnName="id")
-     */
-    private ?Guild $guild;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $level_id;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $member_since;
+    /*** @var array */
+    public const RELATIONS = [
+        'user' => 'getUser',
+        'guilds' => 'getGuilds'
+    ];
 
     /**
      * @return int
      */
     public function getId(): int
     {
-        return $this->id;
+        return $this->getData(GuildMemberInterface::COLUMN_ID);
     }
 
     /**
@@ -66,51 +45,45 @@ class GuildMember extends Entity
      *
      * @return GuildMember
      */
-    public function setId(int $id): self
+    public function setId(int $id): GuildMember
     {
-        $this->id = $id;
-
-        return $this;
+        return $this->setData(GuildMemberInterface::COLUMN_ID, $id);
     }
 
     /**
-     * @return User|null
+     * @return int
      */
-    public function getMember(): ?User
+    public function getGuildId(): int
     {
-        return $this->member;
+        return $this->getData(GuildMemberInterface::COLUMN_GUILD_ID);
     }
 
     /**
-     * @param User|null $member
+     * @param int $guild_id
      *
      * @return GuildMember
      */
-    public function setMember(?User $member): self
+    public function setGuildId(int $guild_id): GuildMember
     {
-        $this->member = $member;
-
-        return $this;
+        return $this->setData(GuildMemberInterface::COLUMN_GUILD_ID, $guild_id);
     }
 
     /**
-     * @return Guild|null
+     * @return int
      */
-    public function getGuild(): ?Guild
+    public function getUserId(): int
     {
-        return $this->guild;
+        return $this->getData(GuildMemberInterface::COLUMN_USER_ID);
     }
 
     /**
-     * @param Guild|null $guild
+     * @param int $user_id
      *
      * @return GuildMember
      */
-    public function setGuild(?Guild $guild): self
+    public function setUserId(int $user_id): GuildMember
     {
-        $this->guild = $guild;
-
-        return $this;
+        return $this->setData(GuildMemberInterface::COLUMN_USER_ID, $user_id);
     }
 
     /**
@@ -118,7 +91,7 @@ class GuildMember extends Entity
      */
     public function getLevelId(): int
     {
-        return $this->level_id;
+        return $this->getData(GuildMemberInterface::COLUMN_LEVEL_ID);
     }
 
     /**
@@ -126,11 +99,9 @@ class GuildMember extends Entity
      *
      * @return GuildMember
      */
-    public function setLevelId(int $level_id): self
+    public function setLevelId(int $level_id): GuildMember
     {
-        $this->level_id = $level_id;
-
-        return $this;
+        return $this->setData(GuildMemberInterface::COLUMN_LEVEL_ID, $level_id);
     }
 
     /**
@@ -138,7 +109,7 @@ class GuildMember extends Entity
      */
     public function getMemberSince(): int
     {
-        return $this->member_since;
+        return $this->getData(GuildMemberInterface::COLUMN_MEMBER_SINCE);
     }
 
     /**
@@ -146,45 +117,97 @@ class GuildMember extends Entity
      *
      * @return GuildMember
      */
-    public function setMemberSince(int $member_since): self
+    public function setMemberSince(int $member_since): GuildMember
     {
-        $this->member_since = $member_since;
-
-        return $this;
+        return $this->setData(GuildMemberInterface::COLUMN_MEMBER_SINCE, $member_since);
     }
 
     /**
-     * Returns a copy of the current Entity safely
+     * @return User|null
      *
-     * @return array
+     * @throws DataObjectManagerException
      */
-    public function toArray(): array
+    public function getUser(): ?User
     {
-        return [
-            'id' => $this->getId(),
-            'member' => $this->getMember()->toArray(),
-            'level_id' => $this->getLevelId(),
-            'member_since' => $this->getMemberSince()
-        ];
-    }
+        /** @var User $user */
+        $user = $this->getData('user');
 
-    /**
-     * @return string
-     */
-    public function serialize()
-    {
-        return serialize(get_object_vars($this));
-    }
-
-    /**
-     * @param   string  $data
-     */
-    public function unserialize($data)
-    {
-        $values = unserialize($data);
-
-        foreach ($values as $key => $value) {
-            $this->$key = $value;
+        if ($user) {
+            return $user;
         }
+
+        /** @var GuildMemberRepository $guildMemberRepository */
+        $guildMemberRepository = repository(GuildMemberRepository::class);
+
+        /** @var UserRepository $userRepository */
+        $userRepository = repository(UserRepository::class);
+
+        /** @var User $user */
+        $user = $guildMemberRepository->getOneToOne(
+            $userRepository,
+            $this->getUserId(),
+            'id'
+        );
+
+        if (!$user) {
+            return null;
+        }
+
+        $this->setUser($user);
+
+        return $user;
+    }
+
+    /**
+     * @param User $user
+     *
+     * @return GuildMember
+     */
+    public function setUser(User $user): GuildMember
+    {
+        return $this->setData('user', $user);
+    }
+
+    /**
+     * @return Collection|array|mixed|null
+     * @throws DataObjectManagerException
+     */
+    public function getGuilds(): ?Collection
+    {
+        $guilds = $this->getData('guilds');
+
+        if ($guilds) {
+            return $guilds;
+        }
+
+        /** @var GuildMemberRepository $guildMemberRepository */
+        $guildMemberRepository = repository(GuildMemberRepository::class);
+
+        /** @var GuildRepository $guildRepository */
+        $guildRepository = repository(GuildRepository::class);
+
+        $guilds = $guildMemberRepository->getOneToMany(
+            $guildRepository,
+            $this->getGuildId(),
+            'id'
+        );
+
+        if (!$guilds->toArray()) {
+            return null;
+        }
+
+        $this->setGuilds($guilds);
+
+        return $guilds;
+    }
+
+    /**
+     * @param Collection $guild
+     *
+     * @return GuildMember
+     */
+    public function setGuilds(Collection $guild): GuildMember
+    {
+        return $this->setData('guild', $guild);
     }
 }

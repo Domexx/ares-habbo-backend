@@ -18,10 +18,16 @@ use Slim\App;
  */
 class RouteServiceProvider extends AbstractServiceProvider
 {
+    /**
+     * @var string[]
+     */
     protected $provides = [
         ResponseFactoryInterface::class
     ];
 
+    /**
+     * Registers new service.
+     */
     public function register()
     {
         $container = $this->getContainer();

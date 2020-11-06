@@ -7,68 +7,36 @@
 
 namespace Ares\User\Entity;
 
-use Ares\Framework\Entity\Entity;
-use Doctrine\ORM\Mapping as ORM;
+use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\DataObject;
+use Ares\User\Entity\Contract\UserCurrencyInterface;
+use Ares\User\Repository\UserCurrencyRepository;
+use Ares\User\Repository\UserRepository;
 
 /**
  * Class UserCurrency
  *
  * @package Ares\User\Entity
- *
- * @ORM\Entity
- * @ORM\Table(name="users_currency")
- * @ORM\Cache(usage="NONSTRICT_READ_WRITE")
  */
-class UserCurrency extends Entity
+class UserCurrency extends DataObject implements UserCurrencyInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private int $id;
+    /** @var string */
+    public const TABLE = 'users_currency';
 
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $user_id;
+    /** @var array */
+    public const RELATIONS = [
+      'user' => 'getUser'
+    ];
 
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $type;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $amount;
-
-    /**
-     * @return int
-     */
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param int $id
-     *
-     * @return UserCurrency
-     */
-    public function setId(int $id): self
-    {
-        $this->id = $id;
-
-        return $this;
-    }
+    /** @var string */
+    public const PRIMARY_KEY = 'user_id';
 
     /**
      * @return int
      */
     public function getUserId(): int
     {
-        return $this->user_id;
+        return $this->getData(UserCurrencyInterface::COLUMN_USER_ID);
     }
 
     /**
@@ -76,11 +44,9 @@ class UserCurrency extends Entity
      *
      * @return UserCurrency
      */
-    public function setUserId(int $user_id): self
+    public function setUserId(int $user_id): UserCurrency
     {
-        $this->user_id = $user_id;
-
-        return $this;
+        return $this->setData(UserCurrencyInterface::COLUMN_USER_ID, $user_id);
     }
 
     /**
@@ -88,7 +54,7 @@ class UserCurrency extends Entity
      */
     public function getType(): int
     {
-        return $this->type;
+        return $this->getData(UserCurrencyInterface::COLUMN_TYPE);
     }
 
     /**
@@ -96,11 +62,9 @@ class UserCurrency extends Entity
      *
      * @return UserCurrency
      */
-    public function setType(int $type): self
+    public function setType(int $type): UserCurrency
     {
-        $this->type = $type;
-
-        return $this;
+        return $this->setData(UserCurrencyInterface::COLUMN_TYPE, $type);
     }
 
     /**
@@ -108,7 +72,7 @@ class UserCurrency extends Entity
      */
     public function getAmount(): int
     {
-        return $this->amount;
+        return $this->getData(UserCurrencyInterface::COLUMN_AMOUNT);
     }
 
     /**
@@ -116,45 +80,49 @@ class UserCurrency extends Entity
      *
      * @return UserCurrency
      */
-    public function setAmount(int $amount): self
+    public function setAmount(int $amount): UserCurrency
     {
-        $this->amount = $amount;
-
-        return $this;
+        return $this->setData(UserCurrencyInterface::COLUMN_AMOUNT, $amount);
     }
 
     /**
-     * Returns a copy of the current Entity safely
+     * @return User|null
      *
-     * @return array
+     * @throws DataObjectManagerException
      */
-    public function toArray(): array
+    public function getUser(): ?User
     {
-        return [
-            'id' => $this->getId(),
-            'user_id' => $this->getUserId(),
-            'type' => $this->getType(),
-            'amount' => $this->getAmount()
-        ];
-    }
+        /** @var User $user */
+        $user = $this->getData('user');
 
-    /**
-     * @return string
-     */
-    public function serialize()
-    {
-        return serialize(get_object_vars($this));
-    }
-
-    /**
-     * @param   string  $data
-     */
-    public function unserialize($data)
-    {
-        $values = unserialize($data);
-
-        foreach ($values as $key => $value) {
-            $this->$key = $value;
+        if ($user) {
+            return $user;
         }
+
+        /** @var UserRepository $userRepository */
+        $userRepository = repository(UserRepository::class);
+
+        /** @var UserCurrencyRepository $userCurrencyRepository */
+        $userCurrencyRepository = repository(UserCurrencyRepository::class);
+
+        /** @var User $user */
+        $user = $userCurrencyRepository->getOneToOne(
+            $userRepository,
+            $this->getUserId(),
+            'id'
+        );
+
+        if (!$user) {
+            return null;
+        }
+
+        $this->setUser($user);
+
+        return $user;
+    }
+
+    public function setUser(User $user): UserCurrency
+    {
+        return $this->setData('user', $user);
     }
 }

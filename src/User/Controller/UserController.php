@@ -8,13 +8,10 @@
 namespace Ares\User\Controller;
 
 use Ares\Framework\Controller\BaseController;
+use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\User\Entity\User;
 use Ares\User\Exception\UserException;
 use Ares\User\Repository\UserRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
-use Psr\Cache\InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -26,11 +23,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class UserController extends BaseController
 {
     /**
-     * 2 equals the second field in the enum-field
-     */
-    private const USER_EQUALS_ONLINE = 2;
-
-    /**
      * @var UserRepository Gets the current UserRepository
      */
     private UserRepository $userRepository;
@@ -38,7 +30,7 @@ class UserController extends BaseController
     /**
      * UserController constructor.
      *
-     * @param UserRepository $userRepository
+     * @param   UserRepository  $userRepository
      */
     public function __construct(
         UserRepository $userRepository
@@ -54,18 +46,19 @@ class UserController extends BaseController
      *
      * @return Response Returns a Response with the given Data
      * @throws UserException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws InvalidArgumentException
+     * @throws DataObjectManagerException
      */
     public function user(Request $request, Response $response): Response
     {
         /** @var User $user */
-        $user = $this->getUser($this->userRepository, $request, false)
-            ->toArray();
+        $user = user($request);
+        $user->getRoles();
+        $user->getCurrencies();
 
         return $this->respond(
             $response,
-            response()->setData($user)
+            response()
+                ->setData($user)
         );
     }
 
@@ -79,46 +72,14 @@ class UserController extends BaseController
      */
     public function onlineUser(Request $request, Response $response): Response
     {
-        /** @var User $onlineUser */
-        $onlineUser = $this->userRepository->count([
-            'online' => self::USER_EQUALS_ONLINE
-        ]);
+        $onlineUser = $this->userRepository->getUserOnlineCount();
 
         return $this->respond(
             $response,
-            response()->setData([
-                'count' => $onlineUser
-            ])
-        );
-    }
-
-    /**
-     * Saves the given Language to the User
-     *
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return Response
-     * @throws InvalidArgumentException
-     * @throws ORMException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws UserException
-     * @throws OptimisticLockException
-     */
-    public function updateLocale(Request $request, Response $response): Response
-    {
-        /** @var array $body */
-        $body = $request->getParsedBody();
-
-        /** @var User $user */
-        $user = $this->getUser($this->userRepository, $request, false);
-        $user->setLocale($body['locale']);
-
-        $this->userRepository->update($user);
-
-        return $this->respond(
-            $response,
-            response()->setData($user->toArray())
+            response()
+                ->setData([
+                    'count' => $onlineUser
+                ])
         );
     }
 }

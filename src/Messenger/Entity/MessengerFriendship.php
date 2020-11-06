@@ -7,58 +7,34 @@
 
 namespace Ares\Messenger\Entity;
 
-use Ares\Framework\Entity\Entity;
+use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\DataObject;
+use Ares\Messenger\Entity\Contract\MessengerFriendshipInterface;
+use Ares\Messenger\Repository\MessengerRepository;
 use Ares\User\Entity\User;
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\OneToOne;
+use Ares\User\Repository\UserRepository;
 
 /**
  * Class MessengerFriendship
  *
  * @package Ares\Messenger\Entity
- *
- * @ORM\Table(name="messenger_friendships")
- * @ORM\Entity(repositoryClass="Ares\Messenger\Repository\MessengerRepository")
- * @ORM\Cache(usage="NONSTRICT_READ_WRITE")
  */
-class MessengerFriendship extends Entity
+class MessengerFriendship extends DataObject implements MessengerFriendshipInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private int $id;
+    /** @var string */
+    public const TABLE = 'messenger_friendships';
 
-    /**
-     * @OneToOne(targetEntity="\Ares\User\Entity\User", fetch="EAGER")
-     * @JoinColumn(name="user_one_id", referencedColumnName="id")
-     */
-    private ?User $user;
-
-    /**
-     * @OneToOne(targetEntity="\Ares\User\Entity\User", fetch="EAGER")
-     * @JoinColumn(name="user_two_id", referencedColumnName="id")
-     */
-    private ?User $friend;
-
-    /**
-     * @ORM\Column(type="integer", length=1)
-     */
-    private int $relation;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $friends_since;
+    /** @var array */
+    public const RELATIONS = [
+        'user' => 'getUser'
+    ];
 
     /**
      * @return int
      */
     public function getId(): int
     {
-        return $this->id;
+        return $this->getData(MessengerFriendshipInterface::COLUMN_ID);
     }
 
     /**
@@ -66,51 +42,45 @@ class MessengerFriendship extends Entity
      *
      * @return MessengerFriendship
      */
-    public function setId(int $id): self
+    public function setId(int $id): MessengerFriendship
     {
-        $this->id = $id;
-
-        return $this;
+        return $this->setData(MessengerFriendshipInterface::COLUMN_ID, $id);
     }
 
     /**
-     * @return User|null
+     * @return int
      */
-    public function getUser(): ?User
+    public function getUserOneId(): int
     {
-        return $this->user;
+        return $this->getData(MessengerFriendshipInterface::COLUMN_USER_ONE_ID);
     }
 
     /**
-     * @param User|null $user
+     * @param int $user_one_id
      *
      * @return MessengerFriendship
      */
-    public function setUser(?User $user): self
+    public function setUserOneId(int $user_one_id): MessengerFriendship
     {
-        $this->user = $user;
-
-        return $this;
+        return $this->setData(MessengerFriendshipInterface::COLUMN_USER_ONE_ID, $user_one_id);
     }
 
     /**
-     * @return User|null
+     * @return int
      */
-    public function getFriend(): ?User
+    public function getUserTwoId(): int
     {
-        return $this->friend;
+        return $this->getData(MessengerFriendshipInterface::COLUMN_USER_TWO_ID);
     }
 
     /**
-     * @param User|null $friend
+     * @param int $user_two_id
      *
      * @return MessengerFriendship
      */
-    public function setFriend(?User $friend): self
+    public function setUserTwoId(int $user_two_id): MessengerFriendship
     {
-        $this->friend = $friend;
-
-        return $this;
+        return $this->setData(MessengerFriendshipInterface::COLUMN_USER_TWO_ID, $user_two_id);
     }
 
     /**
@@ -118,7 +88,7 @@ class MessengerFriendship extends Entity
      */
     public function getRelation(): int
     {
-        return $this->relation;
+        return $this->getData(MessengerFriendshipInterface::COLUMN_RELATION);
     }
 
     /**
@@ -126,11 +96,9 @@ class MessengerFriendship extends Entity
      *
      * @return MessengerFriendship
      */
-    public function setRelation(int $relation): self
+    public function setRelation(int $relation): MessengerFriendship
     {
-        $this->relation = $relation;
-
-        return $this;
+        return $this->setData(MessengerFriendshipInterface::COLUMN_RELATION, $relation);
     }
 
     /**
@@ -138,7 +106,7 @@ class MessengerFriendship extends Entity
      */
     public function getFriendsSince(): int
     {
-        return $this->friends_since;
+        return $this->getData(MessengerFriendshipInterface::COLUMN_FRIENDS_SINCE);
     }
 
     /**
@@ -146,30 +114,47 @@ class MessengerFriendship extends Entity
      *
      * @return MessengerFriendship
      */
-    public function setFriendsSince(int $friends_since): self
+    public function setFriendsSince(int $friends_since): MessengerFriendship
     {
-        $this->friends_since = $friends_since;
-
-        return $this;
+        return $this->setData(MessengerFriendshipInterface::COLUMN_FRIENDS_SINCE, $friends_since);
     }
 
     /**
-     * @return string
+     * @return User|null
+     * @throws DataObjectManagerException
      */
-    public function serialize()
+    public function getUser(): ?User
     {
-        return serialize(get_object_vars($this));
-    }
+        $user = $this->getData('user');
 
-    /**
-     * @param string $data
-     */
-    public function unserialize($data)
-    {
-        $values = unserialize($data);
-
-        foreach ($values as $key => $value) {
-            $this->$key = $value;
+        if ($user) {
+            return $user;
         }
+
+        /** @var MessengerRepository $messengerRepository */
+        $messengerRepository = repository(MessengerRepository::class);
+
+        /** @var UserRepository $userRepository */
+        $userRepository = repository(UserRepository::class);
+
+        /** @var User $user */
+        $user = $messengerRepository->getOneToOne(
+            $userRepository,
+            $this->getUserTwoId(),
+            'id'
+        );
+
+        if (!$user) {
+            return null;
+        }
+
+        $this->setUser($user);
+
+        return $user;
+    }
+
+    public function setUser(User $user): MessengerFriendship
+    {
+        return $this->setData('user', $user);
     }
 }

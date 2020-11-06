@@ -7,98 +7,52 @@
 
 namespace Ares\Article\Entity;
 
-use Ares\Framework\Entity\Entity;
+use Ares\Article\Entity\Contract\ArticleInterface;
+use Ares\Article\Repository\ArticleRepository;
+use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\DataObject;
 use Ares\User\Entity\User;
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\OneToOne;
+use Ares\User\Repository\UserRepository;
 
 /**
  * Class Article
  *
  * @package Ares\Article\Entity
- *
- * @ORM\Entity
- * @ORM\Table(name="ares_articles", uniqueConstraints={@ORM\UniqueConstraint(name="title", columns={"title"})}))
- * @ORM\Cache(usage="NONSTRICT_READ_WRITE")
- * @ORM\HasLifecycleCallbacks
  */
-class Article extends Entity
+class Article extends DataObject implements ArticleInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private int $id;
+    /** @var string */
+    public const TABLE = 'ares_articles';
+
+    /** @var array **/
+    public const RELATIONS = [
+      'user' => 'getUser'
+    ];
 
     /**
-     * @ORM\Column(type="string", length=150)
+     * @return int
      */
-    private string $title;
-
-    /**
-     * @ORM\Column(type="string", length=100)
-     */
-    private string $slug;
-
-    /**
-     * @ORM\Column(type="string", length=150)
-     */
-    private string $description;
-
-    /**
-     * @ORM\Column(type="string", length=200)
-     */
-    private string $content;
-
-    /**
-     * @ORM\Column(type="string", length=35)
-     */
-    private ?string $image;
-
-    /**
-     * @OneToOne(targetEntity="\Ares\User\Entity\User")
-     */
-    private ?User $author;
-
-    /**
-     * @ORM\Column(type="integer", columnDefinition="ENUM('0',1')")
-     */
-    private int $hidden;
-
-    /**
-     * @ORM\Column(type="integer", columnDefinition="ENUM('0',1')")
-     */
-    private int $pinned;
-
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    protected \DateTime $created_at;
-
-    /**
-     * @ORM\Column(type="datetime", nullable = true)
-     */
-    protected \DateTime $updated_at;
-
-    /**
-     * Get Article id
-     *
-     * @return integer
-     */
-    public function getId(): ?int
+    public function getId(): int
     {
-        return $this->id;
+        return $this->getData(ArticleInterface::COLUMN_ID);
     }
 
     /**
-     * Gets Title of News
+     * @param int $id
      *
+     * @return Article
+     */
+    public function setId(int $id): Article
+    {
+        return $this->setData(ArticleInterface::COLUMN_ID, $id);
+    }
+
+    /**
      * @return string
      */
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
-        return $this->title;
+        return $this->getData(ArticleInterface::COLUMN_TITLE);
     }
 
     /**
@@ -106,11 +60,9 @@ class Article extends Entity
      *
      * @return Article
      */
-    public function setTitle(string $title): self
+    public function setTitle(string $title): Article
     {
-        $this->title = $title;
-
-        return $this;
+        return $this->setData(ArticleInterface::COLUMN_TITLE, $title);
     }
 
     /**
@@ -118,7 +70,7 @@ class Article extends Entity
      */
     public function getSlug(): string
     {
-        return $this->slug;
+        return $this->getData(ArticleInterface::COLUMN_SLUG);
     }
 
     /**
@@ -126,21 +78,17 @@ class Article extends Entity
      *
      * @return Article
      */
-    public function setSlug(string $slug): self
+    public function setSlug(string $slug): Article
     {
-        $this->slug = $slug;
-
-        return $this;
+        return $this->setData(ArticleInterface::COLUMN_SLUG, $slug);
     }
 
     /**
-     * Gets Description of News
-     *
      * @return string
      */
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
-        return $this->description;
+        return $this->getData(ArticleInterface::COLUMN_DESCRIPTION);
     }
 
     /**
@@ -148,19 +96,17 @@ class Article extends Entity
      *
      * @return Article
      */
-    public function setDescription(string $description): self
+    public function setDescription(string $description): Article
     {
-        $this->description = $description;
-
-        return $this;
+        return $this->setData(ArticleInterface::COLUMN_DESCRIPTION, $description);
     }
 
     /**
      * @return string
      */
-    public function getContent(): ?string
+    public function getContent(): string
     {
-        return $this->content;
+        return $this->getData(ArticleInterface::COLUMN_CONTENT);
     }
 
     /**
@@ -168,19 +114,17 @@ class Article extends Entity
      *
      * @return Article
      */
-    public function setContent(string $content): self
+    public function setContent(string $content)
     {
-        $this->content = $content;
-
-        return $this;
+        return $this->setData(ArticleInterface::COLUMN_CONTENT, $content);
     }
 
     /**
      * @return string
      */
-    public function getImage(): ?string
+    public function getImage(): string
     {
-        return $this->image;
+        return $this->getData(ArticleInterface::COLUMN_IMAGE);
     }
 
     /**
@@ -188,39 +132,35 @@ class Article extends Entity
      *
      * @return Article
      */
-    public function setImage(string $image): self
+    public function setImage(string $image): Article
     {
-        $this->image = $image;
-
-        return $this;
-    }
-
-    /**
-     * @return User|null
-     */
-    public function getAuthor(): ?User
-    {
-        return $this->author;
-    }
-
-    /**
-     * @param User $author
-     *
-     * @return Article
-     */
-    public function setAuthor(User $author): self
-    {
-        $this->author = $author;
-
-        return $this;
+        return $this->setData(ArticleInterface::COLUMN_IMAGE, $image);
     }
 
     /**
      * @return int
      */
-    public function getHidden(): ?int
+    public function getAuthorId(): ?int
     {
-        return $this->hidden;
+        return $this->getData(ArticleInterface::COLUMN_AUTHOR_ID);
+    }
+
+    /**
+     * @param int $author_id
+     *
+     * @return Article
+     */
+    public function setAuthorId(int $author_id): Article
+    {
+        return $this->setData(ArticleInterface::COLUMN_AUTHOR_ID, $author_id);
+    }
+
+    /**
+     * @return int
+     */
+    public function getHidden(): int
+    {
+        return $this->getData(ArticleInterface::COLUMN_HIDDEN);
     }
 
     /**
@@ -228,11 +168,9 @@ class Article extends Entity
      *
      * @return Article
      */
-    public function setHidden(int $hidden): self
+    public function setHidden(int $hidden): Article
     {
-        $this->hidden = $hidden;
-
-        return $this;
+        return $this->setData(ArticleInterface::COLUMN_HIDDEN, $hidden);
     }
 
     /**
@@ -240,7 +178,7 @@ class Article extends Entity
      */
     public function getPinned(): int
     {
-        return $this->pinned;
+        return $this->getData(ArticleInterface::COLUMN_PINNED);
     }
 
     /**
@@ -248,11 +186,45 @@ class Article extends Entity
      *
      * @return Article
      */
-    public function setPinned(int $pinned): self
+    public function setPinned(int $pinned): Article
     {
-        $this->pinned = $pinned;
+        return $this->setData(ArticleInterface::COLUMN_PINNED, $pinned);
+    }
 
-        return $this;
+    /**
+     * @return int
+     */
+    public function getLikes(): int
+    {
+        return $this->getData(ArticleInterface::COLUMN_LIKES);
+    }
+
+    /**
+     * @param int $likes
+     *
+     * @return Article
+     */
+    public function setLikes(int $likes): Article
+    {
+        return $this->setData(ArticleInterface::COLUMN_LIKES, $likes);
+    }
+
+    /**
+     * @return int
+     */
+    public function getDislikes(): int
+    {
+        return $this->getData(ArticleInterface::COLUMN_DISLIKES);
+    }
+
+    /**
+     * @param int $dislikes
+     *
+     * @return Article
+     */
+    public function setDislikes(int $dislikes): Article
+    {
+        return $this->setData(ArticleInterface::COLUMN_DISLIKES, $dislikes);
     }
 
     /**
@@ -260,7 +232,17 @@ class Article extends Entity
      */
     public function getCreatedAt(): \DateTime
     {
-        return $this->created_at;
+        return $this->getData(ArticleInterface::COLUMN_CREATED_AT);
+    }
+
+    /**
+     * @param \DateTime $created_at
+     *
+     * @return Article
+     */
+    public function setCreatedAt(\DateTime $created_at): Article
+    {
+        return $this->setData(ArticleInterface::COLUMN_CREATED_AT, $created_at);
     }
 
     /**
@@ -268,68 +250,62 @@ class Article extends Entity
      */
     public function getUpdatedAt(): \DateTime
     {
-        return $this->updated_at;
+        return $this->getData(ArticleInterface::COLUMN_UPDATED_AT);
     }
 
     /**
-     * Gets triggered only on insert
+     * @param \DateTime $updated_at
      *
-     * @ORM\PrePersist
+     * @return Article
      */
-    public function onPrePersist()
+    public function setUpdatedAt(\DateTime $updated_at): Article
     {
-        $this->created_at = new \DateTime("now");
+        return $this->setData(ArticleInterface::COLUMN_UPDATED_AT, $updated_at);
     }
 
     /**
-     * Gets triggered every time on update
+     * @return User|null
      *
-     * @ORM\PreUpdate
+     * @throws DataObjectManagerException
      */
-    public function onPreUpdate()
+    public function getUser(): ?User
     {
-        $this->updated_at = new \DateTime("now");
-    }
+        /** @var User $user */
+        $user = $this->getData('user');
 
-    /**
-     * Returns a copy of the current Entity safely
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->getId(),
-            'title' => $this->getTitle(),
-            'slug' => $this->getSlug(),
-            'description' => $this->getDescription(),
-            'content' => $this->getContent(),
-            'image' => $this->getImage(),
-            'author' => $this->getAuthor()->toArray(),
-            'hidden' => $this->getHidden(),
-            'pinned' => $this->getPinned(),
-            'created_at' => $this->getCreatedAt(),
-            'updated_at' => $this->getUpdatedAt()
-        ];
-    }
-
-    /**
-     * @return string
-     */
-    public function serialize()
-    {
-        return serialize(get_object_vars($this));
-    }
-
-    /**
-     * @param   string  $data
-     */
-    public function unserialize($data)
-    {
-        $values = unserialize($data);
-
-        foreach ($values as $key => $value) {
-            $this->$key = $value;
+        if ($user) {
+            return $user;
         }
+
+        /** @var ArticleRepository $articleRepository */
+        $articleRepository = repository(ArticleRepository::class);
+
+        /** @var UserRepository $userRepository */
+        $userRepository = repository(UserRepository::class);
+
+        /** @var User $user */
+        $user = $articleRepository->getOneToOne(
+            $userRepository,
+            $this->getAuthorId(),
+            'id'
+        );
+
+        if (!$user) {
+            return null;
+        }
+
+        $this->setUser($user);
+
+        return $user;
+    }
+
+    /**
+     * @param User $user
+     *
+     * @return Article
+     */
+    public function setUser(User $user): Article
+    {
+        return $this->setData('user', $user);
     }
 }

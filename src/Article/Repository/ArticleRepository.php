@@ -7,14 +7,11 @@
 
 namespace Ares\Article\Repository;
 
-use Ares\Framework\Interfaces\SearchCriteriaInterface;
+use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Article\Entity\Article;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Jhg\DoctrinePagination\Collection\PaginatedArrayCollection;
-use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
-use Psr\Cache\InvalidArgumentException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Ares\Framework\Model\Query\Collection;
 
 /**
  * Class ArticleRepository
@@ -24,160 +21,100 @@ use Psr\Cache\InvalidArgumentException;
 class ArticleRepository extends BaseRepository
 {
     /** @var string */
-    private const CACHE_PREFIX = 'ARES_ARTICLE_';
+    protected string $cachePrefix = 'ARES_ARTICLE_';
 
     /** @var string */
-    private const CACHE_COLLECTION_PREFIX = 'ARES_ARTICLE_COLLECTION_';
+    protected string $cacheCollectionPrefix = 'ARES_ARTICLE_COLLECTION_';
 
     /** @var string */
     protected string $entity = Article::class;
 
     /**
-     * Get object by id.
+     * @param string $term
+     * @param int    $page
+     * @param int    $resultPerPage
      *
-     * @param int  $id
-     *
-     * @param bool $cachedEntity
-     *
-     * @return Article|null
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
+     * @return LengthAwarePaginator
+     * @throws DataObjectManagerException
      */
-    public function get(int $id, bool $cachedEntity = true): ?object
+    public function searchArticles(string $term, int $page, int $resultPerPage): LengthAwarePaginator
     {
-        $entity = $this->cacheService->get(self::CACHE_PREFIX . $id);
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                'ares_articles.id', 'ares_articles.author_id', 'ares_articles.title', 'ares_articles.slug',
+                'ares_articles.description', 'ares_articles.image', 'ares_articles.likes', 'ares_articles.dislikes',
+                'ares_articles.created_at'
+            ])->selectRaw(
+                'count(ares_articles_comments.article_id) as comments'
+            )->leftJoin(
+                'ares_articles_comments',
+                'ares_articles.id',
+                '=',
+                'ares_articles_comments.article_id'
+            )->where('title', 'LIKE', '%' . $term . '%')
+            ->where('hidden', 0)
+            ->groupBy('ares_articles.id')
+            ->orderBy('comments', 'DESC')
+            ->addRelation('user');
 
-        if ($entity && $cachedEntity) {
-            return unserialize($entity);
-        }
-
-        $entity = $this->find($id);
-
-        $this->cacheService->set(self::CACHE_PREFIX . $id, serialize($entity));
-
-        return $entity;
+        return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
 
     /**
-     * @param object $model
-     *
-     * @return object
-     * @throws InvalidArgumentException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws PhpfastcacheSimpleCacheException
+     * @return Collection
+     * @throws DataObjectManagerException
      */
-    public function save(object $model): object
+    public function getPinnedArticles(): ?Collection
     {
-        $this->getEntityManager()->persist($model);
-        $this->getEntityManager()->flush();
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                'ares_articles.id', 'ares_articles.author_id', 'ares_articles.title', 'ares_articles.slug',
+                'ares_articles.description', 'ares_articles.image', 'ares_articles.likes', 'ares_articles.dislikes',
+                'ares_articles.created_at'
+            ])->selectRaw(
+                'count(ares_articles_comments.article_id) as comments'
+            )->leftJoin(
+                'ares_articles_comments',
+                'ares_articles.id',
+                '=',
+                'ares_articles_comments.article_id'
+            )->where([
+                'pinned' => 1,
+                'hidden' => 0
+            ])->groupBy('ares_articles.id')
+            ->orderBy('ares_articles.id', 'DESC')
+            ->limit(3)
+            ->addRelation('user');
 
-        $this->cacheService->set(self::CACHE_COLLECTION_PREFIX . $model->getId(), serialize($model));
-
-        return $model;
+        return $this->getList($searchCriteria);
     }
 
     /**
-     * @param  object  $model
+     * @param int $page
+     * @param int $resultPerPage
      *
-     * @return Article
-     * @throws ORMException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws OptimisticLockException|InvalidArgumentException
+     * @return LengthAwarePaginator
+     * @throws DataObjectManagerException
      */
-    public function update(object $model): object
+    public function getPaginatedArticleList(int $page, int $resultPerPage): LengthAwarePaginator
     {
-        $this->getEntityManager()->flush();
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                'ares_articles.id', 'ares_articles.author_id', 'ares_articles.title', 'ares_articles.slug',
+                'ares_articles.description', 'ares_articles.image', 'ares_articles.likes', 'ares_articles.dislikes',
+                'ares_articles.created_at'
+            ])->selectRaw(
+                'count(ares_articles_comments.article_id) as comments'
+            )->leftJoin(
+                'ares_articles_comments',
+                'ares_articles.id',
+                '=',
+                'ares_articles_comments.article_id'
+            )->groupBy('ares_articles.id')
+            ->where('ares_articles.hidden', 0)
+            ->orderBy('ares_articles.id', 'DESC')
+            ->addRelation('user');
 
-        $this->cacheService->set(self::CACHE_PREFIX . $model->getId(), serialize($model));
-
-        return $model;
-    }
-
-    /**
-     * @param SearchCriteriaInterface $searchCriteria
-     *
-     * @param bool                    $cachedEntity
-     *
-     * @return array|object[]
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
-     */
-    public function getList(SearchCriteriaInterface $searchCriteria, bool $cachedEntity = true)
-    {
-        $cacheKey = $searchCriteria->getCacheKey();
-
-        $collection = $this->cacheService->get(self::CACHE_COLLECTION_PREFIX . $cacheKey);
-
-        if ($collection && $cachedEntity) {
-            return unserialize($collection);
-        }
-
-        $collection = $this->findBy(
-            $searchCriteria->getFilters(),
-            $searchCriteria->getOrders(),
-            $searchCriteria->getLimit(),
-            $searchCriteria->getOffset()
-        );
-
-        $this->cacheService->set(self::CACHE_COLLECTION_PREFIX . $cacheKey, serialize($collection));
-
-        return $collection;
-    }
-
-    /**
-     * Delete object by id.
-     *
-     * @param   int  $id
-     *
-     * @return bool
-     * @throws InvalidArgumentException
-     * @throws ORMException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws OptimisticLockException
-     */
-    public function delete(int $id): bool
-    {
-        $model = $this->get($id);
-
-        if (!$model) {
-            return false;
-        }
-
-        $this->getEntityManager()->remove($model);
-        $this->getEntityManager()->flush();
-
-        return true;
-    }
-
-    /**
-     * @param SearchCriteriaInterface $searchCriteria
-     *
-     * @param bool                    $cachedEntity
-     *
-     * @return PaginatedArrayCollection
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
-     */
-    public function paginate(SearchCriteriaInterface $searchCriteria, bool $cachedEntity = true): PaginatedArrayCollection
-    {
-        $cacheKey = $searchCriteria->getCacheKey();
-
-        $collection = $this->cacheService->get(self::CACHE_COLLECTION_PREFIX . $cacheKey);
-
-        if ($collection && $cachedEntity) {
-            return unserialize($collection);
-        }
-
-        $collection = $this->findPageBy(
-            $searchCriteria->getPage(),
-            $searchCriteria->getLimit(),
-            $searchCriteria->getFilters(),
-            $searchCriteria->getOrders()
-        );
-
-        $this->cacheService->set(self::CACHE_COLLECTION_PREFIX . $cacheKey, serialize($collection));
-
-        return $collection;
+        return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
 }

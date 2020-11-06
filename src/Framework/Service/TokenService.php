@@ -21,7 +21,6 @@ class TokenService
      * Creates the JWT - Token and returns it
      *
      * @param $id
-     *
      * @return string
      * @throws ValidateException
      */

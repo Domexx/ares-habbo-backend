@@ -7,70 +7,37 @@
 
 namespace Ares\Guild\Entity;
 
-use Ares\Framework\Entity\Entity;
+use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\DataObject;
+use Ares\Guild\Entity\Contract\GuildInterface;
+use Ares\Guild\Repository\GuildRepository;
 use Ares\Room\Entity\Room;
+use Ares\Room\Repository\RoomRepository;
 use Ares\User\Entity\User;
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\OneToOne;
+use Ares\User\Repository\UserRepository;
 
 /**
  * Class Guild
  *
  * @package Ares\Guild\Entity
- *
- * @ORM\Entity
- * @ORM\Table(name="guilds")
- * @ORM\Cache(usage="NONSTRICT_READ_WRITE")
- * @ORM\HasLifecycleCallbacks
  */
-class Guild extends Entity
+class Guild extends DataObject implements GuildInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private int $id;
+    /** @var string */
+    public const TABLE = 'guilds';
 
-    /**
-     * @OneToOne(targetEntity="\Ares\User\Entity\User", fetch="EAGER")
-     * @JoinColumn(name="user_id", referencedColumnName="id")
-     */
-    private User $creator;
-
-    /**
-     * @ORM\Column(type="string", length=50)
-     */
-    private string $name;
-
-    /**
-     * @ORM\Column(type="string", length=512)
-     */
-    private string $description;
-
-    /**
-     * @OneToOne(targetEntity="\Ares\Room\Entity\Room", fetch="EAGER")
-     * @JoinColumn(name="room_id", referencedColumnName="id")
-     */
-    private Room $room;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private string $badge;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $date_created;
+    /*** @var array */
+    public const RELATIONS = [
+        'user' => 'getUser',
+        'room' => 'getRoom'
+    ];
 
     /**
      * @return int
      */
     public function getId(): int
     {
-        return $this->id;
+        return $this->getData(GuildInterface::COLUMN_ID);
     }
 
     /**
@@ -78,31 +45,27 @@ class Guild extends Entity
      *
      * @return Guild
      */
-    public function setId(int $id): self
+    public function setId(int $id): Guild
     {
-        $this->id = $id;
-
-        return $this;
+        return $this->setData(GuildInterface::COLUMN_ID, $id);
     }
 
     /**
-     * @return User|null
+     * @return int
      */
-    public function getCreator(): ?User
+    public function getUserId(): ?int
     {
-        return $this->creator;
+        return $this->getData(GuildInterface::COLUMN_USER_ID);
     }
 
     /**
-     * @param User $creator
+     * @param int $user_id
      *
      * @return Guild
      */
-    public function setCreator(User $creator): self
+    public function setUserId(int $user_id): Guild
     {
-        $this->creator = $creator;
-
-        return $this;
+        return $this->setData(GuildInterface::COLUMN_USER_ID, $user_id);
     }
 
     /**
@@ -110,7 +73,7 @@ class Guild extends Entity
      */
     public function getName(): string
     {
-        return $this->name;
+        return $this->getData(GuildInterface::COLUMN_NAME);
     }
 
     /**
@@ -118,11 +81,9 @@ class Guild extends Entity
      *
      * @return Guild
      */
-    public function setName(string $name): self
+    public function setName(string $name): Guild
     {
-        $this->name = $name;
-
-        return $this;
+        return $this->setData(GuildInterface::COLUMN_NAME, $name);
     }
 
     /**
@@ -130,7 +91,7 @@ class Guild extends Entity
      */
     public function getDescription(): string
     {
-        return $this->description;
+        return $this->getData(GuildInterface::COLUMN_DESCRIPTION);
     }
 
     /**
@@ -138,31 +99,45 @@ class Guild extends Entity
      *
      * @return Guild
      */
-    public function setDescription(string $description): self
+    public function setDescription(string $description): Guild
     {
-        $this->description = $description;
-
-        return $this;
+        return $this->setData(GuildInterface::COLUMN_DESCRIPTION, $description);
     }
 
     /**
-     * @return Room|null
+     * @return int
      */
-    public function getRoom(): ?Room
+    public function getRoomId(): ?int
     {
-        return $this->room;
+        return $this->getData(GuildInterface::COLUMN_ROOM_ID);
     }
 
     /**
-     * @param Room $room
+     * @param int $room_id
      *
      * @return Guild
      */
-    public function setRoom(Room $room): self
+    public function setRoomId(int $room_id): Guild
     {
-        $this->room = $room;
+        return $this->setData(GuildInterface::COLUMN_ROOM_ID, $room_id);
+    }
 
-        return $this;
+    /**
+     * @return int
+     */
+    public function getState(): int
+    {
+        return $this->getData(GuildInterface::COLUMN_STATE);
+    }
+
+    /**
+     * @param int $state
+     *
+     * @return Guild
+     */
+    public function setState(int $state): Guild
+    {
+        return $this->setData(GuildInterface::COLUMN_STATE, $state);
     }
 
     /**
@@ -170,7 +145,7 @@ class Guild extends Entity
      */
     public function getBadge(): string
     {
-        return $this->badge;
+        return $this->getData(GuildInterface::COLUMN_BADGE);
     }
 
     /**
@@ -178,11 +153,9 @@ class Guild extends Entity
      *
      * @return Guild
      */
-    public function setBadge(string $badge): self
+    public function setBadge(string $badge): Guild
     {
-        $this->badge = $badge;
-
-        return $this;
+        return $this->setData(GuildInterface::COLUMN_BADGE, $badge);
     }
 
     /**
@@ -190,7 +163,7 @@ class Guild extends Entity
      */
     public function getDateCreated(): int
     {
-        return $this->date_created;
+        return $this->getData(GuildInterface::COLUMN_DATE_CREATED);
     }
 
     /**
@@ -198,47 +171,100 @@ class Guild extends Entity
      *
      * @return Guild
      */
-    public function setDateCreated(int $date_created): self
+    public function setDateCreated(int $date_created): Guild
     {
-        $this->date_created = $date_created;
-
-        return $this;
+        return $this->setData(GuildInterface::COLUMN_DATE_CREATED, $date_created);
     }
 
     /**
-     * Returns a copy of the current Entity safely
+     * @return User|null
      *
-     * @return array
+     * @throws DataObjectManagerException
      */
-    public function toArray(): array
+    public function getUser(): ?User
     {
-        return [
-            'id' => $this->getId(),
-            'creator' => $this->getCreator()->toArray(),
-            'name' => $this->getName(),
-            'description' => $this->getDescription(),
-            'badge' => $this->getBadge(),
-            'date_created' => $this->getDateCreated()
-        ];
-    }
+        /** @var User $user */
+        $user = $this->getData('user');
 
-    /**
-     * @return string
-     */
-    public function serialize()
-    {
-        return serialize(get_object_vars($this));
-    }
-
-    /**
-     * @param   string  $data
-     */
-    public function unserialize($data)
-    {
-        $values = unserialize($data);
-
-        foreach ($values as $key => $value) {
-            $this->$key = $value;
+        if ($user) {
+            return $user;
         }
+
+        /** @var GuildRepository $guildRepository */
+        $guildRepository = repository(GuildRepository::class);
+
+        /** @var UserRepository $userRepository */
+        $userRepository = repository(UserRepository::class);
+
+        /** @var User $user */
+        $user = $guildRepository->getOneToOne(
+            $userRepository,
+            $this->getUserId(),
+            'id'
+        );
+
+        if (!$user) {
+            return null;
+        }
+
+        $this->setUser($user);
+
+        return $user;
+    }
+
+    /**
+     * @param User $user
+     *
+     * @return Guild
+     */
+    public function setUser(User $user): Guild
+    {
+        return $this->setData('user', $user);
+    }
+
+    /**
+     * @return Room|null
+     *
+     * @throws DataObjectManagerException
+     */
+    public function getRoom(): ?Room
+    {
+        /** @var Room $room */
+        $room = $this->getData('room');
+
+        if ($room) {
+            return $room;
+        }
+
+        /** @var GuildRepository $guildRepository */
+        $guildRepository = repository(GuildRepository::class);
+
+        /** @var RoomRepository $roomRepository */
+        $roomRepository = repository(RoomRepository::class);
+
+        /** @var Room $room */
+        $room = $guildRepository->getOneToOne(
+            $roomRepository,
+            $this->getRoomId(),
+            'id'
+        );
+
+        if (!$room) {
+            return null;
+        }
+
+        $this->setRoom($room);
+
+        return $room;
+    }
+
+    /**
+     * @param Room $room
+     *
+     * @return Guild
+     */
+    public function setRoom(Room $room): Guild
+    {
+        return $this->setData('room', $room);
     }
 }

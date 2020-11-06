@@ -49,7 +49,7 @@ class ValidationService
      */
     public function validate($data, array $rules): void
     {
-        if (is_null($data) || empty($rules)) {
+        if ($data === null || empty($rules)) {
            throw new ValidationException(__('Please provide a right data set'));
         }
 

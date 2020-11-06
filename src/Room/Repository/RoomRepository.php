@@ -7,14 +7,10 @@
 
 namespace Ares\Room\Repository;
 
-use Ares\Framework\Interfaces\SearchCriteriaInterface;
+use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Room\Entity\Room;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
-use Jhg\DoctrinePagination\Collection\PaginatedArrayCollection;
-use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
-use Psr\Cache\InvalidArgumentException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 /**
  * Class RoomRepository
@@ -24,162 +20,75 @@ use Psr\Cache\InvalidArgumentException;
 class RoomRepository extends BaseRepository
 {
     /** @var string */
-    private const CACHE_PREFIX = 'ARES_ROOM_';
+    protected string $cachePrefix = 'ARES_ROOM_';
 
     /** @var string */
-    private const CACHE_COLLECTION_PREFIX = 'ARES_ROOM_COLLECTION_';
+    protected string $cacheCollectionPrefix = 'ARES_ROOM_COLLECTION_';
 
     /** @var string */
     protected string $entity = Room::class;
 
     /**
-     * Get object by id.
+     * Searches rooms by search term.
      *
-     * @param int  $id
+     * @param string $term
+     * @param int    $page
+     * @param int    $resultPerPage
      *
-     * @param bool $cachedEntity
-     *
-     * @return mixed|object|null
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
+     * @return LengthAwarePaginator
+     * @throws DataObjectManagerException
      */
-    public function get(int $id, bool $cachedEntity = true)
+    public function searchRooms(string $term, int $page, int $resultPerPage): LengthAwarePaginator
     {
-        $entity = $this->cacheService->get(self::CACHE_PREFIX . $id);
+        $searchCriteria = $this->getDataObjectManager()
+            ->where('name', 'LIKE', '%'.$term.'%')
+            ->orderBy('users', 'DESC');
 
-        if ($entity && $cachedEntity) {
-            return unserialize($entity);
-        }
-
-        $entity = $this->find($id);
-
-        $this->cacheService->set(self::CACHE_PREFIX . $id, serialize($entity));
-
-        return $entity;
+        return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
 
     /**
-     * @param object $model
+     * @param int $page
+     * @param int $resultPerPage
      *
-     * @return object
-     * @throws InvalidArgumentException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws PhpfastcacheSimpleCacheException
+     * @return LengthAwarePaginator
+     * @throws DataObjectManagerException
      */
-    public function save(object $model): object
+    public function getPaginatedRoomList(int $page, int $resultPerPage): LengthAwarePaginator
     {
-        $this->getEntityManager()->persist($model);
-        $this->getEntityManager()->flush();
+        $searchCriteria = $this->getDataObjectManager()
+            ->orderBy('id', 'DESC')
+            ->addRelation('guild')
+            ->addRelation('user');
 
-        $this->cacheService->set(self::CACHE_PREFIX . $model->getId(), serialize($model));
-
-        return $model;
+        return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
 
     /**
-     * @param  object  $model
+     * @param int $ownerId
+     * @param int $page
+     * @param int $resultPerPage
      *
-     * @return Room
-     * @throws ORMException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws OptimisticLockException|InvalidArgumentException
+     * @return LengthAwarePaginator
+     * @throws DataObjectManagerException
      */
-    public function update(object $model): object
+    public function getUserRoomsPaginatedList(int $ownerId, int $page, int $resultPerPage): LengthAwarePaginator
     {
-        $this->getEntityManager()->flush();
+        $searchCriteria = $this->getDataObjectManager()
+            ->where('owner_id', $ownerId)
+            ->orderBy('id', 'DESC');
 
-        $this->cacheService->set(self::CACHE_PREFIX . $model->getId(), serialize($model));
-
-        return $model;
+        return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
 
     /**
-     * @param SearchCriteriaInterface $searchCriteria
-     *
-     * @param bool                    $cachedEntity
-     *
-     * @return array|object[]
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
+     * @return Room|null
      */
-    public function getList(SearchCriteriaInterface $searchCriteria, bool $cachedEntity = true)
+    public function getMostVisitedRoom(): ?Room
     {
-        $cacheKey = $searchCriteria->getCacheKey();
+        $searchCriteria = $this->getDataObjectManager()
+            ->orderBy('users', 'DESC');
 
-        $collection = $this->cacheService->get(self::CACHE_COLLECTION_PREFIX . $cacheKey);
-
-        if ($collection && $cachedEntity) {
-            return unserialize($collection);
-        }
-
-        $collection = $this->findBy(
-            $searchCriteria->getFilters(),
-            $searchCriteria->getOrders(),
-            $searchCriteria->getLimit(),
-            $searchCriteria->getOffset()
-        );
-
-        $this->cacheService->set(self::CACHE_COLLECTION_PREFIX . $cacheKey, serialize($collection));
-
-        return $collection;
-    }
-
-    /**
-     * Delete object by id.
-     *
-     * @param int $id
-     *
-     * @return bool
-     * @throws InvalidArgumentException
-     * @throws ORMException
-     * @throws OptimisticLockException
-     * @throws PhpfastcacheSimpleCacheException
-     */
-    public function delete(int $id): bool
-    {
-        $model = $this->get($id);
-
-        if (!$model) {
-            return false;
-        }
-
-        $this->getEntityManager()->remove($model);
-        $this->getEntityManager()->flush();
-
-        $this->cacheService->delete(self::CACHE_PREFIX . $id);
-
-        return true;
-    }
-
-    /**
-     * @param SearchCriteriaInterface $searchCriteria
-     *
-     * @param bool                    $cachedEntity
-     *
-     * @return PaginatedArrayCollection
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
-     */
-    public function paginate(SearchCriteriaInterface $searchCriteria, bool $cachedEntity = true): PaginatedArrayCollection
-    {
-        $cacheKey = $searchCriteria->getCacheKey();
-
-        $collection = $this->cacheService->get(self::CACHE_COLLECTION_PREFIX . $cacheKey);
-
-        if ($collection && $cachedEntity) {
-            return unserialize($collection);
-        }
-
-        $collection = $this->findPageBy(
-            $searchCriteria->getPage(),
-            $searchCriteria->getLimit(),
-            $searchCriteria->getFilters(),
-            $searchCriteria->getOrders()
-        );
-
-        $this->cacheService->set(self::CACHE_COLLECTION_PREFIX . $cacheKey, serialize($collection));
-
-        return $collection;
+        return $this->getList($searchCriteria)->first();
     }
 }

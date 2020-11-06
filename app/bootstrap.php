@@ -5,61 +5,33 @@
  * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
  */
 
-use Slim\App;
+require_once __DIR__ . '/../vendor/autoload.php';
 
-require __DIR__ . '/../vendor/autoload.php';
+// Adds dotenv environment.
+require_once __DIR__ . '/etc/dotenv.php';
 
-// Loads our environment config
-$dotEnv = Dotenv\Dotenv::createImmutable(__DIR__, '../.env');
-if (file_exists(__DIR__ . '/../' . '.env')) {
-    $dotEnv->load();
-}
+// Adds container initialization.
+require_once __DIR__ . '/etc/container.php';
 
-// Instantiate LeagueContainer
-$container = new \League\Container\Container();
+// Adds custom helper functions.
+require_once __DIR__ . '/etc/helpers.php';
 
-// Enable Auto-wiring for our dependencies..
-$container->delegate(
-    (new League\Container\ReflectionContainer)->cacheResolutions()
-);
+// Adds custom service providers.
+require_once __DIR__ . '/etc/providers.php';
 
-// Helper functions
-require_once __DIR__ . '/helpers.php';
+// Adds core slim app.
+require_once __DIR__ . '/etc/app.php';
 
-// Parse our providers
-require_once __DIR__ . '/providers.php';
+// Adds routing initialization.
+require_once __DIR__ . '/etc/routing.php';
 
-if ($_ENV['CACHE_ENABLED']) {
-    $container->addServiceProvider(
-        new \Ares\Framework\Provider\CacheServiceProvider()
-    );
-}
+// Adds cache service
+require_once __DIR__ . '/etc/cache.php';
 
-// Create App instance
-$app = $container->get(App::class);;
+// Adds app proxy.
+require_once __DIR__ . '/etc/proxy.php';
 
-$middleware = require_once __DIR__ . '/middleware.php';
-$middleware($app);
-
-// Routing
-$routes = require __DIR__ . '/routes.php';
-$routes($app);
-
-// Sets our App Proxy
-$alias = 'App';
-$proxy = \Ares\Framework\Proxy\App::class;
-$manager = new Statical\Manager();
-$manager->addProxyInstance($alias, $proxy, $app);
-
-// Sets our Route-Cache
-if ($_ENV['API_DEBUG'] == "production") {
-    $routeCollector = $app->getRouteCollector();
-
-    if(!file_exists(route_cache_dir())) {
-        mkdir(route_cache_dir(), 0755, true);
-    }
-
-    $routeCollector->setCacheFile(route_cache_dir() . '/route.cache.php');
-}
+// Adds database initialization.
+require_once __DIR__ . '/etc/database.php';
 
 return $app;

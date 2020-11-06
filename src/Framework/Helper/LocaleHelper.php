@@ -25,7 +25,7 @@ class LocaleHelper
         $path = $this->getPath();
         $fileName = $this->getFileName($locale);
 
-        $jsonContent = file_get_contents($path . $fileName);
+        $jsonContent = @file_get_contents($path . $fileName);
 
         if (!$jsonContent) {
             return [];
@@ -39,7 +39,7 @@ class LocaleHelper
      */
     private function getPath(): string
     {
-        return app_dir() . '/Lang/';
+        return app_dir() . '/lang/';
     }
 
     /**

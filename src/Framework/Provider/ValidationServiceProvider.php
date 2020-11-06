@@ -8,6 +8,7 @@
 namespace Ares\Framework\Provider;
 
 use League\Container\ServiceProvider\AbstractServiceProvider;
+use PHLAK\Config\Config;
 use Rakit\Validation\Validator;
 
 /**
@@ -25,21 +26,15 @@ class ValidationServiceProvider extends AbstractServiceProvider
     ];
 
     /**
-     * @var array
+     * Registers new service.
      */
-    public array $messages = [
-        'required' => 'validation.required',
-        'email' => 'validation.email',
-        'password_confirmation:same' => 'register.password.same',
-        'password:min' => 'register.password.min'
-    ];
-
     public function register()
     {
         $container = $this->getContainer();
 
         $container->add(Validator::class, function () use ($container) {
-            return new Validator($this->messages);
+            $config = $container->get(Config::class);
+            return new Validator($config->get('api_settings.validation'));
         });
     }
 }

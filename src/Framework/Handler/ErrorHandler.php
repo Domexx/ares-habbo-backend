@@ -17,7 +17,6 @@ use Psr\Log\LoggerInterface;
 use Slim\Interfaces\ErrorHandlerInterface;
 use Throwable;
 
-
 /**
  * Class ErrorHandler
  *

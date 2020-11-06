@@ -7,63 +7,34 @@
 
 namespace Ares\Ban\Entity;
 
-use Ares\Framework\Entity\Entity;
+use Ares\Ban\Entity\Contract\BanInterface;
+use Ares\Ban\Repository\BanRepository;
+use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\DataObject;
 use Ares\User\Entity\User;
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\OneToOne;
+use Ares\User\Repository\UserRepository;
 
 /**
  * Class Ban
  *
  * @package Ares\Ban\Entity
- *
- * @ORM\Entity
- * @ORM\Table(name="bans")
- * @ORM\Cache(usage="NONSTRICT_READ_WRITE")
  */
-class Ban extends Entity
+class Ban extends DataObject implements BanInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private int $id;
+    /** @var string */
+    public const TABLE = 'bans';
 
-    /**
-     * @OneToOne(targetEntity="\Ares\User\Entity\User", fetch="EAGER")
-     * @JoinColumn(name="user_id", referencedColumnName="id")
-     */
-    private ?User $user;
-
-    /**
-     * @OneToOne(targetEntity="\Ares\User\Entity\User", fetch="EAGER")
-     * @JoinColumn(name="user_staff_id", referencedColumnName="id")
-     */
-    private ?User $staff;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $timestamp;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $ban_expire;
-
-    /**
-     * @ORM\Column(type="string", length=200)
-     */
-    private string $ban_reason;
+    /*** @var array */
+    public const RELATIONS = [
+      'user' => 'getUser'
+    ];
 
     /**
      * @return int
      */
     public function getId(): int
     {
-        return $this->id;
+        return $this->getData(BanInterface::COLUMN_ID);
     }
 
     /**
@@ -71,51 +42,81 @@ class Ban extends Entity
      *
      * @return Ban
      */
-    public function setId(int $id): self
+    public function setId(int $id): Ban
     {
-        $this->id = $id;
-
-        return $this;
+        return $this->setData(BanInterface::COLUMN_ID, $id);
     }
 
     /**
-     * @return User|null
+     * @return int
      */
-    public function getUser(): ?User
+    public function getUserId(): int
     {
-        return $this->user;
+        return $this->getData(BanInterface::COLUMN_USER_ID);
     }
 
     /**
-     * @param User|null $user
+     * @param int $user_id
      *
      * @return Ban
      */
-    public function setUser(?User $user): self
+    public function setUserId(int $user_id): Ban
     {
-        $this->user = $user;
-
-        return $this;
+        return $this->setData(BanInterface::COLUMN_USER_ID, $user_id);
     }
 
     /**
-     * @return User|null
+     * @return string
      */
-    public function getStaff(): ?User
+    public function getIp(): string
     {
-        return $this->staff;
+        return $this->getData(BanInterface::COLUMN_IP);
     }
 
     /**
-     * @param User|null $staff
+     * @param string $ip
      *
      * @return Ban
      */
-    public function setStaff(?User $staff): self
+    public function setIp(string $ip): Ban
     {
-        $this->staff = $staff;
+        return $this->setData(BanInterface::COLUMN_IP, $ip);
+    }
 
-        return $this;
+    /**
+     * @return string
+     */
+    public function getMachineId(): string
+    {
+        return $this->getData(BanInterface::COLUMN_MACHINE_ID);
+    }
+
+    /**
+     * @param string $machine_id
+     *
+     * @return Ban
+     */
+    public function setMachineId(string $machine_id): Ban
+    {
+        return $this->setData(BanInterface::COLUMN_MACHINE_ID, $machine_id);
+    }
+
+    /**
+     * @return int
+     */
+    public function getUserStaffId(): int
+    {
+        return $this->getData(BanInterface::COLUMN_USER_STAFF_ID);
+    }
+
+    /**
+     * @param int $user_staff_id
+     *
+     * @return Ban
+     */
+    public function setUserStaffId(int $user_staff_id): Ban
+    {
+        return $this->setData(BanInterface::COLUMN_USER_STAFF_ID, $user_staff_id);
     }
 
     /**
@@ -123,7 +124,7 @@ class Ban extends Entity
      */
     public function getTimestamp(): int
     {
-        return $this->timestamp;
+        return $this->getData(BanInterface::COLUMN_TIMESTAMP);
     }
 
     /**
@@ -131,11 +132,9 @@ class Ban extends Entity
      *
      * @return Ban
      */
-    public function setTimestamp(int $timestamp): self
+    public function setTimestamp(int $timestamp): Ban
     {
-        $this->timestamp = $timestamp;
-
-        return $this;
+        return $this->setData(BanInterface::COLUMN_TIMESTAMP, $timestamp);
     }
 
     /**
@@ -143,7 +142,7 @@ class Ban extends Entity
      */
     public function getBanExpire(): int
     {
-        return $this->ban_expire;
+        return $this->getData(BanInterface::COLUMN_BAN_EXPIRE);
     }
 
     /**
@@ -151,11 +150,9 @@ class Ban extends Entity
      *
      * @return Ban
      */
-    public function setBanExpire(int $ban_expire): self
+    public function setBanExpire(int $ban_expire): Ban
     {
-        $this->ban_expire = $ban_expire;
-
-        return $this;
+        return $this->setData(BanInterface::COLUMN_BAN_EXPIRE, $ban_expire);
     }
 
     /**
@@ -163,7 +160,7 @@ class Ban extends Entity
      */
     public function getBanReason(): string
     {
-        return $this->ban_reason;
+        return $this->getData(BanInterface::COLUMN_BAN_REASON);
     }
 
     /**
@@ -171,47 +168,90 @@ class Ban extends Entity
      *
      * @return Ban
      */
-    public function setBanReason(string $ban_reason): self
+    public function setBanReason(string $ban_reason): Ban
     {
-        $this->ban_reason = $ban_reason;
-
-        return $this;
-    }
-
-    /**
-     * Returns a copy of the current Entity safely
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->getId(),
-            'user' => $this->getUser()->toArray(),
-            'staff' => $this->getStaff()->getUsername(),
-            'timestamp' => $this->getTimestamp(),
-            'ban_expire' => $this->getBanExpire(),
-            'ban_reason' => $this->getBanReason()
-        ];
+        return $this->setData(BanInterface::COLUMN_BAN_REASON, $ban_reason);
     }
 
     /**
      * @return string
      */
-    public function serialize()
+    public function getType(): string
     {
-        return serialize(get_object_vars($this));
+        return $this->getData(BanInterface::COLUMN_TYPE);
     }
 
     /**
-     * @param $data
+     * @param string $type
+     *
+     * @return Ban
      */
-    public function unserialize($data)
+    public function setType(string $type): Ban
     {
-        $values = unserialize($data);
+        return $this->setData(BanInterface::COLUMN_TYPE, $type);
+    }
 
-        foreach ($values as $key => $value) {
-            $this->$key = $value;
+    /**
+     * @return int
+     */
+    public function getCfhTopic(): int
+    {
+        return $this->getData(BanInterface::COLUMN_CFH_TOPIC);
+    }
+
+    /**
+     * @param int $cfh_topic
+     *
+     * @return Ban
+     */
+    public function setCfhTopic(int $cfh_topic): Ban
+    {
+        return $this->setData(BanInterface::COLUMN_CFH_TOPIC, $cfh_topic);
+    }
+
+    /**
+     * @return User|null
+     *
+     * @throws DataObjectManagerException
+     */
+    public function getUser(): ?User
+    {
+        /** @var User $user */
+        $user = $this->getData('user');
+
+        if ($user) {
+            return $user;
         }
+
+        /** @var BanRepository $banRepository */
+        $banRepository = repository(BanRepository::class);
+
+        /** @var UserRepository $userRepository */
+        $userRepository = repository(UserRepository::class);
+
+        /** @var User $user */
+        $user = $banRepository->getOneToOne(
+            $userRepository,
+            $this->getUserStaffId(),
+            'id'
+        );
+
+        if (!$user) {
+            return null;
+        }
+
+        $this->setUser($user);
+
+        return $user;
+    }
+
+    /**
+     * @param User $user
+     *
+     * @return Ban
+     */
+    public function setUser(User $user): Ban
+    {
+        return $this->setData('user', $user);
     }
 }

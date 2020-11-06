@@ -37,7 +37,6 @@ class LocaleService
      *
      * @param string $key
      * @param array  $placeholder
-     *
      * @return string
      */
     public function translate(string $key, array $placeholder = []): string

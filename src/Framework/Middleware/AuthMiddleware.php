@@ -39,7 +39,7 @@ class AuthMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Invoke middleware.
+     * Process an incoming server request.
      *
      * @param   ServerRequestInterface   $request  The request
      * @param   RequestHandlerInterface  $handler  The handler
@@ -51,10 +51,11 @@ class AuthMiddleware implements MiddlewareInterface
         ServerRequestInterface $request,
         RequestHandlerInterface $handler
     ): ResponseInterface {
-        $token = explode(' ', (string)$request->getHeaderLine('Authorization'))[1] ?? '';
+        $token = explode(' ', (string) $request->getHeaderLine('Authorization'))[1] ?? '';
 
         if (!$token || !Token::validate($token, $_ENV['TOKEN_SECRET'])) {
-            $this->responseFactory->createResponse()
+            $this->responseFactory
+                ->createResponse()
                 ->withHeader('Content-Type', 'application/problem+json');
 
             throw new AuthenticationException(__('You arent allowed to visit this site'), 401);

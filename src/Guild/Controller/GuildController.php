@@ -8,16 +8,11 @@
 namespace Ares\Guild\Controller;
 
 use Ares\Framework\Controller\BaseController;
-use Ares\Framework\Model\Adapter\DoctrineSearchCriteria;
+use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Guild\Entity\Guild;
-use Ares\Guild\Entity\GuildMember;
 use Ares\Guild\Exception\GuildException;
 use Ares\Guild\Repository\GuildMemberRepository;
 use Ares\Guild\Repository\GuildRepository;
-use Ares\Room\Entity\Room;
-use Jhg\DoctrinePagination\Collection\PaginatedArrayCollection;
-use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
-use Psr\Cache\InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -39,86 +34,56 @@ class GuildController extends BaseController
     private GuildMemberRepository $guildMemberRepository;
 
     /**
-     * @var DoctrineSearchCriteria
-     */
-    private DoctrineSearchCriteria $searchCriteria;
-
-    /**
      * RoomController constructor.
      *
-     * @param GuildRepository        $guildRepository
-     * @param GuildMemberRepository  $guildMemberRepository
-     * @param DoctrineSearchCriteria $searchCriteria
+     * @param   GuildRepository         $guildRepository
+     * @param   GuildMemberRepository   $guildMemberRepository
      */
     public function __construct(
         GuildRepository $guildRepository,
-        GuildMemberRepository $guildMemberRepository,
-        DoctrineSearchCriteria $searchCriteria
+        GuildMemberRepository $guildMemberRepository
     ) {
-        $this->guildRepository = $guildRepository;
+        $this->guildRepository       = $guildRepository;
         $this->guildMemberRepository = $guildMemberRepository;
-        $this->searchCriteria = $searchCriteria;
     }
 
     /**
-     * @param Request  $request
-     * @param Response $response
-     * @param          $args
+     * @param Request     $request
+     * @param Response    $response
+     * @param             $args
      *
      * @return Response
-     * @throws GuildException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws InvalidArgumentException
+     * @throws GuildException|DataObjectManagerException
      */
-    public function guild(Request $request, Response $response, $args): Response
+    public function guild(Request $request, Response $response, array $args): Response
     {
         /** @var int $id */
         $id = $args['id'];
 
         /** @var Guild $guild */
-        $guild = $this->guildRepository->get($id);
+        $guild = $this->guildRepository->getGuild((int) $id);
 
-        /** @var GuildMember $memberCount */
-        $memberCount = $this->guildMemberRepository->count([
-            'guild' => $id
-        ]);
-
-        if (is_null($guild)) {
+        if (!$guild) {
             throw new GuildException(__('No specific Guild found'));
         }
 
-        /** @var Room $guildRoom */
-        $guildRoom = [
-            'member_count' => $memberCount,
-            'room' => [
-                'name' => $guild->getRoom()->getName(),
-                'description' => $guild->getRoom()->getDescription(),
-                'state' => $guild->getRoom()->getState(),
-                'users' => $guild->getRoom()->getUsers(),
-                'users_max' => $guild->getRoom()->getUsersMax(),
-                'score' => $guild->getRoom()->getScore(),
-                'creator' => $guild->getRoom()->getOwner()->toArray()
-            ]
-        ];
-
         return $this->respond(
             $response,
-            response()->setData(array_merge($guild->toArray(), $guildRoom))
+            response()
+                ->setData($guild)
         );
     }
 
     /**
-     * @param Request  $request
-     * @param Response $response
+     * @param Request     $request
+     * @param Response    $response
      *
-     * @param          $args
+     * @param             $args
      *
      * @return Response
-     * @throws GuildException
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
+     * @throws DataObjectManagerException
      */
-    public function list(Request $request, Response $response, $args): Response
+    public function list(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -126,36 +91,16 @@ class GuildController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $this->searchCriteria->setPage((int)$page)
-            ->setLimit((int)$resultPerPage)
-            ->addOrder('id', 'DESC');
-
-        $guilds = $this->guildRepository->paginate($this->searchCriteria);
-
-        if ($guilds->isEmpty()) {
-            throw new GuildException(__('No Guilds were found'), 404);
-        }
-
-        /** @var PaginatedArrayCollection $list */
-        $list = [];
-        foreach ($guilds as $guild) {
-            $guildRoom = [
-                'room' => [
-                    'name' => $guild->getRoom()->getName(),
-                    'description' => $guild->getRoom()->getDescription(),
-                    'state' => $guild->getRoom()->getState(),
-                    'users' => $guild->getRoom()->getUsers(),
-                    'users_max' => $guild->getRoom()->getUsersMax(),
-                    'score' => $guild->getRoom()->getScore(),
-                    'creator' => $guild->getRoom()->getOwner()->toArray()
-                ]
-            ];
-            $list[] = array_merge($guild->toArray(), $guildRoom);
-        }
+        $guilds = $this->guildRepository
+            ->getPaginatedGuildList(
+                (int) $page,
+                (int) $resultPerPage
+            );
 
         return $this->respond(
             $response,
-            response()->setData($list)
+            response()
+                ->setData($guilds)
         );
     }
 
@@ -163,17 +108,15 @@ class GuildController extends BaseController
      * @param Request  $request
      * @param Response $response
      *
-     * @param          $args
+     * @param array    $args
      *
      * @return Response
-     * @throws GuildException
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
+     * @throws DataObjectManagerException
      */
-    public function members(Request $request, Response $response, $args): Response
+    public function members(Request $request, Response $response, array $args): Response
     {
-        /** @var int $args */
-        $id = $args['id'];
+        /** @var int $guildId */
+        $guildId = $args['guild_id'];
 
         /** @var int $page */
         $page = $args['page'];
@@ -181,26 +124,36 @@ class GuildController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $this->searchCriteria->setPage((int)$page)
-            ->setLimit((int)$resultPerPage)
-            ->addFilter('guild', $id)
-            ->addOrder('id', 'DESC');
-
-        $members = $this->guildMemberRepository->paginate($this->searchCriteria);
-
-        if ($members->isEmpty()) {
-            throw new GuildException(__('No Members were found for this Guild'), 404);
-        }
-
-        /** @var PaginatedArrayCollection $list */
-        $list = [];
-        foreach ($members as $member) {
-            $list[] = $member->toArray();
-        }
+        $members = $this->guildMemberRepository
+            ->getPaginatedGuildMembers(
+                (int) $guildId,
+                (int) $page,
+                (int) $resultPerPage
+            );
 
         return $this->respond(
             $response,
-            response()->setData($list)
+            response()
+                ->setData($members)
+        );
+    }
+
+    /**
+     *
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     */
+    public function mostMembers(Request $request, Response $response): Response
+    {
+        /** @var Guild $guild */
+        $guild = $this->guildRepository->getMostMemberGuild();
+
+        return $this->respond(
+            $response,
+            response()
+                ->setData($guild)
         );
     }
 }

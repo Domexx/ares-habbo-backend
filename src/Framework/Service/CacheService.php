@@ -7,9 +7,13 @@
 
 namespace Ares\Framework\Service;
 
-use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
+use DateInterval;
+use DateTime;
+use Exception;
+use InvalidArgumentException;
+use Phpfastcache\Exceptions\PhpfastcacheInvalidArgumentException;
 use Phpfastcache\Helper\Psr16Adapter as FastCache;
-use Psr\Cache\InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class CacheService
@@ -24,130 +28,201 @@ class CacheService
     private FastCache $fastCache;
 
     /**
+     * @var LoggerInterface
+     */
+    private LoggerInterface $logger;
+
+    /**
      * CacheService constructor.
      *
      * @param FastCache $fastCache
+     * @param LoggerInterface $logger
      */
     public function __construct(
-        FastCache $fastCache
+        FastCache $fastCache,
+        LoggerInterface $logger
     ) {
         $this->fastCache = $fastCache;
+        $this->logger = $logger;
     }
 
     /**
-     * @param   string  $key
+     * Checks whether cache is set or not.
      *
+     * @param string $key
      * @return bool
-     * @throws PhpfastcacheSimpleCacheException
      */
     public function has(string $key): bool
     {
-        $this->isCacheEnabled();
+        try {
+            if (!$this->isCacheEnabled()) {
+                return false;
+            }
 
-        return $this->fastCache->has($key);
+            return $this->fastCache->has($key);
+        } catch (Exception $exception) {
+            $this->logger->error(
+                $exception->getMessage()
+            );
+        }
     }
 
     /**
-     * @param   string  $key
+     * Get single cache entry.
      *
+     * @param string $key
      * @return  mixed
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws InvalidArgumentException
      */
     public function get(string $key)
     {
-        if (!$this->has($key) || !$this->isCacheEnabled()) {
+        try {
+            if (!$this->has($key) || !$this->isCacheEnabled()) {
+                return null;
+            }
+
+            return $this->fastCache->get($key);
+        } catch (Exception $exception) {
+            $this->logger->error(
+                $exception->getMessage()
+            );
+
             return null;
         }
-
-        return $this->fastCache->get($key);
     }
 
     /**
-     * @param   array  $keys
+     * Set single cache entry.
      *
-     * @return string
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws InvalidArgumentException
-     */
-    public function getMultiple(array $keys): string
-    {
-        $this->isCacheEnabled();
-
-        return $this->fastCache->getMultiple($keys);
-    }
-
-    /**
-     * @param   string  $key
-     * @param           $value
-     * @param   int     $ttl
-     *
+     * @param string $key
+     * @param mixed $value
+     * @param int $ttl
      * @return bool
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws InvalidArgumentException
      */
     public function set(string $key, $value, int $ttl = 0): bool
     {
-        $this->isCacheEnabled();
+        try {
+            if (!$this->isCacheEnabled()) {
+                return false;
+            }
 
-        return $this->fastCache->set($key, $value, $this->getTTL($ttl));
+            return $this->fastCache->set($key, $value, $this->getTTL($ttl));
+        } catch (Exception $exception) {
+            $this->logger->error(
+                $exception->getMessage()
+            );
+
+            return false;
+        }
     }
 
     /**
-     * @param   array  $values
-     * @param   int    $ttl
+     * Clears specific cache entry by key.
      *
+     * @param string $key
      * @return bool
-     * @throws PhpfastcacheSimpleCacheException
-     */
-    public function setMultiple(array $values, int $ttl = 0): bool
-    {
-        $this->isCacheEnabled();
-
-        return $this->fastCache->setMultiple($values, $this->getTTL($ttl));
-    }
-
-    /**
-     * @param   string  $key
-     *
-     * @return bool
-     * @throws PhpfastcacheSimpleCacheException
      */
     public function delete(string $key): bool
     {
-        $this->isCacheEnabled();
+        try {
+            if (!$this->isCacheEnabled()) {
+                return false;
+            }
 
-        return $this->fastCache->delete($key);
+            return $this->fastCache->delete($key);
+        } catch (Exception $exception) {
+            $this->logger->error(
+                $exception->getMessage()
+            );
+        }
     }
 
     /**
-     * @param   array  $keys
+     * Cleares cache.
      *
      * @return bool
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws InvalidArgumentException
-     */
-    public function deleteMultiple(array $keys): bool
-    {
-        $this->isCacheEnabled();
-
-        return $this->fastCache->deleteMultiple($keys);
-    }
-
-    /**
-     * @return bool
-     * @throws PhpfastcacheSimpleCacheException
      */
     public function clear(): bool
     {
-        $this->isCacheEnabled();
+        try {
+            if (!$this->isCacheEnabled()) {
+                return false;
+            }
 
-        return $this->fastCache->clear();
+            return $this->fastCache->clear();
+        } catch (Exception $exception) {
+            $this->logger->error(
+                $exception->getMessage()
+            );
+
+            return false;
+        }
     }
 
     /**
-     * @param   int  $ttl
+     * Sets new cache item with tags.
      *
+     * @param string $key
+     * @param $value
+     * @param array $tags
+     * @param int $ttl
+     * @return bool
+     */
+    public function setWithTags(string $key, $value, array $tags, int $ttl = 0): bool
+    {
+        try {
+            if (!$this->isCacheEnabled()) {
+                return false;
+            }
+
+            $cacheManager = $this->fastCache->getInternalCacheInstance();
+            $ttl = $this->getTTL($ttl);
+
+            $cacheItem = $cacheManager
+                ->getItem($key)
+                ->set($value)
+                ->addTags($tags);
+
+            if (is_int($ttl) && $ttl <= 0) {
+                $cacheItem->expiresAt((new DateTime('@0')));
+            } elseif (is_int($ttl) || $ttl instanceof DateInterval) {
+                $cacheItem->expiresAfter($ttl);
+            }
+
+            return $cacheManager->save($cacheItem);
+        } catch (PhpfastcacheInvalidArgumentException $exception) {
+            $this->logger->error(
+                $exception->getMessage()
+            );
+
+            return false;
+        }
+    }
+
+    /**
+     * Deletes cache items by given tag.
+     *
+     * @param string $tag
+     * @return bool
+     */
+    public function deleteByTag(string $tag): bool
+    {
+        try {
+            $cacheManager = $this->fastCache->getInternalCacheInstance();
+
+            return $cacheManager->deleteItemsByTag($tag);
+        } catch (InvalidArgumentException $exception) {
+            $this->logger->error(
+                $exception->getMessage()
+            );
+
+            return false;
+        }
+    }
+
+    /**
+     * Returns ttl for cache.
+     *
+     * @param int $ttl
      * @return int|mixed
      */
     private function getTTL(int $ttl)
@@ -160,7 +235,7 @@ class CacheService
     }
 
     /**
-     * Check whether Caching is Enabled or not
+     * Check whether Caching is Enabled or not.
      *
      * @return bool
      */

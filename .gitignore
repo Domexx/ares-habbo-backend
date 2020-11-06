@@ -13,4 +13,5 @@
 /tmp/Logs
 /tmp/Cache
 /.env
+composer.lock
 

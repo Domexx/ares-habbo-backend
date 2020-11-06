@@ -9,7 +9,6 @@ namespace Ares\Framework\Proxy;
 
 use Statical\BaseProxy;
 
-
 /**
  * Class App
  *

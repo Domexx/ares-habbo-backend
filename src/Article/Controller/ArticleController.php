@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Ares (https://ares.to)
  *
@@ -7,15 +7,17 @@
 
 namespace Ares\Article\Controller;
 
+use Ares\Article\Service\CreateArticleService;
 use Ares\Framework\Controller\BaseController;
 use Ares\Article\Entity\Article;
 use Ares\Article\Exception\ArticleException;
 use Ares\Article\Repository\ArticleRepository;
-use Ares\Framework\Model\Adapter\DoctrineSearchCriteria;
-use Doctrine\Common\Collections\ArrayCollection;
-use Jhg\DoctrinePagination\Collection\PaginatedArrayCollection;
-use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
-use Psr\Cache\InvalidArgumentException;
+use Ares\Framework\Exception\AuthenticationException;
+use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Service\ValidationService;
+use Ares\User\Entity\User;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -26,115 +28,134 @@ use Psr\Http\Message\ServerRequestInterface as Request;
  */
 class ArticleController extends BaseController
 {
-    /*
-     * Represents the Value of pinned Articles
-     */
-    private const IS_PINNED = 1;
-
-    /*
-     * Represents the Value of Visible Articles
-    */
-    private const IS_VISIBLE = 1;
-
     /**
      * @var ArticleRepository
      */
     private ArticleRepository $articleRepository;
 
     /**
-     * @var DoctrineSearchCriteria
+     * @var CreateArticleService
      */
-    private DoctrineSearchCriteria $searchCriteria;
+    private CreateArticleService $createArticleService;
+
+    /**
+     * @var ValidationService
+     */
+    private ValidationService $validationService;
 
     /**
      * NewsController constructor.
      *
      * @param   ArticleRepository       $articleRepository
-     * @param   DoctrineSearchCriteria  $searchCriteria
+     * @param   CreateArticleService    $createArticleService
+     * @param   ValidationService       $validationService
      */
     public function __construct(
         ArticleRepository $articleRepository,
-        DoctrineSearchCriteria $searchCriteria
+        CreateArticleService $createArticleService,
+        ValidationService $validationService
     ) {
-        $this->articleRepository = $articleRepository;
-        $this->searchCriteria = $searchCriteria;
+        $this->articleRepository    = $articleRepository;
+        $this->createArticleService = $createArticleService;
+        $this->validationService    = $validationService;
     }
 
     /**
-     * @param   Request   $request
-     * @param   Response  $response
+     * Creates new article.
+     *
+     * @param Request $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws ArticleException
+     * @throws DataObjectManagerException
+     * @throws ValidationException
+     * @throws AuthenticationException
+     */
+    public function create(Request $request, Response $response): Response
+    {
+        /** @var array $parsedData */
+        $parsedData = $request->getParsedBody();
+
+        $this->validationService->validate($parsedData, [
+            'title'       => 'required',
+            'description' => 'required',
+            'content'     => 'required',
+            'image'       => 'required',
+            'hidden'      => 'required|numeric',
+            'pinned'      => 'required|numeric'
+        ]);
+
+        /** @var User $user */
+        $userId = user($request)->getId();
+
+        $customResponse = $this->createArticleService->execute($userId, $parsedData);
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * @param Request     $request
+     * @param Response    $response
      *
      * @param             $args
      *
      * @return Response
-     * @throws ArticleException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws InvalidArgumentException
+     * @throws ArticleException|DataObjectManagerException
      */
-    public function article(Request $request, Response $response, $args): Response
+    public function article(Request $request, Response $response, array $args): Response
     {
-        /** @var int $id */
-        $id = $args['id'];
+        /** @var string $slug */
+        $slug = $args['slug'];
 
         /** @var Article $article */
-        $article = $this->articleRepository->get($id);
+        $article = $this->articleRepository->get((string) $slug, 'slug');
 
-        if (is_null($article)) {
+        if (!$article) {
             throw new ArticleException(__('No specific Article found'), 404);
         }
+        $article->getUser();
 
         return $this->respond(
             $response,
-            response()->setData($article->toArray())
+            response()
+                ->setData($article)
         );
     }
 
     /**
+     * Gets all Pinned Articles
+     *
      * @param Request  $request
      * @param Response $response
      *
      * @return Response
-     * @throws ArticleException
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
+     * @throws DataObjectManagerException
      */
     public function pinned(Request $request, Response $response): Response
     {
-        $this->searchCriteria
-            ->addFilter('pinned', self::IS_PINNED)
-            ->addFilter('hidden', self::IS_VISIBLE);
-
-        /** @var array $pinnedArticles */
-        $pinnedArticles = $this->articleRepository->getList($this->searchCriteria);
-
-        if (empty($pinnedArticles)) {
-            throw new ArticleException(__('No Pinned Articles found'));
-        }
-
-        /** @var ArrayCollection $list */
-        $list = [];
-        foreach ($pinnedArticles as $pinnedArticle) {
-            $list[] = $pinnedArticle->toArray();
-        }
+        $pinnedArticles = $this->articleRepository->getPinnedArticles();
 
         return $this->respond(
             $response,
-            response()->setData($list)
+            response()
+                ->setData($pinnedArticles)
         );
     }
 
     /**
-     * @param Request  $request
-     * @param Response $response
+     * @param Request     $request
+     * @param Response    $response
      *
-     * @param          $args
+     * @param             $args
      *
      * @return Response
-     * @throws ArticleException
-     * @throws InvalidArgumentException
-     * @throws PhpfastcacheSimpleCacheException
+     * @throws DataObjectManagerException
      */
-    public function list(Request $request, Response $response, $args): Response
+    public function list(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -142,25 +163,46 @@ class ArticleController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $this->searchCriteria->setPage((int)$page)
-            ->setLimit((int)$resultPerPage)
-            ->addOrder('id', 'DESC');
+        /** @var LengthAwarePaginator $articles */
+        $articles = $this->articleRepository
+            ->getPaginatedArticleList(
+                (int) $page,
+                (int) $resultPerPage
+            );
 
-        $articles = $this->articleRepository->paginate($this->searchCriteria);
+        return $this->respond(
+            $response,
+            response()
+                ->setData($articles)
+        );
+    }
 
-        if ($articles->isEmpty()) {
-            throw new ArticleException(__('No Articles were found'), 404);
-        }
+    /**
+     * Deletes specific article.
+     *
+     * @param Request     $request
+     * @param Response    $response
+     * @param             $args
+     *
+     * @return Response
+     * @throws ArticleException
+     * @throws DataObjectManagerException
+     */
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $id */
+        $id = $args['id'];
 
-        /** @var PaginatedArrayCollection $list */
-        $list = [];
-        foreach ($articles as $article) {
-            $list[] = $article->toArray();
+        $deleted = $this->articleRepository->delete((int) $id);
+
+        if (!$deleted) {
+            throw new ArticleException(__('Article could not be deleted.'), 409);
         }
 
         return $this->respond(
             $response,
-            response()->setData($list)
+            response()
+                ->setData(true)
         );
     }
 }

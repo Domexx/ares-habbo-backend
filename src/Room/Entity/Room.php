@@ -7,80 +7,37 @@
 
 namespace Ares\Room\Entity;
 
-use Ares\Framework\Entity\Entity;
+use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\DataObject;
 use Ares\Guild\Entity\Guild;
+use Ares\Guild\Repository\GuildRepository;
+use Ares\Room\Entity\Contract\RoomInterface;
+use Ares\Room\Repository\RoomRepository;
 use Ares\User\Entity\User;
-use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\OneToOne;
+use Ares\User\Repository\UserRepository;
 
 /**
  * Class Room
  *
  * @package Ares\Room\Entity
- *
- * @ORM\Entity
- * @ORM\Table(name="rooms")
- * @ORM\Cache(usage="NONSTRICT_READ_WRITE")
- * @ORM\HasLifecycleCallbacks
  */
-class Room extends Entity
+class Room extends DataObject implements RoomInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\Column(name="id", type="integer")
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private int $id;
+    /** @var string */
+    public const TABLE = 'rooms';
 
-    /**
-     * @OneToOne(targetEntity="\Ares\User\Entity\User", fetch="EAGER")
-     * @JoinColumn(name="owner_id", referencedColumnName="id")
-     */
-    private ?User $owner;
-
-    /**
-     * @ORM\Column(type="string", length=50)
-     */
-    private string $name;
-
-    /**
-     * @ORM\Column(type="string", length=512)
-     */
-    private string $description;
-
-    /**
-     * @ORM\Column(type="string", columnDefinition="ENUM('open','locked','password', 'invisible')")
-     */
-    private string $state;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $users;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $users_max;
-
-    /**
-     * @OneToOne(targetEntity="\Ares\Guild\Entity\Guild", fetch="EAGER")
-     * @JoinColumn(name="guild_id", referencedColumnName="id", nullable=true)
-     */
-    private ?Guild $guild;
-
-    /**
-     * @ORM\Column(type="integer", length=11)
-     */
-    private int $score;
+    /** @var array **/
+    public const RELATIONS = [
+        'guild' => 'getGuild',
+        'user' => 'getUser'
+    ];
 
     /**
      * @return int
      */
     public function getId(): int
     {
-        return $this->id;
+        return $this->getData(RoomInterface::COLUMN_ID);
     }
 
     /**
@@ -88,31 +45,27 @@ class Room extends Entity
      *
      * @return Room
      */
-    public function setId(int $id): self
+    public function setId(int $id): Room
     {
-        $this->id = $id;
-
-        return $this;
+        return $this->setData(RoomInterface::COLUMN_ID, $id);
     }
 
     /**
-     * @return User|null
+     * @return int
      */
-    public function getOwner(): ?User
+    public function getOwnerId(): int
     {
-        return $this->owner;
+        return $this->getData(RoomInterface::COLUMN_OWNER_ID);
     }
 
     /**
-     * @param User $owner
+     * @param int $owner_id
      *
      * @return Room
      */
-    public function setOwner(User $owner): self
+    public function setOwnerId(int $owner_id): Room
     {
-        $this->owner = $owner;
-
-        return $this;
+        return $this->setData(RoomInterface::COLUMN_OWNER_ID, $owner_id);
     }
 
     /**
@@ -120,7 +73,7 @@ class Room extends Entity
      */
     public function getName(): string
     {
-        return $this->name;
+        return $this->getData(RoomInterface::COLUMN_NAME);
     }
 
     /**
@@ -128,11 +81,9 @@ class Room extends Entity
      *
      * @return Room
      */
-    public function setName(string $name): self
+    public function setName(string $name): Room
     {
-        $this->name = $name;
-
-        return $this;
+        return $this->setData(RoomInterface::COLUMN_NAME, $name);
     }
 
     /**
@@ -140,7 +91,7 @@ class Room extends Entity
      */
     public function getDescription(): string
     {
-        return $this->description;
+        return $this->getData(RoomInterface::COLUMN_DESCRIPTION);
     }
 
     /**
@@ -148,11 +99,9 @@ class Room extends Entity
      *
      * @return Room
      */
-    public function setDescription(string $description): self
+    public function setDescription(string $description): Room
     {
-        $this->description = $description;
-
-        return $this;
+        return $this->setData(RoomInterface::COLUMN_DESCRIPTION, $description);
     }
 
     /**
@@ -160,7 +109,7 @@ class Room extends Entity
      */
     public function getState(): string
     {
-        return $this->state;
+        return $this->getData(RoomInterface::COLUMN_STATE);
     }
 
     /**
@@ -168,11 +117,9 @@ class Room extends Entity
      *
      * @return Room
      */
-    public function setState(string $state): self
+    public function setState(string $state): Room
     {
-        $this->state = $state;
-
-        return $this;
+        return $this->setData(RoomInterface::COLUMN_STATE, $state);
     }
 
     /**
@@ -180,7 +127,7 @@ class Room extends Entity
      */
     public function getUsers(): int
     {
-        return $this->users;
+        return $this->getData(RoomInterface::COLUMN_USERS);
     }
 
     /**
@@ -188,11 +135,9 @@ class Room extends Entity
      *
      * @return Room
      */
-    public function setUsers(int $users): self
+    public function setUsers(int $users): Room
     {
-        $this->users = $users;
-
-        return $this;
+        return $this->setData(RoomInterface::COLUMN_USERS, $users);
     }
 
     /**
@@ -200,7 +145,7 @@ class Room extends Entity
      */
     public function getUsersMax(): int
     {
-        return $this->users_max;
+        return $this->getData(RoomInterface::COLUMN_USERS_MAX);
     }
 
     /**
@@ -208,31 +153,27 @@ class Room extends Entity
      *
      * @return Room
      */
-    public function setUsersMax(int $users_max): self
+    public function setUsersMax(int $users_max): Room
     {
-        $this->users_max = $users_max;
-
-        return $this;
+        return $this->setData(RoomInterface::COLUMN_USERS_MAX, $users_max);
     }
 
     /**
-     * @return Guild|null
+     * @return int
      */
-    public function getGuild(): ?Guild
+    public function getGuildId(): int
     {
-        return $this->guild;
+        return $this->getData(RoomInterface::COLUMN_GUILD_ID);
     }
 
     /**
-     * @param Guild $guild
+     * @param int $guild_id
      *
      * @return Room
      */
-    public function setGuild(Guild $guild): self
+    public function setGuildId(int $guild_id): Room
     {
-        $this->guild = $guild;
-
-        return $this;
+        return $this->setData(RoomInterface::COLUMN_GUILD_ID, $guild_id);
     }
 
     /**
@@ -240,7 +181,7 @@ class Room extends Entity
      */
     public function getScore(): int
     {
-        return $this->score;
+        return $this->getData(RoomInterface::COLUMN_SCORE);
     }
 
     /**
@@ -248,60 +189,94 @@ class Room extends Entity
      *
      * @return Room
      */
-    public function setScore(int $score): self
+    public function setScore(int $score): Room
     {
-        $this->score = $score;
-
-        return $this;
+        return $this->setData(RoomInterface::COLUMN_SCORE, $score);
     }
 
     /**
-     * @ORM\PostLoad
-     */
-    public function loadNullGuild()
-    {
-        if ($this->guild && $this->guild->getId() == 0) {
-            $this->guild = null;
-        }
-    }
-
-    /**
-     * Returns a copy of the current Entity safely
+     * @return User|null
      *
-     * @return array
+     * @throws DataObjectManagerException
      */
-    public function toArray(): array
+    public function getUser(): ?User
     {
-        return [
-            'id' => $this->getId(),
-            'owner' => $this->getOwner()->toArray(),
-            'name' => $this->getName(),
-            'description' => $this->getDescription(),
-            'state' => $this->getState(),
-            'users' => $this->getUsers(),
-            'users_max' => $this->getUsersMax(),
-            'guild' => (is_null($this->getGuild()) ? $this->getGuild() : $this->getGuild()->toArray()),
-            'score' => $this->getScore()
-        ];
-    }
+        /** @var User $user */
+        $user = $this->getData('user');
 
-    /**
-     * @return string
-     */
-    public function serialize()
-    {
-        return serialize(get_object_vars($this));
-    }
-
-    /**
-     * @param string $data
-     */
-    public function unserialize($data)
-    {
-        $values = unserialize($data);
-
-        foreach ($values as $key => $value) {
-            $this->$key = $value;
+        if ($user) {
+            return $user;
         }
+
+        /** @var RoomRepository $roomRepository */
+        $roomRepository = repository(RoomRepository::class);
+
+        /** @var UserRepository $userRepository */
+        $userRepository = repository(UserRepository::class);
+
+        /** @var User $user */
+        $user = $roomRepository->getOneToOne(
+            $userRepository,
+            $this->getOwnerId(),
+            'id'
+        );
+
+        if (!$user) {
+            return null;
+        }
+
+        $this->setUser($user);
+
+        return $user;
+    }
+
+    /**
+     * @param User $user
+     *
+     * @return Room
+     */
+    public function setUser(User $user): Room
+    {
+        return $this->setData('user', $user);
+    }
+
+    /**
+     * @return Guild|null
+     *
+     * @throws DataObjectManagerException
+     */
+    public function getGuild(): ?Guild
+    {
+        $guild = $this->getData('guild');
+
+        if ($guild) {
+            return $guild;
+        }
+
+        /** @var RoomRepository $roomRepository */
+        $roomRepository = repository(RoomRepository::class);
+
+        /** @var GuildRepository $guildRepository */
+        $guildRepository = repository(GuildRepository::class);
+
+        /** @var Guild $guild */
+        $guild = $roomRepository->getOneToOne(
+            $guildRepository,
+            $this->getGuildId(),
+            'id'
+        );
+
+        if (!$guild) {
+            return null;
+        }
+
+        $this->setGuild($guild);
+
+        return $guild;
+    }
+
+    public function setGuild(Guild $guild): Room
+    {
+        return $this->setData('guild', $guild);
     }
 }

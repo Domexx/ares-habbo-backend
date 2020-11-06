@@ -18,14 +18,15 @@ use League\Container\ServiceProvider\AbstractServiceProvider;
  */
 class LocaleServiceProvider extends AbstractServiceProvider
 {
-    /** @var array */
+    /**
+     * @var string[]
+     */
     protected $provides = [
-        'settings',
         Locale::class
     ];
 
     /**
-     * Registers Locale Model as shared instance.
+     * Registers new service.
      */
     public function register()
     {

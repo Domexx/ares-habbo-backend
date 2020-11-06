@@ -8,14 +8,10 @@
 namespace Ares\Messenger\Controller;
 
 use Ares\Framework\Controller\BaseController;
-use Ares\Framework\Model\Adapter\DoctrineSearchCriteria;
-use Ares\Messenger\Exception\MessengerException;
+use Ares\Framework\Exception\AuthenticationException;
+use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Messenger\Repository\MessengerRepository;
-use Ares\User\Exception\UserException;
-use Ares\User\Repository\UserRepository;
-use Jhg\DoctrinePagination\Collection\PaginatedArrayCollection;
-use Phpfastcache\Exceptions\PhpfastcacheSimpleCacheException;
-use Psr\Cache\InvalidArgumentException;
+use Ares\User\Entity\User;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -32,45 +28,27 @@ class MessengerController extends BaseController
     private MessengerRepository $messengerRepository;
 
     /**
-     * @var UserRepository
-     */
-    private UserRepository $userRepository;
-
-    /**
-     * @var DoctrineSearchCriteria
-     */
-    private DoctrineSearchCriteria $searchCriteria;
-
-    /**
      * MessengerController constructor.
      *
-     * @param   MessengerRepository     $messengerRepository
-     * @param   UserRepository          $userRepository
-     * @param   DoctrineSearchCriteria  $searchCriteria
+     * @param MessengerRepository    $messengerRepository
      */
     public function __construct(
-        MessengerRepository $messengerRepository,
-        UserRepository $userRepository,
-        DoctrineSearchCriteria $searchCriteria
+        MessengerRepository $messengerRepository
     ) {
         $this->messengerRepository = $messengerRepository;
-        $this->userRepository = $userRepository;
-        $this->searchCriteria = $searchCriteria;
     }
 
     /**
-     * @param   Request   $request
-     * @param   Response  $response
+     * @param Request $request
+     * @param Response $response
      *
-     * @param             $args
+     * @param array $args
      *
      * @return Response
-     * @throws MessengerException
-     * @throws UserException
-     * @throws PhpfastcacheSimpleCacheException
-     * @throws InvalidArgumentException
+     * @throws DataObjectManagerException
+     * @throws AuthenticationException
      */
-    public function friends(Request $request, Response $response, $args): Response
+    public function friends(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -78,35 +56,20 @@ class MessengerController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $this->searchCriteria->setPage((int)$page)
-            ->setLimit((int)$resultPerPage)
-            ->addFilter('user', $this->getUser($this->userRepository, $request)->getId())
-            ->addOrder('id', 'DESC');
+        /** @var User $user */
+        $user = user($request);
 
-        $friends = $this->messengerRepository->paginate($this->searchCriteria);
-
-        if ($friends->isEmpty()) {
-            throw new MessengerException(__('You have no friends'), 404);
-        }
-
-        /** @var PaginatedArrayCollection $list */
-        $list = [];
-        foreach ($friends as $friend) {
-            $list[] = $friend
-                ->getFriend()
-                ->toArray();
-        }
+        $friends = $this->messengerRepository
+            ->getPaginatedMessengerFriends(
+                $user->getId(),
+                (int) $page,
+                (int) $resultPerPage
+            );
 
         return $this->respond(
             $response,
-            response()->setData([
-                'pagination' => [
-                    'totalPages' => $friends->getPages(),
-                    'prevPage' => $friends->getPrevPage(),
-                    'nextPage' => $friends->getNextPage()
-                ],
-                'friends' => $list
-            ])
+            response()
+                ->setData($friends)
         );
     }
 }
