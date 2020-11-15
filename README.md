@@ -1,95 +1,197 @@
-# ![Ares A](https://i.imgur.com/1zelxEp.png)
+### ![Ares A](https://cdn.discordapp.com/attachments/597479264060833867/774656708067983370/ares64x64.png) Habbo
 
-[![Discord](https://img.shields.io/discord/683417203546128387?color=%237289DA&label=Discord)](https://discord.gg/pN7ZMFw) [![CodeFactor](https://www.codefactor.io/repository/github/arescms/ares/badge)](https://www.codefactor.io/repository/github/arescms/ares)
+[![CodeFactor](https://www.codefactor.io/repository/github/domexx/ares-habbo-backend/badge/develop)](https://www.codefactor.io/repository/github/domexx/ares-habbo-backend/overview/develop) [![Discord](https://img.shields.io/discord/683417203546128387?color=%237289DA&label=Discord)](https://discord.gg/zQkUmQUZJz) [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/Domexx/ares-habbo-backend/blob/develop/LICENSE)
+==========================
 
-A blazing fast SPA for your Retro using Angular10 & Slim.
+## Introduction
+This project is the backend api part of the custom Ares CMS for Habbo. You can easily create your custom Frontend Application 
+while not worrying about the Backend, Ares takes care of everything.
 
----
+It can be used for fast creating and expanding Habbo Retros.
 
-## Table of Contents
+## Installation
+#### Preferable with nginx on debian 10
 
-1. [Why did we create Ares?](#1-why-did-we-create-ares)
-2. [Why Ares?](#2-why-ares)
-3. [Which Technologies are we using?](#3-which-technologies-are-we-using)
-4. [Who works on Ares?](#4-who-works-on-ares)
-5. [Support](#5-support)
-6. [Disclaimer](#6-disclaimer)
-7. [Setup](#7-setup)
+##### 1. Clone project. 
+```console
+$ git clone https://github.com/Domexx/ares-habbo-backend.git
+```
+##### 2. Change directory to project.
+```console
+$ cd ares-habbo-backend
+```
+##### 3. Copy dotenv config.
+```console
+$ cp .env.example .env 
+```
+##### 4. Install composer dependencies.
+```console
+$ composer install 
+```
+##### 5. Give rights to the folder.
+```console
+$ chmod -R 775 {dir name} 
+```
 
----
+## Configuration
+##### Configure your .env:
 
-## 1. Why did we create Ares?
+```text
+# Database Credentials
+DB_HOST=db
+DB_PORT=db
+DB_NAME="ares"
+DB_USER="ares"
+DB_PASSWORD="your_password"
 
-We looked, and we didn't find any good Habbo Retro CMS out there.
+# Api Mode | development / production
+API_DEBUG="production"
 
-All of them were either **crappy** coded, **outdated** or just didn't have the Features they **Promised**.
+# Name of the Application and 
+WEB_NAME="Ares"
+WEB_FRONTEND_LINK="*"
 
-We want to create something useful, fun to use and at the same time extremely fast.
+# 1 = Enabled, 0 = Disabled
+CACHE_ENABLED=1
+# "Files" for Filecache, "Predis" for Redis
+CACHE_TYPE="Files"
+# Defines the cache alive time in seconds
+CACHE_TTL=950
 
----
+# Redis if Cache is enabled and type is Predis
+CACHE_REDIS_HOST=127.0.0.1
+# Redis Port, standard Port is 6379
+CACHE_REDIS_PORT=6379
 
-## 2. Why Ares?
+# Only works with Redis // Enables Throttling // Enables that people only can call the endpoint certain times in a short period
+THROTTLE_ENABLED=0
 
-Ares is using state-of-the-art Technology to make the experience for you and your Users as secure, fast and convenient as possible.
+TOKEN_ISSUER="Ares-Issuer"
+TOKEN_DURATION=86400
 
-We're always updating Ares with new Features and try to keep it Bug-Free.
+# The secret must be at least 12 characters in length; contain numbers; upper and lowercase letters; and one of the following special characters *&!@%^#$
+TOKEN_SECRET="Secret123!456$"
 
-Ares is here to stay.
+```
 
----
+## Expand project
 
-## 3. Which Technologies are we using?
+### Create custom Module:
 
-### For our Backend we're using:
+##### 1. Create controller class which extends BaseController
+In the controller class you can define functions that are called by calling a route,
+which can be defined in the app/routes/routes.php.
+Auth protected routes can be used with setting middleware 'AuthMiddleware',
+between route path and route action call.
+ 
+```php
+<?php
 
-Local Development:
+namespace Ares\CustomModule\Controller;
 
-[**DDEV**](https://ddev.readthedocs.io/en/stable/)
+use Ares\Framework\Controller\BaseController;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
-Framework used:
+/**
+ * Class Controller
+ *
+ * @package Ares\CustomModule\Controller
+ */
+class Controller extends BaseController
+{
+    /**
+     * Reveals a custom response to the user
+     *
+     * @param Request  $request  The current incoming Request
+     * @param Response $response The current Response
+     *
+     * @return Response Returns a Response with the given Data
+     */
+    public function customResponse(Request $request, Response $response): Response
+    {
+        /** @var string $customResponse */
+        $customResponse = 'your custom response';
 
-[**Slim 4**](http://www.slimframework.com)
+        return $this->respond(
+            $response,
+            response()
+                ->setData($customResponse)
+        );
+    }
+}
+```
 
-Language used:
+##### 2. Register your custom route in app/routes.php that calls a controller function
+```php
+return function (App $app) {
+    // Registers our custom routes that calls the customResponse function in our custom controller
+    $app->get('/custom', \Ares\CustomModule\Controller\Controller::class . ':customResponse');
+};
+```
 
-[**PHP v7.4.5**](https://php.net/)
+### Create custom Service Provider:
 
-### For our Frontend we're using:
+##### 1. Create new Service Provider with extending AbstractServiceProvider
+```php
+<?php
 
-[**Angular**](https://angular.io/)
+namespace Ares\CustomModule\Provider;
 
-Noteworthy Dependencies:
+use Ares\CustomModule\Model\Custom;
+use League\Container\ServiceProvider\AbstractServiceProvider;
 
-- [Webpack](https://webpack.js.org/) - To bundle the Frontend.
-- [Babel](https://babeljs.io/) - To transpile ES6 to ES5.
+/**
+ * Class CustomServiceProvider
+ *
+ * @package Ares\CustomModule\Provider
+ */
+class CustomServiceProvider extends AbstractServiceProvider
+{
+    /**
+     * @var string[]
+     */
+    protected $provides = [
+        Custom::class
+    ];
 
----
+    /**
+     * Registers new service.
+     */
+    public function register()
+    {
+        $container = $this->getContainer();
 
-## 4. Who works on Ares?
+        $container->add(Custom::class, function () {
+            return new Custom();
+        });
+    }
+}
+```
 
-#### The Core-Team
+##### 2. Register the new created Service Provider in app/etc/providers.php
+```php
+    // Adds our CustomProvider to add Customs
+    $container->addServiceProvider(
+        new \Ares\CustomModule\Provider\CustomServiceProvider()
+    );
+```
 
-- Dome [Backend] (Discord: Dome#9999)
-- necmi [Frontend] (Discord: necmi#5362)
+## Credits
+If you got questions or feedback feel free to contact us.
 
----
+- Discord: Dome#9999
+- Mail: dominik-forschner@web.de
+----------------------------------
+- Discord: s1njar#0066
+- Mail: s1njar.mail@gmail.com
 
-## 5. Support
+## Links
 
-If you're searching from Help instead of opening an Issue here, please try on our [Discord](https://discord.gg/pN7ZMFw)!
+- [Slim Framework](https://www.slimframework.com/)
+- [Ares Core Module](https://github.com/Domexx/Ares-Core.git)
+- [Discord](https://discord.gg/zQkUmQUZJz)
 
----
+## License
 
-## 6. Disclaimer
-
-All rights go to their respective owners.
-
-Ares is in no way endorsed, affiliated or associated with Sulake.
-
-Ares is a not for profit educational project.
-
----
-
-## 7. Setup
-
-// Coming Soon
+The MIT License (MIT).

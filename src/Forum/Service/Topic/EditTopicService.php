@@ -1,17 +1,18 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Service\Topic;
 
 use Ares\Forum\Entity\Topic;
-use Ares\Forum\Exception\TopicException;
 use Ares\Forum\Repository\TopicRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use DateTime;
 
 /**
  * Class EditTopicService
@@ -21,49 +22,39 @@ use Ares\Framework\Interfaces\CustomResponseInterface;
 class EditTopicService
 {
     /**
-     * @var TopicRepository
-     */
-    private TopicRepository $topicRepository;
-
-    /**
      * EditTopicService constructor.
      *
      * @param   TopicRepository  $topicRepository
      */
     public function __construct(
-        TopicRepository $topicRepository
-    ) {
-        $this->topicRepository = $topicRepository;
-    }
+        private TopicRepository $topicRepository
+    ) {}
 
     /**
      * @param array $data
      *
      * @return CustomResponseInterface
-     * @throws TopicException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function execute(array $data): CustomResponseInterface
     {
         /** @var string $title */
         $title = $data['title'];
 
-        /** @var int $topic */
-        $topic_id = $data['topic_id'];
+        /** @var int $topicId */
+        $topicId = $data['topic_id'];
 
         /** @var string $description */
         $description = $data['description'];
 
         /** @var Topic $topic */
-        $topic = $this->topicRepository->get($topic_id);
-
-        if (!$topic) {
-            throw new TopicException(__('Topic not found'));
-        }
+        $topic = $this->topicRepository->get($topicId);
 
         $topic
             ->setTitle($title)
-            ->setDescription($description);
+            ->setDescription($description)
+            ->setUpdatedAt(new DateTime());
 
         /** @var Topic $topic */
         $topic = $this->topicRepository->save($topic);

@@ -1,15 +1,15 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Middleware;
 
 use Ares\Role\Exception\RoleException;
 use Ares\Role\Service\CheckAccessService;
-use Doctrine\ORM\Query\QueryException;;
+use Illuminate\Database\QueryException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -24,20 +24,13 @@ use Slim\Routing\RouteContext;
 class RolePermissionMiddleware implements MiddlewareInterface
 {
     /**
-     * @var CheckAccessService
-     */
-    private CheckAccessService $checkAccessService;
-
-    /**
      * RolePermissionMiddleware constructor.
      *
      * @param CheckAccessService $checkAccessService
      */
     public function __construct(
-        CheckAccessService $checkAccessService
-    ) {
-        $this->checkAccessService = $checkAccessService;
-    }
+        private CheckAccessService $checkAccessService
+    ) {}
 
     /**
      * @param ServerRequestInterface  $request
@@ -61,7 +54,7 @@ class RolePermissionMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        $userId = (int) $this->fetchUserId($request);
+        $userId = $this->fetchUserId($request);
 
         $isPermitted = $this->checkAccessService->execute($userId, $permissionName);
 

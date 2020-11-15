@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Entity;
@@ -47,13 +47,13 @@ class RoleHierarchy extends DataObject implements RoleHierarchyInterface
     }
 
     /**
-     * @param int $parent_role_id
+     * @param int $parentRoleId
      *
      * @return RoleHierarchy
      */
-    public function setParentRoleId(int $parent_role_id): RoleHierarchy
+    public function setParentRoleId(int $parentRoleId): RoleHierarchy
     {
-        return $this->setData(RoleHierarchyInterface::COLUMN_PARENT_ROLE_ID, $parent_role_id);
+        return $this->setData(RoleHierarchyInterface::COLUMN_PARENT_ROLE_ID, $parentRoleId);
     }
 
     /**
@@ -65,13 +65,13 @@ class RoleHierarchy extends DataObject implements RoleHierarchyInterface
     }
 
     /**
-     * @param int $child_role_id
+     * @param int $childRoleId
      *
      * @return RoleHierarchy
      */
-    public function setChildRoleId(int $child_role_id): RoleHierarchy
+    public function setChildRoleId(int $childRoleId): RoleHierarchy
     {
-        return $this->setData(RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID, $child_role_id);
+        return $this->setData(RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID, $childRoleId);
     }
 
     /**
@@ -83,12 +83,12 @@ class RoleHierarchy extends DataObject implements RoleHierarchyInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return RoleHierarchy
      */
-    public function setCreatedAt(\DateTime $created_at): RoleHierarchy
+    public function setCreatedAt(\DateTime $createdAt): RoleHierarchy
     {
-        return $this->setData(RoleHierarchyInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(RoleHierarchyInterface::COLUMN_CREATED_AT, $createdAt);
     }
 }

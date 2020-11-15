@@ -1,14 +1,16 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Controller\Settings;
 
 use Ares\Framework\Controller\BaseController;
+use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
@@ -28,31 +30,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class UserSettingsController extends BaseController
 {
     /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var ChangeGeneralSettingsService
-     */
-    private ChangeGeneralSettingsService $changeGeneralSettingsService;
-
-    /**
-     * @var ChangePasswordService
-     */
-    private ChangePasswordService $changePasswordService;
-
-    /**
-     * @var ChangeEmailService
-     */
-    private ChangeEmailService $changeEmailService;
-
-    /**
-     * @var ChangeUsernameService
-     */
-    private ChangeUsernameService $changeUsernameService;
-
-    /**
      * UserSettingsController constructor.
      *
      * @param ValidationService            $validationService
@@ -62,27 +39,23 @@ class UserSettingsController extends BaseController
      * @param ChangeUsernameService        $changeUsernameService
      */
     public function __construct(
-        ValidationService $validationService,
-        ChangeGeneralSettingsService $changeGeneralSettingsService,
-        ChangePasswordService $changePasswordService,
-        ChangeEmailService $changeEmailService,
-        ChangeUsernameService $changeUsernameService
-    ) {
-        $this->validationService = $validationService;
-        $this->changeGeneralSettingsService = $changeGeneralSettingsService;
-        $this->changePasswordService = $changePasswordService;
-        $this->changeEmailService = $changeEmailService;
-        $this->changeUsernameService = $changeUsernameService;
-    }
+        private ValidationService $validationService,
+        private ChangeGeneralSettingsService $changeGeneralSettingsService,
+        private ChangePasswordService $changePasswordService,
+        private ChangeEmailService $changeEmailService,
+        private ChangeUsernameService $changeUsernameService
+    ) {}
 
     /**
      * @param Request  $request
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
+     * @throws DataObjectManagerException
      * @throws UserSettingsException
      * @throws ValidationException
-     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function changeGeneralSettings(Request $request, Response $response): Response
     {
@@ -119,7 +92,9 @@ class UserSettingsController extends BaseController
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      * @throws UserSettingsException
      * @throws ValidationException
      */
@@ -154,7 +129,9 @@ class UserSettingsController extends BaseController
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      * @throws UserSettingsException
      * @throws ValidationException
      */
@@ -188,7 +165,9 @@ class UserSettingsController extends BaseController
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      * @throws UserSettingsException
      * @throws ValidationException
      */

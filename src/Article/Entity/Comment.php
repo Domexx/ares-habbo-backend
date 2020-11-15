@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Article\Entity;
@@ -56,13 +56,13 @@ class Comment extends DataObject implements CommentInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return Comment
      */
-    public function setUserId(int $user_id): Comment
+    public function setUserId(int $userId): Comment
     {
-        return $this->setData(CommentInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(CommentInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -110,13 +110,13 @@ class Comment extends DataObject implements CommentInterface
     }
 
     /**
-     * @param int $is_edited
+     * @param int $isEdited
      *
      * @return Comment
      */
-    public function setIsEdited(int $is_edited): Comment
+    public function setIsEdited(int $isEdited): Comment
     {
-        return $this->setData(CommentInterface::COLUMN_IS_EDITED, $is_edited);
+        return $this->setData(CommentInterface::COLUMN_IS_EDITED, $isEdited);
     }
 
     /**
@@ -164,13 +164,13 @@ class Comment extends DataObject implements CommentInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return Comment
      */
-    public function setCreatedAt(\DateTime $created_at): Comment
+    public function setCreatedAt(\DateTime $createdAt): Comment
     {
-        return $this->setData(CommentInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(CommentInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
@@ -182,13 +182,13 @@ class Comment extends DataObject implements CommentInterface
     }
 
     /**
-     * @param \DateTime $updated_at
+     * @param \DateTime $updatedAt
      *
      * @return Comment
      */
-    public function setUpdatedAt(\DateTime $updated_at): Comment
+    public function setUpdatedAt(\DateTime $updatedAt): Comment
     {
-        return $this->setData(CommentInterface::COLUMN_UPDATED_AT, $updated_at);
+        return $this->setData(CommentInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
 
     /**
@@ -203,6 +203,10 @@ class Comment extends DataObject implements CommentInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var CommentRepository $commentRepository */

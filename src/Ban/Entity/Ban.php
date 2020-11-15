@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Ban\Entity;
@@ -56,13 +56,13 @@ class Ban extends DataObject implements BanInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return Ban
      */
-    public function setUserId(int $user_id): Ban
+    public function setUserId(int $userId): Ban
     {
-        return $this->setData(BanInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(BanInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -92,13 +92,13 @@ class Ban extends DataObject implements BanInterface
     }
 
     /**
-     * @param string $machine_id
+     * @param string $machineId
      *
      * @return Ban
      */
-    public function setMachineId(string $machine_id): Ban
+    public function setMachineId(string $machineId): Ban
     {
-        return $this->setData(BanInterface::COLUMN_MACHINE_ID, $machine_id);
+        return $this->setData(BanInterface::COLUMN_MACHINE_ID, $machineId);
     }
 
     /**
@@ -110,13 +110,13 @@ class Ban extends DataObject implements BanInterface
     }
 
     /**
-     * @param int $user_staff_id
+     * @param int $userStaffId
      *
      * @return Ban
      */
-    public function setUserStaffId(int $user_staff_id): Ban
+    public function setUserStaffId(int $userStaffId): Ban
     {
-        return $this->setData(BanInterface::COLUMN_USER_STAFF_ID, $user_staff_id);
+        return $this->setData(BanInterface::COLUMN_USER_STAFF_ID, $userStaffId);
     }
 
     /**
@@ -146,13 +146,13 @@ class Ban extends DataObject implements BanInterface
     }
 
     /**
-     * @param int $ban_expire
+     * @param int $banExpire
      *
      * @return Ban
      */
-    public function setBanExpire(int $ban_expire): Ban
+    public function setBanExpire(int $banExpire): Ban
     {
-        return $this->setData(BanInterface::COLUMN_BAN_EXPIRE, $ban_expire);
+        return $this->setData(BanInterface::COLUMN_BAN_EXPIRE, $banExpire);
     }
 
     /**
@@ -164,13 +164,13 @@ class Ban extends DataObject implements BanInterface
     }
 
     /**
-     * @param string $ban_reason
+     * @param string $banReason
      *
      * @return Ban
      */
-    public function setBanReason(string $ban_reason): Ban
+    public function setBanReason(string $banReason): Ban
     {
-        return $this->setData(BanInterface::COLUMN_BAN_REASON, $ban_reason);
+        return $this->setData(BanInterface::COLUMN_BAN_REASON, $banReason);
     }
 
     /**
@@ -200,13 +200,13 @@ class Ban extends DataObject implements BanInterface
     }
 
     /**
-     * @param int $cfh_topic
+     * @param int $cfhTopic
      *
      * @return Ban
      */
-    public function setCfhTopic(int $cfh_topic): Ban
+    public function setCfhTopic(int $cfhTopic): Ban
     {
-        return $this->setData(BanInterface::COLUMN_CFH_TOPIC, $cfh_topic);
+        return $this->setData(BanInterface::COLUMN_CFH_TOPIC, $cfhTopic);
     }
 
     /**
@@ -221,6 +221,10 @@ class Ban extends DataObject implements BanInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var BanRepository $banRepository */

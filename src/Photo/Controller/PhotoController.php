@@ -1,14 +1,15 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Photo\Controller;
 
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\Photo\Entity\Photo;
@@ -27,21 +28,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class PhotoController extends BaseController
 {
     /**
-     * @var PhotoRepository
-     */
-    private PhotoRepository $photoRepository;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var UserRepository
-     */
-    private UserRepository $userRepository;
-
-    /**
      * PhotoController constructor.
      *
      * @param   PhotoRepository         $photoRepository
@@ -49,14 +35,10 @@ class PhotoController extends BaseController
      * @param   ValidationService       $validationService
      */
     public function __construct(
-        PhotoRepository $photoRepository,
-        UserRepository $userRepository,
-        ValidationService $validationService
-    ) {
-        $this->photoRepository   = $photoRepository;
-        $this->validationService = $validationService;
-        $this->userRepository    = $userRepository;
-    }
+        private PhotoRepository $photoRepository,
+        private UserRepository $userRepository,
+        private ValidationService $validationService
+    ) {}
 
     /**
      * @param Request  $request
@@ -65,7 +47,7 @@ class PhotoController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
-     * @throws PhotoException
+     * @throws NoSuchEntityException
      */
     public function photo(Request $request, Response $response, array $args): Response
     {
@@ -73,11 +55,7 @@ class PhotoController extends BaseController
         $id = $args['id'];
 
         /** @var Photo $photo */
-        $photo = $this->photoRepository->get((int) $id);
-
-        if (!$photo) {
-            throw new PhotoException(__('No Photo was found'), 404);
-        }
+        $photo = $this->photoRepository->get($id);
         $photo->getUser();
 
         return $this->respond(
@@ -92,7 +70,7 @@ class PhotoController extends BaseController
      * @param Response $response
      *
      * @return Response
-     * @throws PhotoException
+     * @throws NoSuchEntityException
      * @throws ValidationException
      */
     public function search(Request $request, Response $response): Response
@@ -108,14 +86,10 @@ class PhotoController extends BaseController
         $username = $parsedData['username'];
 
         /** @var User $user */
-        $user = $this->userRepository->get((string) $username, 'username');
+        $user = $this->userRepository->get($username, 'username');
 
         /** @var Photo $photo */
         $photo = $this->photoRepository->get($user->getId(), 'user_id');
-
-        if (!$photo || !$user) {
-            throw new PhotoException(__('No Photo was found'), 404);
-        }
 
         return $this->respond(
             $response,
@@ -142,8 +116,8 @@ class PhotoController extends BaseController
 
         $photos = $this->photoRepository
             ->getPaginatedPhotoList(
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -167,7 +141,7 @@ class PhotoController extends BaseController
         /** @var int $id */
         $id = $args['id'];
 
-        $photo = $this->photoRepository->delete((int) $id);
+        $photo = $this->photoRepository->delete($id);
 
         if (!$photo) {
             throw new PhotoException(__('Photo could not be deleted'));

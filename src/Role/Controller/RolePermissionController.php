@@ -1,20 +1,23 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Controller;
 
 use Ares\Framework\Controller\BaseController;
+use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException as ValidationExceptionAlias;
 use Ares\Framework\Service\ValidationService;
 use Ares\Role\Exception\RoleException;
 use Ares\Role\Repository\PermissionRepository;
 use Ares\Role\Service\CreateRolePermissionService;
 use Ares\Role\Service\CreatePermissionService;
+use Ares\Role\Service\FetchUserPermissionService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -26,44 +29,21 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class RolePermissionController extends BaseController
 {
     /**
-     * @var PermissionRepository
-     */
-    private PermissionRepository $permissionRepository;
-
-    /**
-     * @var CreatePermissionService
-     */
-    private CreatePermissionService $createPermissionService;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var CreateRolePermissionService
-     */
-    private CreateRolePermissionService $createRolePermissionService;
-
-    /**
      * RolePermissionController constructor.
      *
      * @param PermissionRepository        $permissionRepository
      * @param CreatePermissionService     $createPermissionService
      * @param CreateRolePermissionService $createRolePermissionService
+     * @param FetchUserPermissionService  $fetchUserPermissionService
      * @param ValidationService           $validationService
      */
     public function __construct(
-        PermissionRepository $permissionRepository,
-        CreatePermissionService $createPermissionService,
-        CreateRolePermissionService $createRolePermissionService,
-        ValidationService $validationService
-    ) {
-        $this->permissionRepository = $permissionRepository;
-        $this->createPermissionService = $createPermissionService;
-        $this->createRolePermissionService = $createRolePermissionService;
-        $this->validationService = $validationService;
-    }
+        private PermissionRepository $permissionRepository,
+        private CreatePermissionService $createPermissionService,
+        private CreateRolePermissionService $createRolePermissionService,
+        private FetchUserPermissionService $fetchUserPermissionService,
+        private ValidationService $validationService
+    ) {}
 
     /**
      * @param Request  $request
@@ -83,8 +63,8 @@ class RolePermissionController extends BaseController
 
         $permissions = $this->permissionRepository
             ->getPaginatedPermissionList(
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -99,7 +79,29 @@ class RolePermissionController extends BaseController
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
+     * @throws NoSuchEntityException
+     */
+    public function userPermissions(Request $request, Response $response): Response
+    {
+        /** @var int $userId */
+        $userId = user($request)->getId();
+
+        $customResponse = $this->fetchUserPermissionService->execute($userId);
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      * @throws RoleException
      * @throws ValidationExceptionAlias
      */
@@ -126,6 +128,7 @@ class RolePermissionController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      * @throws RoleException
      * @throws ValidationExceptionAlias
      */
@@ -160,10 +163,10 @@ class RolePermissionController extends BaseController
         /** @var int $id */
         $id = $args['id'];
 
-        $deleted = $this->permissionRepository->delete((int) $id);
+        $deleted = $this->permissionRepository->delete($id);
 
         if (!$deleted) {
-            throw new RoleException(__('Permission could not be deleted.'), 409);
+            throw new RoleException(__('Permission could not be deleted'), 409);
         }
 
         return $this->respond(

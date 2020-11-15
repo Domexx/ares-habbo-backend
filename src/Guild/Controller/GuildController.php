@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Guild\Controller;
@@ -24,28 +24,15 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class GuildController extends BaseController
 {
     /**
-     * @var GuildRepository
-     */
-    private GuildRepository $guildRepository;
-
-    /**
-     * @var GuildMemberRepository
-     */
-    private GuildMemberRepository $guildMemberRepository;
-
-    /**
      * RoomController constructor.
      *
      * @param   GuildRepository         $guildRepository
      * @param   GuildMemberRepository   $guildMemberRepository
      */
     public function __construct(
-        GuildRepository $guildRepository,
-        GuildMemberRepository $guildMemberRepository
-    ) {
-        $this->guildRepository       = $guildRepository;
-        $this->guildMemberRepository = $guildMemberRepository;
-    }
+        private GuildRepository $guildRepository,
+        private GuildMemberRepository $guildMemberRepository
+    ) {}
 
     /**
      * @param Request     $request
@@ -61,10 +48,13 @@ class GuildController extends BaseController
         $id = $args['id'];
 
         /** @var Guild $guild */
-        $guild = $this->guildRepository->getGuild((int) $id);
+        $guild = $this->guildRepository->getGuild($id);
 
+        /**
+         * @TODO UJEFU
+         */
         if (!$guild) {
-            throw new GuildException(__('No specific Guild found'));
+            throw new GuildException(__('No Guild was found'));
         }
 
         return $this->respond(
@@ -93,8 +83,8 @@ class GuildController extends BaseController
 
         $guilds = $this->guildRepository
             ->getPaginatedGuildList(
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -126,9 +116,9 @@ class GuildController extends BaseController
 
         $members = $this->guildMemberRepository
             ->getPaginatedGuildMembers(
-                (int) $guildId,
-                (int) $page,
-                (int) $resultPerPage
+                $guildId,
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(

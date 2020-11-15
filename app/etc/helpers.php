@@ -1,12 +1,13 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Framework\Model\CustomResponse;
 use Ares\Framework\Model\Query\Collection;
@@ -107,7 +108,8 @@ if (!function_exists('container')) {
      *
      * @return Container
      */
-    function container(): \League\Container\Container {
+    function container(): Container
+    {
         return App::getContainer();
     }
 }
@@ -152,9 +154,11 @@ if (!function_exists('user')) {
      * Required classes: \Ares\User\Repository\UserRepository, \Ares\User\Entity\User
      *
      * @param Request $request
-     * @param bool $isCached
+     * @param bool    $isCached
+     *
      * @return User
      * @throws AuthenticationException
+     * @throws NoSuchEntityException
      */
     function user(Request $request, bool $isCached = true): User {
         /** @var array $user */

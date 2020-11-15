@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Service\Auth;
@@ -20,20 +20,13 @@ use Exception;
 class TicketService
 {
     /**
-     * @var UserRepository
-     */
-    private UserRepository $userRepository;
-
-    /**
      * TicketService constructor.
      *
      * @param UserRepository $userRepository
      */
     public function __construct(
-        UserRepository $userRepository
-    ) {
-        $this->userRepository = $userRepository;
-    }
+        private UserRepository $userRepository
+    ) {}
 
     /**
      * Generates us a new Ticket for the User to authenticate him to the Server

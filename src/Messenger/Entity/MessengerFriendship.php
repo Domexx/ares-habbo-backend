@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Messenger\Entity;
@@ -56,13 +56,13 @@ class MessengerFriendship extends DataObject implements MessengerFriendshipInter
     }
 
     /**
-     * @param int $user_one_id
+     * @param int $userOneId
      *
      * @return MessengerFriendship
      */
-    public function setUserOneId(int $user_one_id): MessengerFriendship
+    public function setUserOneId(int $userOneId): MessengerFriendship
     {
-        return $this->setData(MessengerFriendshipInterface::COLUMN_USER_ONE_ID, $user_one_id);
+        return $this->setData(MessengerFriendshipInterface::COLUMN_USER_ONE_ID, $userOneId);
     }
 
     /**
@@ -74,13 +74,13 @@ class MessengerFriendship extends DataObject implements MessengerFriendshipInter
     }
 
     /**
-     * @param int $user_two_id
+     * @param int $userTwoId
      *
      * @return MessengerFriendship
      */
-    public function setUserTwoId(int $user_two_id): MessengerFriendship
+    public function setUserTwoId(int $userTwoId): MessengerFriendship
     {
-        return $this->setData(MessengerFriendshipInterface::COLUMN_USER_TWO_ID, $user_two_id);
+        return $this->setData(MessengerFriendshipInterface::COLUMN_USER_TWO_ID, $userTwoId);
     }
 
     /**
@@ -110,13 +110,13 @@ class MessengerFriendship extends DataObject implements MessengerFriendshipInter
     }
 
     /**
-     * @param int $friends_since
+     * @param int $friendsSince
      *
      * @return MessengerFriendship
      */
-    public function setFriendsSince(int $friends_since): MessengerFriendship
+    public function setFriendsSince(int $friendsSince): MessengerFriendship
     {
-        return $this->setData(MessengerFriendshipInterface::COLUMN_FRIENDS_SINCE, $friends_since);
+        return $this->setData(MessengerFriendshipInterface::COLUMN_FRIENDS_SINCE, $friendsSince);
     }
 
     /**
@@ -129,6 +129,10 @@ class MessengerFriendship extends DataObject implements MessengerFriendshipInter
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var MessengerRepository $messengerRepository */

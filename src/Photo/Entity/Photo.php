@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Photo\Entity;
@@ -56,13 +56,13 @@ class Photo extends DataObject implements PhotoInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return Photo
      */
-    public function setUserId(int $user_id): Photo
+    public function setUserId(int $userId): Photo
     {
-        return $this->setData(PhotoInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(PhotoInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -74,13 +74,13 @@ class Photo extends DataObject implements PhotoInterface
     }
 
     /**
-     * @param int $room_id
+     * @param int $roomId
      *
      * @return Photo
      */
-    public function setRoomId(int $room_id): Photo
+    public function setRoomId(int $roomId): Photo
     {
-        return $this->setData(PhotoInterface::COLUMN_ROOM_ID, $room_id);
+        return $this->setData(PhotoInterface::COLUMN_ROOM_ID, $roomId);
     }
 
     /**
@@ -120,6 +120,42 @@ class Photo extends DataObject implements PhotoInterface
     }
 
     /**
+     * @return int
+     */
+    public function getLikes(): int
+    {
+        return $this->getData(PhotoInterface::COLUMN_LIKES);
+    }
+
+    /**
+     * @param int $likes
+     *
+     * @return Photo
+     */
+    public function setLikes(int $likes): Photo
+    {
+        return $this->setData(PhotoInterface::COLUMN_LIKES, $likes);
+    }
+
+    /**
+     * @return int
+     */
+    public function getDislikes(): int
+    {
+        return $this->getData(PhotoInterface::COLUMN_DISLIKES);
+    }
+
+    /**
+     * @param int $dislikes
+     *
+     * @return Photo
+     */
+    public function setDislikes(int $dislikes): Photo
+    {
+        return $this->setData(PhotoInterface::COLUMN_DISLIKES, $dislikes);
+    }
+
+    /**
      * @return User|null
      *
      * @throws DataObjectManagerException
@@ -131,6 +167,10 @@ class Photo extends DataObject implements PhotoInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var PhotoRepository $photoRepository */

@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Repository;
@@ -33,7 +33,7 @@ class RoleUserRepository extends BaseRepository
      * @return array|null
      * @throws QueryException
      */
-    public function getUserRoleIds($userId): ?array
+    public function getUserRoleIds(int $userId): ?array
     {
         $searchCriteria = $this->getDataObjectManager()
             ->select('role_id')
@@ -54,8 +54,38 @@ class RoleUserRepository extends BaseRepository
             ->where([
                 'role_id' => $roleId,
                 'user_id' => $userId
-            ]);
+            ])->limit(1);
 
         return $this->getList($searchCriteria)->first();
+    }
+
+    /**
+     * @param array $allUserRoleIds
+     *
+     * @return array|null
+     */
+    public function getUserPermissions(array $allUserRoleIds): ?array
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                'ares_roles_permission.id',
+                'ares_roles_permission.role_id',
+                'ares_roles_permission.permission_id'
+            ])->from('ares_roles_permission')
+            ->leftJoin(
+                'ares_permissions',
+                'ares_permissions.id',
+                '=',
+                'ares_roles_permission.permission_id'
+            )->whereIn(
+                'ares_roles_permission.role_id',
+                $allUserRoleIds
+            )->select('ares_permissions.name');
+
+        return array_values(
+            array_unique(
+                $this->getList($searchCriteria)->get('name')
+            )
+        );
     }
 }

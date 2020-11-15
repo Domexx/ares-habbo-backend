@@ -1,16 +1,17 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Controller;
 
 use Ares\Framework\Controller\BaseController;
+use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\User\Entity\User;
-use Ares\User\Exception\UserException;
 use Ares\User\Repository\UserRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -23,20 +24,13 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class UserController extends BaseController
 {
     /**
-     * @var UserRepository Gets the current UserRepository
-     */
-    private UserRepository $userRepository;
-
-    /**
      * UserController constructor.
      *
      * @param   UserRepository  $userRepository
      */
     public function __construct(
-        UserRepository $userRepository
-    ) {
-        $this->userRepository = $userRepository;
-    }
+        private UserRepository $userRepository
+    ) {}
 
     /**
      * Retrieves the logged in User via JWT - Token
@@ -45,8 +39,9 @@ class UserController extends BaseController
      * @param Response $response The current Response
      *
      * @return Response Returns a Response with the given Data
-     * @throws UserException
+     * @throws AuthenticationException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function user(Request $request, Response $response): Response
     {

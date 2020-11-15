@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Guestbook\Service;
@@ -20,20 +20,13 @@ use Ares\Guestbook\Repository\GuestbookRepository;
 class CreateGuestbookEntryService
 {
     /**
-     * @var GuestbookRepository
-     */
-    private GuestbookRepository $guestbookRepository;
-
-    /**
      * CreateGuestbookEntryService constructor.
      *
      * @param   GuestbookRepository  $guestbookRepository
      */
     public function __construct(
-        GuestbookRepository $guestbookRepository
-    ) {
-        $this->guestbookRepository = $guestbookRepository;
-    }
+        private GuestbookRepository $guestbookRepository
+    ) {}
 
     /**
      * @param int   $userId
@@ -70,6 +63,7 @@ class CreateGuestbookEntryService
             ->setProfileId($data['profile_id'])
             ->setGuildId($data['guild_id'])
             ->setLikes(0)
-            ->setDislikes(0);
+            ->setDislikes(0)
+            ->setCreatedAt(new \DateTime());
     }
 }

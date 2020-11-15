@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Service\Thread;
@@ -23,20 +23,13 @@ use Ares\User\Entity\User;
 class EditThreadService
 {
     /**
-     * @var ThreadRepository
-     */
-    private ThreadRepository $threadRepository;
-
-    /**
      * EditThreadService constructor.
      *
      * @param   ThreadRepository  $threadRepository
      */
     public function __construct(
-        ThreadRepository $threadRepository
-    ) {
-        $this->threadRepository = $threadRepository;
-    }
+        private ThreadRepository $threadRepository
+    ) {}
 
     /**
      * @param Topic $topic
@@ -61,6 +54,9 @@ class EditThreadService
         /** @var string $content */
         $content = $data['content'];
 
+        /**
+         * @TODO ueufe
+         */
         $searchCriteria = $this->threadRepository
             ->getDataObjectManager()
             ->where([
@@ -75,13 +71,14 @@ class EditThreadService
             ->first();
 
         if (!$thread) {
-            throw new ThreadException(__('Thread not found'));
+            throw new ThreadException(__('No Thread was found'));
         }
 
         $thread
             ->setTitle($title)
             ->setDescription($description)
-            ->setContent($content);
+            ->setContent($content)
+            ->setUpdatedAt(new \DateTime());
 
         /** @var Thread $thread */
         $thread = $this->threadRepository->save($thread);

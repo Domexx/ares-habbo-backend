@@ -1,19 +1,21 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Service;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Role\Entity\Role;
 use Ares\Role\Entity\RoleHierarchy;
 use Ares\Role\Exception\RoleException;
 use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RoleRepository;
+use DateTime;
 
 /**
  * Class CreateChildRoleService
@@ -23,28 +25,15 @@ use Ares\Role\Repository\RoleRepository;
 class CreateChildRoleService
 {
     /**
-     * @var RoleHierarchyRepository
-     */
-    private RoleHierarchyRepository $roleHierarchyRepository;
-
-    /**
-     * @var RoleRepository
-     */
-    private RoleRepository $roleRepository;
-
-    /**
      * CreateChildRoleService constructor.
      *
      * @param RoleHierarchyRepository $roleHierarchyRepository
      * @param RoleRepository          $roleRepository
      */
     public function __construct(
-        RoleHierarchyRepository $roleHierarchyRepository,
-        RoleRepository $roleRepository
-    ) {
-        $this->roleHierarchyRepository = $roleHierarchyRepository;
-        $this->roleRepository = $roleRepository;
-    }
+        private RoleHierarchyRepository $roleHierarchyRepository,
+        private RoleRepository $roleRepository
+    ) {}
 
     /**
      * @param array $data
@@ -52,6 +41,7 @@ class CreateChildRoleService
      * @return CustomResponseInterface
      * @throws DataObjectManagerException
      * @throws RoleException
+     * @throws NoSuchEntityException
      */
     public function execute(array $data): CustomResponseInterface
     {
@@ -72,10 +62,6 @@ class CreateChildRoleService
 
         /** @var Role $childRole */
         $childRole = $this->roleRepository->get($childRoleId);
-
-        if (!$parentRole || !$childRole) {
-            throw new RoleException(__('Could not found given Roles'));
-        }
 
         $newChildRole = $this->getNewChildRole(
             $parentRole->getId(),
@@ -101,7 +87,8 @@ class CreateChildRoleService
 
         $roleHierarchy
             ->setParentRoleId($parentRoleId)
-            ->setChildRoleId($childRoleId);
+            ->setChildRoleId($childRoleId)
+            ->setCreatedAt(new DateTime());
 
         return $roleHierarchy;
     }

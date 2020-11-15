@@ -1,17 +1,19 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Service;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Role\Entity\Permission;
 use Ares\Role\Exception\RoleException;
 use Ares\Role\Repository\PermissionRepository;
+use DateTime;
 
 /**
  * Class CreatePermissionService
@@ -21,39 +23,29 @@ use Ares\Role\Repository\PermissionRepository;
 class CreatePermissionService
 {
     /**
-     * @var PermissionRepository
-     */
-    private PermissionRepository $permissionRepository;
-
-    /**
      * CreatePermissionService constructor.
      *
      * @param PermissionRepository $permissionRepository
      */
     public function __construct(
-        PermissionRepository $permissionRepository
-    ) {
-        $this->permissionRepository = $permissionRepository;
-    }
+        private PermissionRepository $permissionRepository
+    ) {}
 
     /**
      * @param array $data
      *
      * @return CustomResponseInterface
-     * @throws RoleException
      * @throws DataObjectManagerException
+     * @throws RoleException
+     * @throws NoSuchEntityException
      */
     public function execute(array $data): CustomResponseInterface
     {
-        $searchCriteria = $this->permissionRepository
-            ->getDataObjectManager()
-            ->where('name', $data['name']);
-
         /** @var Permission $existingPermission */
-        $existingPermission = $this->permissionRepository->get($data['name'], 'name');
+        $existingPermission = $this->permissionRepository->get($data['name'], 'name', true);
 
         if ($existingPermission) {
-            throw new RoleException(__('There is already a Permission with that name'));
+            throw new RoleException(__('Permission %s already exists', [$existingPermission->getName()]));
         }
 
         $permission = $this->getNewPermission($data);
@@ -76,7 +68,8 @@ class CreatePermissionService
 
         $permission
             ->setName($data['name'])
-            ->setDescription($data['description']);
+            ->setDescription($data['description'])
+            ->setCreatedAt(new DateTime());
 
         return $permission;
     }

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Controller;
@@ -11,6 +11,7 @@ use Ares\Ban\Exception\BanException;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
@@ -34,36 +35,6 @@ use ReallySimpleJWT\Exception\ValidateException;
 class AuthController extends BaseController
 {
     /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var LoginService
-     */
-    private LoginService $loginService;
-
-    /**
-     * @var RegisterService
-     */
-    private RegisterService $registerService;
-
-    /**
-     * @var TicketService
-     */
-    private TicketService $ticketService;
-
-    /**
-     * @var DetermineIpService
-     */
-    private DetermineIpService $determineIpService;
-
-    /**
-     * @var Config
-     */
-    private Config $config;
-
-    /**
      * AuthController constructor.
      *
      * @param ValidationService $validationService
@@ -74,33 +45,27 @@ class AuthController extends BaseController
      * @param Config $config
      */
     public function __construct(
-        ValidationService $validationService,
-        LoginService $loginService,
-        RegisterService $registerService,
-        TicketService $ticketService,
-        DetermineIpService $determineIpService,
-        Config $config
-    ) {
-        $this->validationService = $validationService;
-        $this->loginService = $loginService;
-        $this->registerService = $registerService;
-        $this->ticketService = $ticketService;
-        $this->determineIpService = $determineIpService;
-        $this->config = $config;
-    }
+        private ValidationService $validationService,
+        private LoginService $loginService,
+        private RegisterService $registerService,
+        private TicketService $ticketService,
+        private DetermineIpService $determineIpService,
+        private Config $config
+    ) {}
 
     /**
      * Logs the User in and parses a generated Token into response
      *
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
      * @return Response Returns a Response with the given Data
      * @throws BanException
      * @throws DataObjectManagerException
-     * @throws ValidationException
      * @throws LoginException
      * @throws ValidateException
+     * @throws ValidationException
+     * @throws NoSuchEntityException
      */
     public function login(Request $request, Response $response): Response
     {
@@ -204,12 +169,13 @@ class AuthController extends BaseController
     /**
      * Gets a new Ticket for the current User
      *
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
      * @return Response
-     * @throws DataObjectManagerException
      * @throws AuthenticationException
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function ticket(Request $request, Response $response): Response
     {

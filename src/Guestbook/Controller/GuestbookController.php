@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Guestbook\Controller;
@@ -10,6 +10,7 @@ namespace Ares\Guestbook\Controller;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\Guestbook\Exception\GuestbookException;
@@ -18,7 +19,6 @@ use Ares\Guestbook\Service\CreateGuestbookEntryService;
 use Ares\Guild\Entity\Guild;
 use Ares\Guild\Repository\GuildRepository;
 use Ares\User\Entity\User;
-use Ares\User\Exception\UserException;
 use Ares\User\Repository\UserRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -31,31 +31,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class GuestbookController extends BaseController
 {
     /**
-     * @var GuestbookRepository
-     */
-    private GuestbookRepository $guestbookRepository;
-
-    /**
-     * @var UserRepository
-     */
-    private UserRepository $userRepository;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var CreateGuestbookEntryService
-     */
-    private CreateGuestbookEntryService $createGuestbookEntryService;
-
-    /**
-     * @var GuildRepository
-     */
-    private GuildRepository $guildRepository;
-
-    /**
      * GuestbookController constructor.
      *
      * @param GuestbookRepository         $guestbookRepository
@@ -65,28 +40,23 @@ class GuestbookController extends BaseController
      * @param CreateGuestbookEntryService $createGuestbookEntryService
      */
     public function __construct(
-        GuestbookRepository $guestbookRepository,
-        UserRepository $userRepository,
-        GuildRepository $guildRepository,
-        ValidationService $validationService,
-        CreateGuestbookEntryService $createGuestbookEntryService
-    ) {
-        $this->guestbookRepository = $guestbookRepository;
-        $this->userRepository = $userRepository;
-        $this->guildRepository = $guildRepository;
-        $this->validationService = $validationService;
-        $this->createGuestbookEntryService = $createGuestbookEntryService;
-    }
+        private GuestbookRepository $guestbookRepository,
+        private UserRepository $userRepository,
+        private GuildRepository $guildRepository,
+        private ValidationService $validationService,
+        private CreateGuestbookEntryService $createGuestbookEntryService
+    ) {}
 
     /**
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
      * @throws DataObjectManagerException
      * @throws GuestbookException
      * @throws ValidationException
-     * @throws AuthenticationException
+     * @throws NoSuchEntityException
      */
     public function create(Request $request, Response $response): Response
     {
@@ -96,30 +66,30 @@ class GuestbookController extends BaseController
         $this->validationService->validate($parsedData, [
             'content' => 'required',
             'profile_id' => 'numeric',
-            'guild' => 'numeric'
+            'guild_id' => 'numeric'
         ]);
 
         /** @var int $profileId */
-        $profileId = $parsedData['profile_id'] ?? 0;
+        $profileId = $parsedData['profile_id'] ?? null;
 
         /** @var int $guildId */
-        $guildId = $parsedData['guild_id'] ?? 0;
+        $guildId = $parsedData['guild_id'] ?? null;
 
         /** @var User $user */
         $user = user($request);
 
         /** @var User $profile */
-        $profile = $this->userRepository->get((int) $profileId);
+        $profile = $this->userRepository->get($profileId, 'id', true);
 
         /** @var Guild $guild */
-        $guild = $this->guildRepository->get((int) $guildId);
+        $guild = $this->guildRepository->get($guildId, 'id', true);
 
         if (!$profile && !$guild) {
             throw new GuestbookException(__('The associated Entities could not be found'));
         }
 
-        $parsedData['profile_id'] = $profile->getId();
-        $parsedData['guild_id'] = $guild->getId();
+        $parsedData['profile_id'] = (!$profile) ? null : $profile->getId();
+        $parsedData['guild_id'] = (!$guild) ? null : $guild->getId();
 
         $customResponse = $this->createGuestbookEntryService
             ->execute(
@@ -154,9 +124,9 @@ class GuestbookController extends BaseController
 
         $entries = $this->guestbookRepository
             ->getPaginatedProfileEntries(
-                (int) $profileId,
-                (int) $page,
-                (int) $resultPerPage
+                $profileId,
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -187,9 +157,9 @@ class GuestbookController extends BaseController
 
         $entries = $this->guestbookRepository
             ->getPaginatedGuildEntries(
-                (int) $guildId,
-                (int) $page,
-                (int) $resultPerPage
+                $guildId,
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -213,10 +183,10 @@ class GuestbookController extends BaseController
         /** @var int $id */
         $id = $args['id'];
 
-        $deleted = $this->guestbookRepository->delete((int) $id);
+        $deleted = $this->guestbookRepository->delete($id);
 
         if (!$deleted) {
-            throw new GuestbookException(__('Guestbook Entry could not be deleted.'), 409);
+            throw new GuestbookException(__('Guestbook entry could not be deleted'), 409);
         }
 
         return $this->respond(

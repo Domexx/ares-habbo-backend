@@ -1,16 +1,16 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Room\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Room\Entity\Room;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 /**
  * Class RoomRepository
@@ -35,10 +35,10 @@ class RoomRepository extends BaseRepository
      * @param int    $page
      * @param int    $resultPerPage
      *
-     * @return LengthAwarePaginator
+     * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function searchRooms(string $term, int $page, int $resultPerPage): LengthAwarePaginator
+    public function searchRooms(string $term, int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
             ->where('name', 'LIKE', '%'.$term.'%')
@@ -51,10 +51,10 @@ class RoomRepository extends BaseRepository
      * @param int $page
      * @param int $resultPerPage
      *
-     * @return LengthAwarePaginator
+     * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function getPaginatedRoomList(int $page, int $resultPerPage): LengthAwarePaginator
+    public function getPaginatedRoomList(int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
             ->orderBy('id', 'DESC')
@@ -69,10 +69,10 @@ class RoomRepository extends BaseRepository
      * @param int $page
      * @param int $resultPerPage
      *
-     * @return LengthAwarePaginator
+     * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function getUserRoomsPaginatedList(int $ownerId, int $page, int $resultPerPage): LengthAwarePaginator
+    public function getUserRoomsPaginatedList(int $ownerId, int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
             ->where('owner_id', $ownerId)

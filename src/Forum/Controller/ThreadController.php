@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Controller;
@@ -15,6 +15,7 @@ use Ares\Forum\Service\Thread\EditThreadService;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
@@ -24,26 +25,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class ThreadController extends BaseController
 {
     /**
-     * @var ThreadRepository
-     */
-    private ThreadRepository $threadRepository;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var CreateThreadService
-     */
-    private CreateThreadService $createThreadService;
-
-    /**
-     * @var EditThreadService
-     */
-    private EditThreadService $editThreadService;
-
-    /**
      * CommentController constructor.
      *
      * @param   ThreadRepository        $threadRepository
@@ -52,26 +33,22 @@ class ThreadController extends BaseController
      * @param   ValidationService       $validationService
      */
     public function __construct(
-        ThreadRepository $threadRepository,
-        CreateThreadService $createThreadService,
-        EditThreadService $editThreadService,
-        ValidationService $validationService
-    ) {
-        $this->threadRepository    = $threadRepository;
-        $this->createThreadService = $createThreadService;
-        $this->editThreadService   = $editThreadService;
-        $this->validationService   = $validationService;
-    }
+        private ThreadRepository $threadRepository,
+        private CreateThreadService $createThreadService,
+        private EditThreadService $editThreadService,
+        private ValidationService $validationService
+    ) {}
 
     /**
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
      * @throws DataObjectManagerException
      * @throws ThreadException
      * @throws ValidationException
-     * @throws AuthenticationException
+     * @throws NoSuchEntityException
      */
     public function create(Request $request, Response $response): Response
     {
@@ -115,12 +92,12 @@ class ThreadController extends BaseController
         /** @var Thread $thread */
         $thread = $this->threadRepository
             ->getSingleThread(
-                (int) $topicId,
-                (string) $slug
+                $topicId,
+                $slug
             );
 
         if (!$thread) {
-            throw new ThreadException(__('No specific Thread found'), 404);
+            throw new ThreadException(__('No Thread was found'), 404);
         }
 
         return $this->respond(
@@ -151,9 +128,9 @@ class ThreadController extends BaseController
 
         $threads = $this->threadRepository
             ->getPaginatedThreadList(
-                (int) $topicId,
-                (int) $page,
-                (int) $resultPerPage
+                $topicId,
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -177,7 +154,7 @@ class ThreadController extends BaseController
         /** @var int $id */
         $id = $args['id'];
 
-        $deleted = $this->threadRepository->delete((int) $id);
+        $deleted = $this->threadRepository->delete($id);
 
         if (!$deleted) {
             throw new ThreadException(__('Thread could not be deleted.'), 409);

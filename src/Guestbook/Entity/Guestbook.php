@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Guestbook\Entity;
@@ -56,49 +56,49 @@ class Guestbook extends DataObject implements GuestbookInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return Guestbook
      */
-    public function setUserId(int $user_id): Guestbook
+    public function setUserId(int $userId): Guestbook
     {
-        return $this->setData(GuestbookInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(GuestbookInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
      * @return int
      */
-    public function getProfileId(): int
+    public function getProfileId(): ?int
     {
         return $this->getData(GuestbookInterface::COLUMN_PROFILE_ID);
     }
 
     /**
-     * @param int $profile_id
+     * @param int $profileId
      *
      * @return Guestbook
      */
-    public function setProfileId(int $profile_id): Guestbook
+    public function setProfileId(?int $profileId): Guestbook
     {
-        return $this->setData(GuestbookInterface::COLUMN_PROFILE_ID, $profile_id);
+        return $this->setData(GuestbookInterface::COLUMN_PROFILE_ID, $profileId);
     }
 
     /**
      * @return int
      */
-    public function getGuildId(): int
+    public function getGuildId(): ?int
     {
         return $this->getData(GuestbookInterface::COLUMN_GUILD_ID);
     }
 
     /**
-     * @param int $guild_id
+     * @param int|null $guildId
      *
      * @return Guestbook
      */
-    public function setGuildId(int $guild_id): Guestbook
+    public function setGuildId(?int $guildId): Guestbook
     {
-        return $this->setData(GuestbookInterface::COLUMN_GUILD_ID, $guild_id);
+        return $this->setData(GuestbookInterface::COLUMN_GUILD_ID, $guildId);
     }
 
     /**
@@ -164,13 +164,13 @@ class Guestbook extends DataObject implements GuestbookInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return Guestbook
      */
-    public function setCreatedAt(\DateTime $created_at): Guestbook
+    public function setCreatedAt(\DateTime $createdAt): Guestbook
     {
-        return $this->setData(GuestbookInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(GuestbookInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
@@ -182,13 +182,13 @@ class Guestbook extends DataObject implements GuestbookInterface
     }
 
     /**
-     * @param \DateTime $updated_at
+     * @param \DateTime $updatedAt
      *
      * @return Guestbook
      */
-    public function setUpdatedAt(\DateTime $updated_at): Guestbook
+    public function setUpdatedAt(\DateTime $updatedAt): Guestbook
     {
-        return $this->setData(GuestbookInterface::COLUMN_UPDATED_AT, $updated_at);
+        return $this->setData(GuestbookInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
 
     /**
@@ -203,6 +203,10 @@ class Guestbook extends DataObject implements GuestbookInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var GuestbookRepository $guestBookRepository */

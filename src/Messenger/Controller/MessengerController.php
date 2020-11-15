@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Messenger\Controller;
@@ -10,6 +10,7 @@ namespace Ares\Messenger\Controller;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Messenger\Repository\MessengerRepository;
 use Ares\User\Entity\User;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -23,30 +24,24 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class MessengerController extends BaseController
 {
     /**
-     * @var MessengerRepository
-     */
-    private MessengerRepository $messengerRepository;
-
-    /**
      * MessengerController constructor.
      *
      * @param MessengerRepository    $messengerRepository
      */
     public function __construct(
-        MessengerRepository $messengerRepository
-    ) {
-        $this->messengerRepository = $messengerRepository;
-    }
+        private MessengerRepository $messengerRepository
+    ) {}
 
     /**
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
-     * @param array $args
+     * @param array    $args
      *
      * @return Response
-     * @throws DataObjectManagerException
      * @throws AuthenticationException
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function friends(Request $request, Response $response, array $args): Response
     {
@@ -62,8 +57,8 @@ class MessengerController extends BaseController
         $friends = $this->messengerRepository
             ->getPaginatedMessengerFriends(
                 $user->getId(),
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(

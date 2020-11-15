@@ -1,13 +1,14 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Service\UserOfTheHotel;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\User\Entity\User;
 use Ares\User\Entity\UserOfTheHotel;
@@ -15,6 +16,7 @@ use Ares\User\Entity\UserSetting;
 use Ares\User\Repository\UserOfTheHotelRepository;
 use Ares\User\Repository\UserRepository;
 use Ares\User\Repository\UserSettingRepository;
+use DateTime;
 
 /**
  * Class ChangeUserOfTheHotelService
@@ -24,21 +26,6 @@ use Ares\User\Repository\UserSettingRepository;
 class ChangeUserOfTheHotelService
 {
     /**
-     * @var UserSettingRepository
-     */
-    private UserSettingRepository $userSettingRepository;
-
-    /**
-     * @var UserOfTheHotelRepository
-     */
-    private UserOfTheHotelRepository $userOfTheHotelRepository;
-
-    /**
-     * @var UserRepository
-     */
-    private UserRepository $userRepository;
-
-    /**
      * ChangeUserOfTheHotelService constructor.
      *
      * @param UserSettingRepository    $userSettingRepository
@@ -46,14 +33,10 @@ class ChangeUserOfTheHotelService
      * @param UserRepository           $userRepository
      */
     public function __construct(
-        UserSettingRepository $userSettingRepository,
-        UserOfTheHotelRepository $userOfTheHotelRepository,
-        UserRepository $userRepository
-    ) {
-        $this->userSettingRepository = $userSettingRepository;
-        $this->userOfTheHotelRepository = $userOfTheHotelRepository;
-        $this->userRepository = $userRepository;
-    }
+        private UserSettingRepository $userSettingRepository,
+        private UserOfTheHotelRepository $userOfTheHotelRepository,
+        private UserRepository $userRepository
+    ) {}
 
     /**
      * @return CustomResponseInterface
@@ -84,6 +67,7 @@ class ChangeUserOfTheHotelService
      * @return UserOfTheHotel
      *
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     private function getNewUserOfTheHotel(): UserOfTheHotel
     {
@@ -98,6 +82,6 @@ class ChangeUserOfTheHotelService
         return $newUser
             ->setUserId($userData->getId())
             ->setToTimestamp(strtotime('+1 week'))
-            ->setCreatedAt(new \DateTime());
+            ->setCreatedAt(new DateTime());
     }
 }

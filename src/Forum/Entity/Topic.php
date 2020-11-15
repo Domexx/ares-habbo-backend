@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Entity;
@@ -101,13 +101,13 @@ class Topic extends DataObject implements TopicInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return Topic
      */
-    public function setCreatedAt(\DateTime $created_at): Topic
+    public function setCreatedAt(\DateTime $createdAt): Topic
     {
-        return $this->setData(TopicInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(TopicInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
@@ -119,12 +119,12 @@ class Topic extends DataObject implements TopicInterface
     }
 
     /**
-     * @param \DateTime $updated_at
+     * @param \DateTime $updatedAt
      *
      * @return Topic
      */
-    public function setUpdatedAt(\DateTime $updated_at): Topic
+    public function setUpdatedAt(\DateTime $updatedAt): Topic
     {
-        return $this->setData(TopicInterface::COLUMN_UPDATED_AT, $updated_at);
+        return $this->setData(TopicInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
 }

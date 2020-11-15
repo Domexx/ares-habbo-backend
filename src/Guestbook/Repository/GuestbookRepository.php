@@ -1,16 +1,16 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Guestbook\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Guestbook\Entity\Guestbook;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 /**
  * Class GuestbookRepository
@@ -33,10 +33,10 @@ class GuestbookRepository extends BaseRepository
      * @param int $page
      * @param int $resultPerPage
      *
-     * @return LengthAwarePaginator
+     * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function getPaginatedProfileEntries(int $profileId, int $page, int $resultPerPage): LengthAwarePaginator
+    public function getPaginatedProfileEntries(int $profileId, int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
             ->where('profile_id', $profileId)
@@ -51,10 +51,10 @@ class GuestbookRepository extends BaseRepository
      * @param int $page
      * @param int $resultPerPage
      *
-     * @return LengthAwarePaginator
+     * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function getPaginatedGuildEntries(int $guildId, int $page, int $resultPerPage): LengthAwarePaginator
+    public function getPaginatedGuildEntries(int $guildId, int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
             ->where('guild_id', $guildId)

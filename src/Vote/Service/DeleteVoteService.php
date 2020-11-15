@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Vote\Service;
@@ -21,20 +21,13 @@ use Ares\Vote\Repository\VoteRepository;
 class DeleteVoteService
 {
     /**
-     * @var VoteRepository
-     */
-    private VoteRepository $voteRepository;
-
-    /**
      * DeleteVoteService constructor.
      *
      * @param VoteRepository $voteRepository
      */
     public function __construct(
-        VoteRepository $voteRepository
-    ) {
-        $this->voteRepository = $voteRepository;
-    }
+        private VoteRepository $voteRepository
+    ) {}
 
     /**
      * Deletes vote by given data.
@@ -50,14 +43,14 @@ class DeleteVoteService
     {
         /** @var Vote $vote */
         $vote = $this->voteRepository->getVoteForDeletion(
-            (int) $data['entity_id'],
-            (int) $data['vote_entity'],
-            (int) $data['vote_type'],
+            $data['entity_id'],
+            $data['vote_entity'],
+            $data['vote_type'],
             $userId
         );
 
         if (!$vote) {
-            throw new VoteException(__('Vote could not be found by given data.'), 404);
+            throw new VoteException(__('No Vote was found'), 404);
         }
 
         $deleted = $this->voteRepository->delete($vote->getId());

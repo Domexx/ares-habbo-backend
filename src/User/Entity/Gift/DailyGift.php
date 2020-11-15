@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Entity\Gift;
@@ -47,13 +47,13 @@ class DailyGift extends DataObject implements DailyGiftInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return DailyGift
      */
-    public function setUserId(int $user_id): DailyGift
+    public function setUserId(int $userId): DailyGift
     {
-        return $this->setData(DailyGiftInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(DailyGiftInterface::COLUMN_USER_ID, $userId);
     }
 
     /**

@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Service\Auth;
@@ -11,6 +11,7 @@ use Ares\Ban\Entity\Ban;
 use Ares\Ban\Exception\BanException;
 use Ares\Ban\Repository\BanRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Factory\DataObjectManagerFactory;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Framework\Service\TokenService;
@@ -27,26 +28,6 @@ use ReallySimpleJWT\Exception\ValidateException;
 class LoginService
 {
     /**
-     * @var UserRepository
-     */
-    private UserRepository $userRepository;
-
-    /**
-     * @var TokenService
-     */
-    private TokenService $tokenService;
-
-    /**
-     * @var BanRepository
-     */
-    private BanRepository $banRepository;
-
-    /**
-     * @var DataObjectManagerFactory
-     */
-    private DataObjectManagerFactory $dataObjectManagerFactory;
-
-    /**
      * LoginService constructor.
      *
      * @param UserRepository           $userRepository
@@ -55,16 +36,11 @@ class LoginService
      * @param DataObjectManagerFactory $dataObjectManagerFactory
      */
     public function __construct(
-        UserRepository $userRepository,
-        BanRepository $banRepository,
-        TokenService $tokenService,
-        DataObjectManagerFactory $dataObjectManagerFactory
-    ) {
-        $this->userRepository = $userRepository;
-        $this->banRepository  = $banRepository;
-        $this->tokenService   = $tokenService;
-        $this->dataObjectManagerFactory = $dataObjectManagerFactory;
-    }
+        private UserRepository $userRepository,
+        private BanRepository $banRepository,
+        private TokenService $tokenService,
+        private DataObjectManagerFactory $dataObjectManagerFactory
+    ) {}
 
     /**
      * Login user.
@@ -76,21 +52,22 @@ class LoginService
      * @throws DataObjectManagerException
      * @throws LoginException
      * @throws ValidateException
+     * @throws NoSuchEntityException
      */
     public function login(array $data): CustomResponseInterface
     {
         /** @var User $user */
-        $user = $this->userRepository->get($data['username'], 'username');
+        $user = $this->userRepository->get($data['username'], 'username', true);
 
-        if ($user === null || !password_verify($data['password'], $user->getPassword())) {
+        if (!$user || !password_verify($data['password'], $user->getPassword())) {
             throw new LoginException(__('general.failed'), 403);
         }
 
         /** @var Ban $isBanned */
-        $isBanned = $this->banRepository->get($user->getId(), 'user_id');
+        $isBanned = $this->banRepository->get($user->getId(), 'user_id', true);
 
         if ($isBanned && $isBanned->getBanExpire() > time()) {
-            throw new BanException(__('general.banned', [$isBanned->getBanReason()]), 401);
+            throw new BanException(__('You are banned because of %s', [$isBanned->getBanReason()]), 401);
         }
 
         $user->setLastLogin(time());

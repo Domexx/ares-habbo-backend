@@ -1,13 +1,14 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Vote\Service;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Framework\Model\DataObject;
 use Ares\Vote\Entity\Vote;
@@ -22,28 +23,15 @@ use Ares\Vote\Repository\VoteRepository;
 class CreateVoteService
 {
     /**
-     * @var VoteRepository
-     */
-    private VoteRepository $voteRepository;
-
-    /**
-     * @var GetVoteEntityService
-     */
-    private GetVoteEntityService $getVoteEntityService;
-
-    /**
      * CreateVoteService constructor.
      *
      * @param VoteRepository $voteRepository
      * @param GetVoteEntityService $getVoteEntityService
      */
     public function __construct(
-        VoteRepository $voteRepository,
-        GetVoteEntityService $getVoteEntityService
-    ) {
-        $this->voteRepository = $voteRepository;
-        $this->getVoteEntityService = $getVoteEntityService;
-    }
+        private VoteRepository $voteRepository,
+        private GetVoteEntityService $getVoteEntityService
+    ) {}
 
     /**
      * Create new vote with given data.
@@ -52,8 +40,9 @@ class CreateVoteService
      * @param array $data
      *
      * @return CustomResponseInterface
-     * @throws VoteException
      * @throws DataObjectManagerException
+     * @throws VoteException
+     * @throws NoSuchEntityException
      */
     public function execute(int $userId, array $data): CustomResponseInterface
     {
@@ -62,7 +51,7 @@ class CreateVoteService
         $existingVote = $this->voteRepository->getExistingVote($vote, $userId);
 
         if ($existingVote) {
-            throw new VoteException(__('User already voted for this entity.'), 422);
+            throw new VoteException(__('User already voted for this entity'), 422);
         }
 
         $entityRepository = $this->getVoteEntityService->execute($vote->getVoteEntity());
@@ -74,11 +63,7 @@ class CreateVoteService
         /** @var DataObject $entity */
         $entity = $entityRepository->get($vote->getEntityId());
 
-        if (!$entity) {
-            throw new VoteException(__('The related vote entity has no existing data.'), 404);
-        }
-
-        $vote = $this->voteRepository->save($entity);
+        $vote = $this->voteRepository->save($vote);
 
         return response()
             ->setData($vote);
@@ -87,12 +72,12 @@ class CreateVoteService
     /**
      * Return new vote.
      *
-     * @param int   $user_id
+     * @param int   $userId
      * @param array $data
      *
      * @return Vote
      */
-    private function getNewVote(int $user_id, array $data): Vote
+    private function getNewVote(int $userId, array $data): Vote
     {
         $vote = new Vote();
 
@@ -100,6 +85,6 @@ class CreateVoteService
             ->setEntityId($data['entity_id'])
             ->setVoteEntity($data['vote_entity'])
             ->setVoteType($data['vote_type'])
-            ->setUserId($user_id);
+            ->setUserId($userId);
     }
 }

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Payment\Entity;
@@ -56,13 +56,13 @@ class Payment extends DataObject implements PaymentInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return Payment
      */
-    public function setUserId(int $user_id): Payment
+    public function setUserId(int $userId): Payment
     {
-        return $this->setData(PaymentInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(PaymentInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -131,6 +131,10 @@ class Payment extends DataObject implements PaymentInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var PaymentRepository $paymentRepository **/

@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Permission\Controller;
@@ -21,20 +21,13 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class PermissionController extends BaseController
 {
     /**
-     * @var PermissionRepository
-     */
-    private PermissionRepository $permissionRepository;
-
-    /**
      * PermissionController constructor.
      *
      * @param PermissionRepository   $permissionRepository
      */
     public function __construct(
-        PermissionRepository $permissionRepository
-    ) {
-        $this->permissionRepository = $permissionRepository;
-    }
+        private PermissionRepository $permissionRepository
+    ) {}
 
     /**
      * @param Request     $request

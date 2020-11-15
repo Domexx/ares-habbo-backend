@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Controller;
@@ -15,11 +15,11 @@ use Ares\Forum\Service\Comment\EditCommentService;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
-use Ares\User\Repository\UserRepository;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -31,26 +31,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class CommentController extends BaseController
 {
     /**
-     * @var CommentRepository
-     */
-    private CommentRepository $commentRepository;
-
-    /**
-     * @var CreateCommentService
-     */
-    private CreateCommentService $createCommentService;
-
-    /**
-     * @var EditCommentService
-     */
-    private EditCommentService $editCommentService;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
      * CommentController constructor.
      *
      * @param   CommentRepository       $commentRepository
@@ -59,26 +39,21 @@ class CommentController extends BaseController
      * @param   ValidationService       $validationService
      */
     public function __construct(
-        CommentRepository $commentRepository,
-        CreateCommentService $createCommentService,
-        EditCommentService $editCommentService,
-        ValidationService $validationService
-    ) {
-        $this->commentRepository    = $commentRepository;
-        $this->createCommentService = $createCommentService;
-        $this->editCommentService   = $editCommentService;
-        $this->validationService    = $validationService;
-    }
+        private CommentRepository $commentRepository,
+        private CreateCommentService $createCommentService,
+        private EditCommentService $editCommentService,
+        private ValidationService $validationService
+    ) {}
 
     /**
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
      * @return Response
-     * @throws CommentException
+     * @throws AuthenticationException
      * @throws DataObjectManagerException
      * @throws ValidationException
-     * @throws AuthenticationException
+     * @throws NoSuchEntityException
      */
     public function create(Request $request, Response $response): Response
     {
@@ -106,8 +81,8 @@ class CommentController extends BaseController
      * @param Response $response
      *
      * @return Response
-     * @throws CommentException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      * @throws ValidationException
      */
     public function edit(Request $request, Response $response): Response
@@ -149,12 +124,12 @@ class CommentController extends BaseController
         /** @var int $threadId */
         $threadId = $args['thread_id'];
 
-        /** @var LengthAwarePaginator $comments */
+        /** @var PaginatedCollection $comments */
         $comments = $this->commentRepository
             ->getPaginatedThreadCommentList(
-                (int) $threadId,
-                (int) $page,
-                (int) $resultPerPage
+                $threadId,
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -178,10 +153,10 @@ class CommentController extends BaseController
         /** @var int $id */
         $id = $args['id'];
 
-        $deleted = $this->commentRepository->delete((int) $id);
+        $deleted = $this->commentRepository->delete($id);
 
         if (!$deleted) {
-            throw new CommentException(__('Comment could not be deleted.'), 409);
+            throw new CommentException(__('Comment could not be deleted'), 409);
         }
 
         return $this->respond(

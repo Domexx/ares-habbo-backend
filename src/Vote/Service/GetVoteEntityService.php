@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Vote\Service;
@@ -25,36 +25,6 @@ use Ares\Vote\Interfaces\VoteEntityInterface;
 class GetVoteEntityService
 {
     /**
-     * @var ArticleRepository
-     */
-    private ArticleRepository $articleRepository;
-
-    /**
-     * @var CommentRepository
-     */
-    private CommentRepository $commentRepository;
-
-    /**
-     * @var ThreadRepository
-     */
-    private ThreadRepository $threadRepository;
-
-    /**
-     * @var ThreadCommentRepository
-     */
-    private ThreadCommentRepository $threadCommentRepository;
-
-    /**
-     * @var PhotoRepository
-     */
-    private PhotoRepository $photoRepository;
-
-    /**
-     * @var GuestbookRepository
-     */
-    private GuestbookRepository $guestbookRepository;
-
-    /**
      * GetVoteEntityService constructor.
      *
      * @param ArticleRepository       $articleRepository
@@ -65,27 +35,20 @@ class GetVoteEntityService
      * @param PhotoRepository         $photoRepository
      */
     public function __construct(
-        ArticleRepository $articleRepository,
-        CommentRepository $commentRepository,
-        ThreadRepository $threadRepository,
-        ThreadCommentRepository $threadCommentRepository,
-        GuestbookRepository $guestbookRepository,
-        PhotoRepository $photoRepository
-    ) {
-        $this->articleRepository = $articleRepository;
-        $this->commentRepository = $commentRepository;
-        $this->threadRepository = $threadRepository;
-        $this->threadCommentRepository = $threadCommentRepository;
-        $this->guestbookRepository = $guestbookRepository;
-        $this->photoRepository = $photoRepository;
-    }
+        private ArticleRepository $articleRepository,
+        private CommentRepository $commentRepository,
+        private ThreadRepository $threadRepository,
+        private ThreadCommentRepository $threadCommentRepository,
+        private GuestbookRepository $guestbookRepository,
+        private PhotoRepository $photoRepository
+    ) {}
 
     /**
      * Takes id and entity and loads specific entity.
      *
      * @param int $entity
      *
-     * @return BaseRepository|null
+     * @return BaseRepository
      * @throws VoteException
      */
     public function execute(int $entity): BaseRepository
@@ -104,7 +67,7 @@ class GetVoteEntityService
             case $entity === VoteEntityInterface::PHOTO_VOTE_ENTITY:
                 return $this->photoRepository;
             default:
-                throw new VoteException(__('Entity with id %s does not exist.', [$entity]), 404);
+                throw new VoteException(__('Entity with id %s does not exist', [$entity]), 404);
         }
     }
 }

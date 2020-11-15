@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Entity;
@@ -55,13 +55,13 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return UserSetting
      */
-    public function setUserId(int $user_id): UserSetting
+    public function setUserId(int $userId): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(UserSettingInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -73,13 +73,13 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @param int $achievement_score
+     * @param int $achievementScore
      *
      * @return UserSetting
      */
-    public function setAchievementScore(int $achievement_score): UserSetting
+    public function setAchievementScore(int $achievementScore): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_ACHIEVEMENT_SCORE, $achievement_score);
+        return $this->setData(UserSettingInterface::COLUMN_ACHIEVEMENT_SCORE, $achievementScore);
     }
 
     /**
@@ -91,13 +91,13 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @param int $can_change_name
+     * @param int $canChangeName
      *
      * @return UserSetting
      */
-    public function setCanChangeName(int $can_change_name): UserSetting
+    public function setCanChangeName(int $canChangeName): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_CAN_CHANGE_NAME, $can_change_name);
+        return $this->setData(UserSettingInterface::COLUMN_CAN_CHANGE_NAME, $canChangeName);
     }
 
     /**
@@ -109,13 +109,13 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @param int $block_following
+     * @param int $blockFollowing
      *
      * @return UserSetting
      */
-    public function setBlockFollowing(int $block_following): UserSetting
+    public function setBlockFollowing(int $blockFollowing): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_BLOCK_FOLLOWING, $block_following);
+        return $this->setData(UserSettingInterface::COLUMN_BLOCK_FOLLOWING, $blockFollowing);
     }
 
     /**
@@ -127,13 +127,13 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @param int $block_friend_requests
+     * @param int $blockFriendRequests
      *
      * @return UserSetting
      */
-    public function setBlockFriendRequests(int $block_friend_requests): UserSetting
+    public function setBlockFriendRequests(int $blockFriendRequests): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_BLOCK_FRIENDREQUESTS, $block_friend_requests);
+        return $this->setData(UserSettingInterface::COLUMN_BLOCK_FRIENDREQUESTS, $blockFriendRequests);
     }
 
     /**
@@ -145,13 +145,13 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @param int $block_room_invites
+     * @param int $blockRoomInvites
      *
      * @return UserSetting
      */
-    public function setBlockRoomInvites(int $block_room_invites): UserSetting
+    public function setBlockRoomInvites(int $blockRoomInvites): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_BLOCK_ROOMINVITES, $block_room_invites);
+        return $this->setData(UserSettingInterface::COLUMN_BLOCK_ROOMINVITES, $blockRoomInvites);
     }
 
     /**
@@ -163,13 +163,13 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @param int $block_camera_follow
+     * @param int $blockCameraFollow
      *
      * @return UserSetting
      */
-    public function setBlockCameraFollow(int $block_camera_follow): UserSetting
+    public function setBlockCameraFollow(int $blockCameraFollow): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_BLOCK_CAMERA_FOLLOW, $block_camera_follow);
+        return $this->setData(UserSettingInterface::COLUMN_BLOCK_CAMERA_FOLLOW, $blockCameraFollow);
     }
 
     /**
@@ -181,13 +181,13 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @param int $online_time
+     * @param int $onlineTime
      *
      * @return UserSetting
      */
-    public function setOnlineTime(int $online_time): UserSetting
+    public function setOnlineTime(int $onlineTime): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_ONLINE_TIME, $online_time);
+        return $this->setData(UserSettingInterface::COLUMN_ONLINE_TIME, $onlineTime);
     }
 
     /**
@@ -235,13 +235,13 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @param int $ignore_pets
+     * @param int $ignorePets
      *
      * @return UserSetting
      */
-    public function setIgnorePets(int $ignore_pets): UserSetting
+    public function setIgnorePets(int $ignorePets): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_IGNORE_PETS, $ignore_pets);
+        return $this->setData(UserSettingInterface::COLUMN_IGNORE_PETS, $ignorePets);
     }
 
     /**
@@ -255,6 +255,10 @@ class UserSetting extends DataObject implements UserSettingInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var UserSettingRepository $userSettingRepository */

@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Service\Settings;
@@ -21,20 +21,13 @@ use Ares\User\Repository\UserRepository;
 class ChangePasswordService
 {
     /**
-     * @var UserRepository
-     */
-    private UserRepository $userRepository;
-
-    /**
      * ChangePasswordService constructor.
      *
      * @param UserRepository $userRepository
      */
     public function __construct(
-        UserRepository $userRepository
-    ) {
-        $this->userRepository = $userRepository;
-    }
+        private UserRepository $userRepository
+    ) {}
 
     /**
      * Changes user password.
@@ -57,11 +50,11 @@ class ChangePasswordService
         );
 
         if (!password_verify($oldPassword, $passwordHashed)) {
-            throw new UserSettingsException(__('Given old password does not match the current password.'));
+            throw new UserSettingsException(__('Given old password does not match the current password'));
         }
 
         if (password_verify($password, $currentPassword)) {
-            throw new UserSettingsException(__('Given password should be a different password than the current.'));
+            throw new UserSettingsException(__('Given password should be a different password than the current'));
         }
 
         /** @var User $user */

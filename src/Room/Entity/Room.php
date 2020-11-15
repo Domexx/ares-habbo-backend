@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Room\Entity;
@@ -59,13 +59,13 @@ class Room extends DataObject implements RoomInterface
     }
 
     /**
-     * @param int $owner_id
+     * @param int $ownerId
      *
      * @return Room
      */
-    public function setOwnerId(int $owner_id): Room
+    public function setOwnerId(int $ownerId): Room
     {
-        return $this->setData(RoomInterface::COLUMN_OWNER_ID, $owner_id);
+        return $this->setData(RoomInterface::COLUMN_OWNER_ID, $ownerId);
     }
 
     /**
@@ -149,13 +149,13 @@ class Room extends DataObject implements RoomInterface
     }
 
     /**
-     * @param int $users_max
+     * @param int $usersMax
      *
      * @return Room
      */
-    public function setUsersMax(int $users_max): Room
+    public function setUsersMax(int $usersMax): Room
     {
-        return $this->setData(RoomInterface::COLUMN_USERS_MAX, $users_max);
+        return $this->setData(RoomInterface::COLUMN_USERS_MAX, $usersMax);
     }
 
     /**
@@ -167,13 +167,13 @@ class Room extends DataObject implements RoomInterface
     }
 
     /**
-     * @param int $guild_id
+     * @param int $guildId
      *
      * @return Room
      */
-    public function setGuildId(int $guild_id): Room
+    public function setGuildId(int $guildId): Room
     {
-        return $this->setData(RoomInterface::COLUMN_GUILD_ID, $guild_id);
+        return $this->setData(RoomInterface::COLUMN_GUILD_ID, $guildId);
     }
 
     /**
@@ -206,6 +206,10 @@ class Room extends DataObject implements RoomInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var RoomRepository $roomRepository */
@@ -251,6 +255,10 @@ class Room extends DataObject implements RoomInterface
 
         if ($guild) {
             return $guild;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var RoomRepository $roomRepository */

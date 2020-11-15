@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Entity;
@@ -51,13 +51,13 @@ class Thread extends DataObject implements ThreadInterface
     }
 
     /**
-     * @param int $topic_id
+     * @param int $topicId
      *
      * @return Thread
      */
-    public function setTopicId(int $topic_id): Thread
+    public function setTopicId(int $topicId): Thread
     {
-        return $this->setData(ThreadInterface::COLUMN_TOPIC_ID, $topic_id);
+        return $this->setData(ThreadInterface::COLUMN_TOPIC_ID, $topicId);
     }
 
     /**
@@ -69,13 +69,13 @@ class Thread extends DataObject implements ThreadInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return Thread
      */
-    public function setUserId(int $user_id): Thread
+    public function setUserId(int $userId): Thread
     {
-        return $this->setData(ThreadInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(ThreadInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -195,13 +195,13 @@ class Thread extends DataObject implements ThreadInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return Thread
      */
-    public function setCreatedAt(\DateTime $created_at): Thread
+    public function setCreatedAt(\DateTime $createdAt): Thread
     {
-        return $this->setData(ThreadInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(ThreadInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
@@ -213,13 +213,13 @@ class Thread extends DataObject implements ThreadInterface
     }
 
     /**
-     * @param \DateTime $updated_at
+     * @param \DateTime $updatedAt
      *
      * @return Thread
      */
-    public function setUpdatedAt(\DateTime $updated_at): Thread
+    public function setUpdatedAt(\DateTime $updatedAt): Thread
     {
-        return $this->setData(ThreadInterface::COLUMN_UPDATED_AT, $updated_at);
+        return $this->setData(ThreadInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
 
     /**
@@ -234,6 +234,10 @@ class Thread extends DataObject implements ThreadInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var ThreadRepository $threadRepository */

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Entity;
@@ -101,13 +101,13 @@ class Role extends DataObject implements RoleInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return Role
      */
-    public function setCreatedAt(\DateTime $created_at): Role
+    public function setCreatedAt(\DateTime $createdAt): Role
     {
-        return $this->setData(RoleInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(RoleInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
@@ -119,12 +119,12 @@ class Role extends DataObject implements RoleInterface
     }
 
     /**
-     * @param \DateTime $updated_at
+     * @param \DateTime $updatedAt
      *
      * @return Role
      */
-    public function setUpdatedAt(\DateTime $updated_at): Role
+    public function setUpdatedAt(\DateTime $updatedAt): Role
     {
-        return $this->setData(RoleInterface::COLUMN_UPDATED_AT, $updated_at);
+        return $this->setData(RoleInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
 }

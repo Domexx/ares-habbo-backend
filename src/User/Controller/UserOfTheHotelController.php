@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Controller;
@@ -21,20 +21,13 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class UserOfTheHotelController extends BaseController
 {
     /**
-     * @var ChangeUserOfTheHotelService
-     */
-    private ChangeUserOfTheHotelService $changeUserOfTheHotelService;
-
-    /**
      * UserOfTheWeekController constructor.
      *
      * @param ChangeUserOfTheHotelService $changeUserOfTheHotelService
      */
     public function __construct(
-        ChangeUserOfTheHotelService $changeUserOfTheHotelService
-    ) {
-        $this->changeUserOfTheHotelService = $changeUserOfTheHotelService;
-    }
+        private ChangeUserOfTheHotelService $changeUserOfTheHotelService
+    ) {}
 
     /**
      * @param Request  $request

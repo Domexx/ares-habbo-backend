@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Entity;
@@ -101,13 +101,13 @@ class Permission extends DataObject implements PermissionInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return Permission
      */
-    public function setCreatedAt(\DateTime $created_at): Permission
+    public function setCreatedAt(\DateTime $createdAt): Permission
     {
-        return $this->setData(PermissionInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(PermissionInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
@@ -119,12 +119,12 @@ class Permission extends DataObject implements PermissionInterface
     }
 
     /**
-     * @param \DateTime $updated_at
+     * @param \DateTime $updatedAt
      *
      * @return Permission
      */
-    public function setUpdatedAt(\DateTime $updated_at): Permission
+    public function setUpdatedAt(\DateTime $updatedAt): Permission
     {
-        return $this->setData(PermissionInterface::COLUMN_UPDATED_AT, $updated_at);
+        return $this->setData(PermissionInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
 }

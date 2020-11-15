@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Repository;
@@ -30,18 +30,14 @@ class RoleHierarchyRepository extends BaseRepository
     /**
      * @param array $parentIds
      *
-     * @return array
-     * @throws QueryException
+     * @return array|null
      */
-    private function getChildIds(array $parentIds): array
+    private function getChildIds(array $parentIds): ?array
     {
-        $searchCriteria = $this
-            ->getDataObjectManager()
+        $searchCriteria = $this->getDataObjectManager()
             ->whereIn('parent_role_id', $parentIds);
 
-        $childRoleIds = $this->getList($searchCriteria)->toArray();
-
-        return array_keys($childRoleIds);
+        return $this->getList($searchCriteria)->get('child_role_id');
     }
 
     /**
@@ -56,6 +52,11 @@ class RoleHierarchyRepository extends BaseRepository
 
         while (count($parentIds) > 0) {
             $parentIds = $this->getChildIds($parentIds);
+
+            if (!$parentIds) {
+                break;
+            }
+
             $allChildIds = array_merge($allChildIds, $parentIds);
         }
 
@@ -80,7 +81,7 @@ class RoleHierarchyRepository extends BaseRepository
             }
 
             foreach ($childIds as $childId) {
-                if ($this->hasChildRoleId($childId, $findingChildId) === true) {
+                if ($this->hasChildRoleId($childId, $findingChildId)) {
                     return true;
                 }
             }

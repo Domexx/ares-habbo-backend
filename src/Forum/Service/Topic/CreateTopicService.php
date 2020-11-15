@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Service\Topic;
@@ -11,8 +11,10 @@ use Ares\Forum\Entity\Topic;
 use Ares\Forum\Exception\TopicException;
 use Ares\Forum\Repository\TopicRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Cocur\Slugify\Slugify;
+use DateTime;
 
 /**
  * Class CreateTopicService
@@ -22,28 +24,15 @@ use Cocur\Slugify\Slugify;
 class CreateTopicService
 {
     /**
-     * @var TopicRepository
-     */
-    private TopicRepository $topicRepository;
-
-    /**
-     * @var Slugify
-     */
-    private Slugify $slug;
-
-    /**
      * CreateTopicService constructor.
      *
      * @param TopicRepository $topicRepository
      * @param Slugify         $slug
      */
     public function __construct(
-        TopicRepository $topicRepository,
-        Slugify $slug
-    ) {
-        $this->topicRepository = $topicRepository;
-        $this->slug = $slug;
-    }
+        private TopicRepository $topicRepository,
+        private Slugify $slug
+    ) {}
 
     /**
      * @param array $data
@@ -51,16 +40,17 @@ class CreateTopicService
      * @return CustomResponseInterface
      * @throws TopicException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
-    public function execute(array $data)
+    public function execute(array $data): CustomResponseInterface
     {
         $topic = $this->getNewTopic($data);
 
         /** @var Topic $existingTopic */
-        $existingTopic = $this->topicRepository->get($topic->getTitle(), 'title');
+        $existingTopic = $this->topicRepository->get($topic->getTitle(), 'title', true);
 
         if ($existingTopic) {
-            throw new TopicException(__('There is already a Topic with that title'));
+            throw new TopicException(__('Topic with the title %s already exists', [$existingTopic->getTitle()]));
         }
 
         /** @var Topic $topic */
@@ -82,6 +72,7 @@ class CreateTopicService
         return $topic
             ->setTitle($data['title'])
             ->setSlug($this->slug->slugify($data['title']))
-            ->setDescription($data['description']);
+            ->setDescription($data['description'])
+            ->setCreatedAt(new DateTime());
     }
 }

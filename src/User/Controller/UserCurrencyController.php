@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Controller;
@@ -23,28 +23,15 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class UserCurrencyController extends BaseController
 {
     /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var UpdateCurrencyService
-     */
-    private UpdateCurrencyService $updateCurrencyService;
-
-    /**
      * UserCurrencyController constructor.
      *
      * @param   ValidationService      $validationService
      * @param   UpdateCurrencyService  $updateCurrencyService
      */
     public function __construct(
-        ValidationService $validationService,
-        UpdateCurrencyService $updateCurrencyService
-    ) {
-        $this->validationService     = $validationService;
-        $this->updateCurrencyService = $updateCurrencyService;
-    }
+        private ValidationService $validationService,
+        private UpdateCurrencyService $updateCurrencyService
+    ) {}
 
     /**
      * Updates user currency by given data.
@@ -56,7 +43,7 @@ class UserCurrencyController extends BaseController
      * @throws UserCurrencyException
      * @throws ValidationException
      */
-    public function update(Request $request, Response $response)
+    public function update(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -68,9 +55,9 @@ class UserCurrencyController extends BaseController
         ]);
 
         $this->updateCurrencyService->execute(
-            (int) $parsedData['user_id'],
-            (int) $parsedData['type'],
-            (int) $parsedData['amount']
+            $parsedData['user_id'],
+            $parsedData['type'],
+            $parsedData['amount']
         );
 
         return $this->respond(

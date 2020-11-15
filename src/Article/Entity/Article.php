@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Article\Entity;
@@ -138,7 +138,7 @@ class Article extends DataObject implements ArticleInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     public function getAuthorId(): ?int
     {
@@ -146,13 +146,13 @@ class Article extends DataObject implements ArticleInterface
     }
 
     /**
-     * @param int $author_id
+     * @param int $authorId
      *
      * @return Article
      */
-    public function setAuthorId(int $author_id): Article
+    public function setAuthorId(int $authorId): Article
     {
-        return $this->setData(ArticleInterface::COLUMN_AUTHOR_ID, $author_id);
+        return $this->setData(ArticleInterface::COLUMN_AUTHOR_ID, $authorId);
     }
 
     /**
@@ -236,13 +236,13 @@ class Article extends DataObject implements ArticleInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return Article
      */
-    public function setCreatedAt(\DateTime $created_at): Article
+    public function setCreatedAt(\DateTime $createdAt): Article
     {
-        return $this->setData(ArticleInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(ArticleInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
@@ -254,13 +254,13 @@ class Article extends DataObject implements ArticleInterface
     }
 
     /**
-     * @param \DateTime $updated_at
+     * @param \DateTime $updatedAt
      *
      * @return Article
      */
-    public function setUpdatedAt(\DateTime $updated_at): Article
+    public function setUpdatedAt(\DateTime $updatedAt): Article
     {
-        return $this->setData(ArticleInterface::COLUMN_UPDATED_AT, $updated_at);
+        return $this->setData(ArticleInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
 
     /**
@@ -275,6 +275,10 @@ class Article extends DataObject implements ArticleInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var ArticleRepository $articleRepository */

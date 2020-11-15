@@ -1,22 +1,21 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Service\Settings;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
-use Ares\Rcon\Exception\RconException;
 use Ares\Rcon\Service\ExecuteRconCommandService;
-use Ares\Role\Exception\RoleException;
 use Ares\User\Entity\User;
 use Ares\User\Entity\UserSetting;
 use Ares\User\Exception\UserSettingsException;
 use Ares\User\Repository\UserSettingRepository;
-use JsonException;
+use Exception;
 
 /**
  * Class ChangeGeneralSettingsService
@@ -26,28 +25,15 @@ use JsonException;
 class ChangeGeneralSettingsService
 {
     /**
-     * @var UserSettingRepository
-     */
-    private UserSettingRepository $userSettingRepository;
-
-    /**
-     * @var ExecuteRconCommandService
-     */
-    private ExecuteRconCommandService $executeRconCommandService;
-
-    /**
      * ChangeGeneralSettingsService constructor.
      *
      * @param UserSettingRepository     $userSettingRepository
      * @param ExecuteRconCommandService $executeRconCommandService
      */
     public function __construct(
-        UserSettingRepository $userSettingRepository,
-        ExecuteRconCommandService $executeRconCommandService
-    ) {
-        $this->userSettingRepository = $userSettingRepository;
-        $this->executeRconCommandService = $executeRconCommandService;
-    }
+        private UserSettingRepository $userSettingRepository,
+        private ExecuteRconCommandService $executeRconCommandService
+    ) {}
 
     /**
      * Changes user general settings by given user.
@@ -58,36 +44,38 @@ class ChangeGeneralSettingsService
      * @return CustomResponseInterface
      * @throws DataObjectManagerException
      * @throws UserSettingsException
-     * @throws RconException
-     * @throws RoleException
-     * @throws JsonException
+     * @throws NoSuchEntityException
      */
     public function execute(User $user, array $data): CustomResponseInterface
     {
         /** @var UserSetting $userSetting */
         $userSetting = $this->userSettingRepository->get($user->getId(), 'user_id');
 
-        if (!$userSetting) {
-            throw new UserSettingsException(__('Settings for given user does not exist.'));
-        }
-
         /** @var UserSetting $userSetting */
         $userSetting = $this->userSettingRepository->save($this->getUpdatedUserSettings($userSetting, $data));
 
-        $this->executeRconCommandService->execute(
-            $user->getId(),
-            [
-                'command' => 'updateuser',
-                'params' => [
-                    'user_id' => $user->getId(),
-                    'block_following' => $userSetting->getBlockFollowing(),
-                    'block_friendrequests' => $userSetting->getBlockFriendRequests(),
-                    'block_roominvites' => $userSetting->getBlockRoomInvites(),
-                    'block_camera_follow' => $userSetting->getBlockCameraFollow()
-                ]
-            ],
-            true
-        );
+        try {
+            $this->executeRconCommandService->execute(
+                $user->getId(),
+                [
+                    'command' => 'updateuser',
+                    'params' => [
+                        'user_id' => $user->getId(),
+                        'block_following' => $userSetting->getBlockFollowing(),
+                        'block_friendrequests' => $userSetting->getBlockFriendRequests(),
+                        'block_roominvites' => $userSetting->getBlockRoomInvites(),
+                        'block_camera_follow' => $userSetting->getBlockCameraFollow()
+                    ]
+                ],
+                true
+            );
+        } catch (Exception $exception) {
+            throw new UserSettingsException(
+                $exception->getMessage(),
+                500,
+                $exception
+            );
+        }
 
         return response()
             ->setData($userSetting);
@@ -103,12 +91,12 @@ class ChangeGeneralSettingsService
     private function getUpdatedUserSettings(UserSetting $userSetting, array $data): UserSetting
     {
         return $userSetting
-            ->setBlockFollowing((string) $data['block_following'])
-            ->setBlockFriendrequests((string) $data['block_friendrequests'])
-            ->setBlockRoominvites((string) $data['block_roominvites'])
-            ->setBlockCameraFollow((string) $data['block_camera_follow'])
-            ->setBlockAlerts((string) $data['block_alerts'])
-            ->setIgnoreBots((string) $data['ignore_bots'])
-            ->setIgnorePets((string) $data['ignore_pets']);
+            ->setBlockFollowing($data['block_following'])
+            ->setBlockFriendrequests($data['block_friendrequests'])
+            ->setBlockRoominvites($data['block_roominvites'])
+            ->setBlockCameraFollow($data['block_camera_follow'])
+            ->setBlockAlerts($data['block_alerts'])
+            ->setIgnoreBots($data['ignore_bots'])
+            ->setIgnorePets($data['ignore_pets']);
     }
 }

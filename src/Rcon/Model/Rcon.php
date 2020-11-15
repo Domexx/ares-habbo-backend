@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Rcon\Model;
@@ -23,20 +23,13 @@ class Rcon
     private $socket;
 
     /**
-     * @var RconHelper
-     */
-    private RconHelper $rconHelper;
-
-    /**
      * Rcon constructor.
      *
      * @param RconHelper $rconHelper
      */
     public function __construct(
-        RconHelper $rconHelper
-    ) {
-        $this->rconHelper = $rconHelper;
-    }
+        private RconHelper $rconHelper
+    ) {}
 
     /**
      * @return RconHelper

@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Vote\Controller;
@@ -10,6 +10,7 @@ namespace Ares\Vote\Controller;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
@@ -30,36 +31,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class VoteController extends BaseController
 {
     /**
-     * @var VoteRepository
-     */
-    private VoteRepository $voteRepository;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var CreateVoteService
-     */
-    private CreateVoteService $createVoteService;
-
-    /**
-     * @var DeleteVoteService
-     */
-    private DeleteVoteService $deleteVoteService;
-
-    /**
-     * @var IncrementVoteService
-     */
-    private IncrementVoteService $incrementVoteService;
-
-    /**
-     * @var DecrementVoteService
-     */
-    private DecrementVoteService $decrementVoteService;
-
-    /**
      * VoteController constructor.
      *
      * @param   VoteRepository          $voteRepository
@@ -70,32 +41,26 @@ class VoteController extends BaseController
      * @param   DecrementVoteService    $decrementVoteService
      */
     public function __construct(
-        VoteRepository $voteRepository,
-        ValidationService $validationService,
-        CreateVoteService $createVoteService,
-        DeleteVoteService $deleteVoteService,
-        IncrementVoteService $incrementVoteService,
-        DecrementVoteService $decrementVoteService
-    ) {
-        $this->voteRepository         = $voteRepository;
-        $this->validationService      = $validationService;
-        $this->createVoteService      = $createVoteService;
-        $this->deleteVoteService      = $deleteVoteService;
-        $this->incrementVoteService   = $incrementVoteService;
-        $this->decrementVoteService   = $decrementVoteService;
-    }
+        private VoteRepository $voteRepository,
+        private ValidationService $validationService,
+        private CreateVoteService $createVoteService,
+        private DeleteVoteService $deleteVoteService,
+        private IncrementVoteService $incrementVoteService,
+        private DecrementVoteService $decrementVoteService
+    ) {}
 
     /**
      * Create new vote.
      *
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
      * @throws DataObjectManagerException
      * @throws ValidationException
      * @throws VoteException
-     * @throws AuthenticationException
+     * @throws NoSuchEntityException
      */
     public function create(Request $request, Response $response): Response
     {
@@ -126,7 +91,7 @@ class VoteController extends BaseController
 
         if (!$result) {
             $this->deleteVoteService->execute($user->getId(), $parsedData);
-            throw new VoteException(__('The entity could not be incremented.'), 500);
+            throw new VoteException(__('The entity could not be incremented'), 500);
         }
 
         return $this->respond(
@@ -138,13 +103,14 @@ class VoteController extends BaseController
     /**
      * Returns total count of likes/dislikes for given entity.
      *
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
      * @return Response
      * @throws AuthenticationException
+     * @throws NoSuchEntityException
      */
-    public function getTotalVotes(Request $request, Response $response)
+    public function getTotalVotes(Request $request, Response $response): Response
     {
         /** @var User $user */
         $user = user($request);
@@ -161,12 +127,13 @@ class VoteController extends BaseController
     /**
      * Delete vote.
      *
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
      * @return Response
      * @throws AuthenticationException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      * @throws ValidationException
      * @throws VoteException
      */
@@ -187,7 +154,7 @@ class VoteController extends BaseController
         $customResponse = $this->deleteVoteService->execute($user->getId(), $parsedData);
 
         if (!$customResponse->getData()) {
-            throw new VoteException(__('Vote could not be deleted.'), 409);
+            throw new VoteException(__('Vote could not be deleted'), 409);
         }
 
         $result = $this->decrementVoteService
@@ -199,7 +166,7 @@ class VoteController extends BaseController
 
         if (!$result) {
             $this->createVoteService->execute($user->getId(), $parsedData);
-            throw new VoteException(__('The entity could not be incremented.'), 500);
+            throw new VoteException(__('The entity could not be incremented'), 500);
         }
 
         return $this->respond(

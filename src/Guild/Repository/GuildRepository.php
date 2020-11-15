@@ -1,16 +1,16 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Guild\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Guild\Entity\Guild;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 /**
  * Class GuildRepository
@@ -33,10 +33,10 @@ class GuildRepository extends BaseRepository
      * @param int    $page
      * @param int    $resultPerPage
      *
-     * @return LengthAwarePaginator
+     * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function searchGuilds(string $term, int $page, int $resultPerPage): LengthAwarePaginator
+    public function searchGuilds(string $term, int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
             ->select([
@@ -71,7 +71,8 @@ class GuildRepository extends BaseRepository
                 '=',
                 'guilds_members.guild_id'
             )->groupBy('guilds.id')
-            ->orderBy('member_count', 'DESC');
+            ->orderBy('member_count', 'DESC')
+            ->limit(1);
 
         return $this->getList($searchCriteria)->first();
     }
@@ -80,10 +81,10 @@ class GuildRepository extends BaseRepository
      * @param int $page
      * @param int $resultPerPage
      *
-     * @return LengthAwarePaginator
+     * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function getPaginatedGuildList(int $page, int $resultPerPage): LengthAwarePaginator
+    public function getPaginatedGuildList(int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
             ->select([
@@ -103,9 +104,9 @@ class GuildRepository extends BaseRepository
     }
 
     /**
-     * @param int $id
+     * @param int  $id
      *
-     * @return mixed
+     * @return Guild|null
      * @throws DataObjectManagerException
      */
     public function getGuild(int $id): ?Guild
@@ -123,7 +124,8 @@ class GuildRepository extends BaseRepository
                 'guilds_members.guild_id'
             )->groupBy('guilds.id')
             ->addRelation('user')
-            ->addRelation('room');
+            ->addRelation('room')
+            ->limit(1);
 
         return $this->getList($searchCriteria)->first();
     }

@@ -1,17 +1,18 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Service\Comment;
 
 use Ares\Forum\Entity\Comment;
-use Ares\Forum\Exception\CommentException;
 use Ares\Forum\Repository\CommentRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use DateTime;
 
 /**
  * Class EditCommentService
@@ -21,27 +22,20 @@ use Ares\Framework\Interfaces\CustomResponseInterface;
 class EditCommentService
 {
     /**
-     * @var CommentRepository
-     */
-    private CommentRepository $commentRepository;
-
-    /**
      * EditCommentService constructor.
      *
      * @param   CommentRepository  $commentRepository
      */
     public function __construct(
-        CommentRepository $commentRepository
-    ) {
-        $this->commentRepository = $commentRepository;
-    }
+        private CommentRepository $commentRepository
+    ) {}
 
     /**
      * @param array $data
      *
      * @return CustomResponseInterface
-     * @throws CommentException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function execute(array $data): CustomResponseInterface
     {
@@ -52,15 +46,12 @@ class EditCommentService
         $content = $data['content'];
 
         /** @var Comment $comment */
-        $comment = $this->commentRepository->get((int) $comment_id);
-
-        if (!$comment) {
-            throw new CommentException(__('Comment not found'));
-        }
+        $comment = $this->commentRepository->get($comment_id);
 
         $comment
             ->setContent($content)
-            ->setIsEdited(1);
+            ->setIsEdited(1)
+            ->setUpdatedAt(new DateTime());
 
         /** @var Comment $comment */
         $comment = $this->commentRepository->save($comment);

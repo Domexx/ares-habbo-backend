@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Guild\Entity;
@@ -59,13 +59,13 @@ class Guild extends DataObject implements GuildInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return Guild
      */
-    public function setUserId(int $user_id): Guild
+    public function setUserId(int $userId): Guild
     {
-        return $this->setData(GuildInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(GuildInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -113,13 +113,13 @@ class Guild extends DataObject implements GuildInterface
     }
 
     /**
-     * @param int $room_id
+     * @param int $roomId
      *
      * @return Guild
      */
-    public function setRoomId(int $room_id): Guild
+    public function setRoomId(int $roomId): Guild
     {
-        return $this->setData(GuildInterface::COLUMN_ROOM_ID, $room_id);
+        return $this->setData(GuildInterface::COLUMN_ROOM_ID, $roomId);
     }
 
     /**
@@ -167,13 +167,13 @@ class Guild extends DataObject implements GuildInterface
     }
 
     /**
-     * @param int $date_created
+     * @param int $dateCreated
      *
      * @return Guild
      */
-    public function setDateCreated(int $date_created): Guild
+    public function setDateCreated(int $dateCreated): Guild
     {
-        return $this->setData(GuildInterface::COLUMN_DATE_CREATED, $date_created);
+        return $this->setData(GuildInterface::COLUMN_DATE_CREATED, $dateCreated);
     }
 
     /**
@@ -188,6 +188,10 @@ class Guild extends DataObject implements GuildInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var GuildRepository $guildRepository */
@@ -234,6 +238,10 @@ class Guild extends DataObject implements GuildInterface
 
         if ($room) {
             return $room;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var GuildRepository $guildRepository */

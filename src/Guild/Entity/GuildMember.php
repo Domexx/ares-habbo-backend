@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Guild\Entity;
@@ -77,13 +77,13 @@ class GuildMember extends DataObject implements GuildMemberInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return GuildMember
      */
-    public function setUserId(int $user_id): GuildMember
+    public function setUserId(int $userId): GuildMember
     {
-        return $this->setData(GuildMemberInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(GuildMemberInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -136,6 +136,10 @@ class GuildMember extends DataObject implements GuildMemberInterface
             return $user;
         }
 
+        if (!isset($this)) {
+            return null;
+        }
+
         /** @var GuildMemberRepository $guildMemberRepository */
         $guildMemberRepository = repository(GuildMemberRepository::class);
 
@@ -178,6 +182,10 @@ class GuildMember extends DataObject implements GuildMemberInterface
 
         if ($guilds) {
             return $guilds;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var GuildMemberRepository $guildMemberRepository */

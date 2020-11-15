@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Service\Thread;
@@ -13,8 +13,10 @@ use Ares\Forum\Exception\ThreadException;
 use Ares\Forum\Repository\ThreadRepository;
 use Ares\Forum\Repository\TopicRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Cocur\Slugify\Slugify;
+use DateTime;
 
 /**
  * Class CreateThreadService
@@ -24,21 +26,6 @@ use Cocur\Slugify\Slugify;
 class CreateThreadService
 {
     /**
-     * @var ThreadRepository
-     */
-    private ThreadRepository $threadRepository;
-
-    /**
-     * @var TopicRepository
-     */
-    private TopicRepository $topicRepository;
-
-    /**
-     * @var Slugify
-     */
-    private Slugify $slug;
-
-    /**
      * CreateThreadService constructor.
      *
      * @param ThreadRepository $threadRepository
@@ -46,14 +33,10 @@ class CreateThreadService
      * @param Slugify          $slug
      */
     public function __construct(
-        ThreadRepository $threadRepository,
-        TopicRepository $topicRepository,
-        Slugify $slug
-    ) {
-        $this->threadRepository = $threadRepository;
-        $this->topicRepository = $topicRepository;
-        $this->slug = $slug;
-    }
+        private ThreadRepository $threadRepository,
+        private TopicRepository $topicRepository,
+        private Slugify $slug
+    ) {}
 
     /**
      * @param int   $userId
@@ -62,6 +45,7 @@ class CreateThreadService
      * @return CustomResponseInterface
      * @throws DataObjectManagerException
      * @throws ThreadException
+     * @throws NoSuchEntityException
      */
     public function execute(int $userId, array $data): CustomResponseInterface
     {
@@ -80,16 +64,17 @@ class CreateThreadService
      *
      * @return Thread
      * @throws ThreadException
+     * @throws NoSuchEntityException
      */
     public function getNewThread(int $userId, array $data): Thread
     {
         $thread = new Thread();
 
         /** @var Topic $topic */
-        $topic = $this->topicRepository->get($data['topic_id']);
+        $topic = $this->topicRepository->get($data['topic_id'], 'id', true);
 
         /** @var Thread $existingThread */
-        $existingThread = $this->threadRepository->get($data['title'], 'title');
+        $existingThread = $this->threadRepository->get($data['title'], 'title', true);
 
         if (!$topic || $existingThread) {
             throw new ThreadException(__('There is already an existing Thread or the Topic could not be found'));
@@ -103,6 +88,7 @@ class CreateThreadService
             ->setDescription($data['description'])
             ->setContent($data['content'])
             ->setLikes(0)
-            ->setDislikes(0);
+            ->setDislikes(0)
+            ->setCreatedAt(new DateTime());
     }
 }

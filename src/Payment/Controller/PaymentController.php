@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Payment\Controller;
@@ -10,6 +10,7 @@ namespace Ares\Payment\Controller;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\Payment\Entity\Payment;
@@ -28,21 +29,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class PaymentController extends BaseController
 {
     /**
-     * @var PaymentRepository
-     */
-    private PaymentRepository $paymentRepository;
-
-    /**
-     * @var CreatePaymentService
-     */
-    private CreatePaymentService $createPaymentService;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
      * PaymentController constructor.
      *
      * @param   PaymentRepository       $paymentRepository
@@ -50,24 +36,21 @@ class PaymentController extends BaseController
      * @param   ValidationService       $validationService
      */
     public function __construct(
-        PaymentRepository $paymentRepository,
-        CreatePaymentService $createPaymentService,
-        ValidationService $validationService
-    ) {
-        $this->paymentRepository = $paymentRepository;
-        $this->createPaymentService = $createPaymentService;
-        $this->validationService = $validationService;
-    }
+        private PaymentRepository $paymentRepository,
+        private CreatePaymentService $createPaymentService,
+        private ValidationService $validationService
+    ) {}
 
     /**
-     * @param Request $request
+     * @param Request  $request
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      * @throws PaymentException
      * @throws ValidationException
-     * @throws AuthenticationException
      */
     public function create(Request $request, Response $response): Response
     {
@@ -95,12 +78,12 @@ class PaymentController extends BaseController
     }
 
     /**
-     * @param Request     $request
-     * @param Response    $response
-     * @param             $args
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
      *
      * @return Response
-     * @throws PaymentException
+     * @throws NoSuchEntityException
      */
     public function payment(Request $request, Response $response, array $args): Response
     {
@@ -108,11 +91,7 @@ class PaymentController extends BaseController
         $id = $args['id'];
 
         /** @var Payment $payment */
-        $payment = $this->paymentRepository->get((int) $id);
-
-        if (!$payment) {
-            throw new PaymentException(__('No specific Payment found'), 404);
-        }
+        $payment = $this->paymentRepository->get($id);
 
         return $this->respond(
             $response,
@@ -139,8 +118,8 @@ class PaymentController extends BaseController
 
         $payments = $this->paymentRepository
             ->getPaginatedPayments(
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -164,10 +143,10 @@ class PaymentController extends BaseController
         /** @var int $id */
         $id = $args['id'];
 
-        $deleted = $this->paymentRepository->delete((int) $id);
+        $deleted = $this->paymentRepository->delete($id);
 
         if (!$deleted) {
-            throw new PaymentException(__('Payment could not be deleted.'), 409);
+            throw new PaymentException(__('Payment could not be deleted'), 409);
         }
 
         return $this->respond(

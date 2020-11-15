@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Rcon\Helper;
@@ -18,31 +18,24 @@ use PHLAK\Config\Config;
 class RconHelper
 {
     /**
-     * @var Config
-     */
-    private Config $config;
-
-    /**
      * RconHelper constructor.
      *
      * @param Config $config
      */
     public function __construct(
-        Config $config
-    ) {
-        $this->config = $config;
-    }
+        private Config $config
+    ) {}
 
     /**
-     * @param resource $socket
-     * @param string   $command
-     * @param array    $parameter
+     * @param   resource    $socket
+     * @param   string      $command
+     * @param   array|null  $parameter
      *
-     * @return array
+     * @return array|null
      * @throws RconException
      * @throws \JsonException
      */
-    public function sendCommand($socket, string $command, array $parameter = null): array
+    public function sendCommand($socket, string $command, array $parameter = null): ?array
     {
         /** @var string $encodedData */
         $encodedData = json_encode([
@@ -53,7 +46,7 @@ class RconHelper
         $executor = socket_write($socket, $encodedData, strlen($encodedData));
 
         if (!$executor) {
-            throw new RconException(__('Could not send the Command'));
+            throw new RconException(__('Could not send the provided Command'));
         }
 
         return json_decode(
@@ -80,7 +73,7 @@ class RconHelper
         $isConnectionEstablished = $this->connectToSocket($socket, $host, $port);
 
         if (!$isConnectionEstablished) {
-            throw new RconException(__('Could not establish connection'));
+            throw new RconException(__('Could not establish a connection to the rcon server'));
         }
 
         return $this;
@@ -103,10 +96,10 @@ class RconHelper
     /**
      * Creates a Socket
      *
-     * @return resource
+     * @return \Socket
      * @throws RconException
      */
-    public function createSocket()
+    public function createSocket(): \Socket
     {
         $socket = socket_create(
             AF_INET,
@@ -115,7 +108,7 @@ class RconHelper
         );
 
         if (!$socket) {
-            throw new RconException(__('Could not create the Socket'), 409);
+            throw new RconException(__('Could not create the socket'), 409);
         }
 
         return $socket;

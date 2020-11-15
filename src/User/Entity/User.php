@@ -1,15 +1,14 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Entity;
 
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Model\DataObject;
-use Ares\Permission\Entity\Permission;
 use Ares\Role\Repository\RoleRepository;
 use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Repository\UserCurrencyRepository;
@@ -205,24 +204,6 @@ class User extends DataObject implements UserInterface
     }
 
     /**
-     * @return Permission|null
-     */
-    public function getRankData(): ?Permission
-    {
-        return $this->getData(UserInterface::COLUMN_RANK);
-    }
-
-    /**
-     * @param Permission|null $rank_data
-     *
-     * @return User
-     */
-    public function setRankData(?Permission $rank_data): User
-    {
-        return $this->setData(UserInterface::COLUMN_RANK, $rank_data);
-    }
-
-    /**
      * @return string|null
      */
     public function getAuthTicket(): ?string
@@ -231,13 +212,13 @@ class User extends DataObject implements UserInterface
     }
 
     /**
-     * @param string|null $auth_ticket
+     * @param string|null $authTicket
      *
      * @return User
      */
-    public function setAuthTicket(?string $auth_ticket): User
+    public function setAuthTicket(?string $authTicket): User
     {
-        return $this->setData(UserInterface::COLUMN_AUTH_TICKET, $auth_ticket);
+        return $this->setData(UserInterface::COLUMN_AUTH_TICKET, $authTicket);
     }
 
     /**
@@ -249,13 +230,13 @@ class User extends DataObject implements UserInterface
     }
 
     /**
-     * @param string $ip_register
+     * @param string $ipRegister
      *
      * @return User
      */
-    public function setIpRegister(string $ip_register): User
+    public function setIpRegister(string $ipRegister): User
     {
-        return $this->setData(UserInterface::COLUMN_IP_REGISTER, $ip_register);
+        return $this->setData(UserInterface::COLUMN_IP_REGISTER, $ipRegister);
     }
 
     /**
@@ -267,13 +248,13 @@ class User extends DataObject implements UserInterface
     }
 
     /**
-     * @param string|null $ip_current
+     * @param string|null $ipCurrent
      *
      * @return User
      */
-    public function setIpCurrent(?string $ip_current): User
+    public function setIpCurrent(?string $ipCurrent): User
     {
-        return $this->setData(UserInterface::COLUMN_IP_CURRENT, $ip_current);
+        return $this->setData(UserInterface::COLUMN_IP_CURRENT, $ipCurrent);
     }
 
     /**
@@ -303,13 +284,13 @@ class User extends DataObject implements UserInterface
     }
 
     /**
-     * @param int $last_login
+     * @param int $lastLogin
      *
      * @return User
      */
-    public function setLastLogin(int $last_login): User
+    public function setLastLogin(int $lastLogin): User
     {
-        return $this->setData(UserInterface::COLUMN_LAST_LOGIN, $last_login);
+        return $this->setData(UserInterface::COLUMN_LAST_LOGIN, $lastLogin);
     }
 
     /**
@@ -321,13 +302,13 @@ class User extends DataObject implements UserInterface
     }
 
     /**
-     * @param int|null $last_online
+     * @param int|null $lastOnline
      *
      * @return User
      */
-    public function setLastOnline(?int $last_online): User
+    public function setLastOnline(?int $lastOnline): User
     {
-        return $this->setData(UserInterface::COLUMN_LAST_ONLINE, $last_online);
+        return $this->setData(UserInterface::COLUMN_LAST_ONLINE, $lastOnline);
     }
 
 
@@ -340,12 +321,12 @@ class User extends DataObject implements UserInterface
     }
 
     /**
-     * @param DateTime $created_at
+     * @param DateTime $createdAt
      * @return User
      */
-    public function setCreatedAt(DateTime $created_at): User
+    public function setCreatedAt(DateTime $createdAt): User
     {
-        return $this->setData(UserInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(UserInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
@@ -357,13 +338,13 @@ class User extends DataObject implements UserInterface
     }
 
     /**
-     * @param DateTime $updated_at
+     * @param DateTime $updatedAt
      *
      * @return User
      */
-    public function setUpdatedAt(DateTime $updated_at): User
+    public function setUpdatedAt(DateTime $updatedAt): User
     {
-        return $this->setData(UserInterface::COLUMN_UPDATED_AT, $updated_at);
+        return $this->setData(UserInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
 
     /**
@@ -376,6 +357,10 @@ class User extends DataObject implements UserInterface
 
         if ($roles) {
             return $roles;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var UserRepository $userRepository */
@@ -422,6 +407,10 @@ class User extends DataObject implements UserInterface
 
         if ($currencies) {
             return $currencies;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var UserRepository $userRepository */

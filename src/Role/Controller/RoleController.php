@@ -1,14 +1,15 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Controller;
 
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\Role\Exception\RoleException;
@@ -27,31 +28,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class RoleController extends BaseController
 {
     /**
-     * @var CreateRoleService
-     */
-    private CreateRoleService $createRoleService;
-
-    /**
-     * @var CreateChildRoleService
-     */
-    private CreateChildRoleService $createChildRoleService;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var RoleRepository
-     */
-    private RoleRepository $roleRepository;
-
-    /**
-     * @var AssignUserToRoleService
-     */
-    private AssignUserToRoleService $assignUserToRoleService;
-
-    /**
      * RoleController constructor.
      *
      * @param CreateRoleService       $createRoleService
@@ -61,18 +37,12 @@ class RoleController extends BaseController
      * @param RoleRepository          $roleRepository
      */
     public function __construct(
-        CreateRoleService $createRoleService,
-        CreateChildRoleService $createChildRoleService,
-        AssignUserToRoleService $assignUserToRoleService,
-        ValidationService $validationService,
-        RoleRepository $roleRepository
-    ) {
-        $this->createRoleService = $createRoleService;
-        $this->createChildRoleService = $createChildRoleService;
-        $this->assignUserToRoleService = $assignUserToRoleService;
-        $this->validationService = $validationService;
-        $this->roleRepository = $roleRepository;
-    }
+        private CreateRoleService $createRoleService,
+        private CreateChildRoleService $createChildRoleService,
+        private AssignUserToRoleService $assignUserToRoleService,
+        private ValidationService $validationService,
+        private RoleRepository $roleRepository
+    ) {}
 
     /**
      * @param Request  $request
@@ -92,8 +62,8 @@ class RoleController extends BaseController
 
         $roles = $this->roleRepository
             ->getPaginatedRoles(
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -137,6 +107,7 @@ class RoleController extends BaseController
      * @throws DataObjectManagerException
      * @throws RoleException
      * @throws ValidationException
+     * @throws NoSuchEntityException
      */
     public function createChildRole(Request $request, Response $response): Response
     {
@@ -162,6 +133,7 @@ class RoleController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      * @throws RoleException
      * @throws ValidationException
      */
@@ -197,10 +169,10 @@ class RoleController extends BaseController
         /** @var int $id */
         $id = $args['id'];
 
-        $deleted = $this->roleRepository->delete((int) $id);
+        $deleted = $this->roleRepository->delete($id);
 
         if (!$deleted) {
-            throw new RoleException(__('Role could not be deleted.'), 409);
+            throw new RoleException(__('Role could not be deleted'), 409);
         }
 
         return $this->respond(

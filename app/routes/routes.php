@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 use Slim\App;
@@ -21,15 +21,16 @@ return function (App $app) {
             // User
             $group->group('/user', function ($group) {
                 $group->get('', \Ares\User\Controller\UserController::class . ':user');
-                $group->post('/ticket', \Ares\User\Controller\AuthController::class . ':ticket');
-                $group->post('/locale', \Ares\User\Controller\UserController::class . ':updateLocale');
+                $group->put('/ticket', \Ares\User\Controller\AuthController::class . ':ticket');
+                $group->put('/locale', \Ares\User\Controller\UserController::class . ':updateLocale');
                 $group->get('/gift', \Ares\User\Controller\Gift\DailyGiftController::class . ':pick');
-                $group->post('/currency', \Ares\User\Controller\UserCurrencyController::class . ':update');
+                $group->put('/currency', \Ares\User\Controller\UserCurrencyController::class . ':update')
+                    ->setName('update-currency');
                 $group->group('/settings', function ($group) {
-                    $group->post('/change_general_settings', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeGeneralSettings');
-                    $group->post('/change_password', \Ares\User\Controller\Settings\UserSettingsController::class . ':changePassword');
-                    $group->post('/change_email', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeEmail');
-                    $group->post('/change_username', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeUsername');
+                    $group->put('/change_general_settings', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeGeneralSettings');
+                    $group->put('/change_password', \Ares\User\Controller\Settings\UserSettingsController::class . ':changePassword');
+                    $group->put('/change_email', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeEmail');
+                    $group->put('/change_username', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeUsername');
                 });
             });
 
@@ -37,6 +38,8 @@ return function (App $app) {
             $group->group('/articles', function ($group) {
                 $group->post('/create', \Ares\Article\Controller\ArticleController::class . ':create')
                     ->setName('create-article');
+                $group->put('/edit', \Ares\Article\Controller\ArticleController::class . ':editArticle')
+                    ->setName('edit-article');
                 $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}',
                     \Ares\Article\Controller\ArticleController::class . ':list');
                 $group->get('/pinned', \Ares\Article\Controller\ArticleController::class . ':pinned');
@@ -48,7 +51,7 @@ return function (App $app) {
             // Comments
             $group->group('/comments', function ($group) {
                 $group->post('/create', \Ares\Article\Controller\CommentController::class . ':create');
-                $group->post('/edit', \Ares\Article\Controller\CommentController::class . ':edit')
+                $group->put('/edit', \Ares\Article\Controller\CommentController::class . ':edit')
                     ->setName('edit-article-comment');
                 $group->get('/{article_id:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}',
                     \Ares\Article\Controller\CommentController::class . ':list');
@@ -151,6 +154,7 @@ return function (App $app) {
 
             // Roles, Permissions
             $group->group('/roles', function ($group) {
+                $group->get('/user/permissions', \Ares\Role\Controller\RolePermissionController::class . ':userPermissions');
                 $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}',
                     \Ares\Role\Controller\RoleController::class . ':list')
                     ->setName('list-all-roles');
@@ -191,7 +195,7 @@ return function (App $app) {
                 $group->group('/comments', function ($group) {
                     $group->post('/{thread:[0-9]+}/create', \Ares\Forum\Controller\CommentController::class . ':create');
                     $group->get('/{thread:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Forum\Controller\CommentController::class . ':list');
-                    $group->post('/{thread:[0-9]+}/{id:[0-9]+}', \Ares\Forum\Controller\CommentController::class . ':edit');
+                    $group->put('/{thread:[0-9]+}/{id:[0-9]+}', \Ares\Forum\Controller\CommentController::class . ':edit');
                     $group->delete('/{thread:[0-9]+}/{id:[0-9]+}', \Ares\Forum\Controller\CommentController::class . ':delete')
                         ->setName('delete-forum-comment');
                 });
@@ -199,7 +203,7 @@ return function (App $app) {
                     $group->post('/create', \Ares\Forum\Controller\TopicController::class . ':create')
                         ->setName('create-forum-topic');
                     $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Forum\Controller\TopicController::class . ':list');
-                    $group->post('{id:[0-9]+}', \Ares\Forum\Controller\TopicController::class . ':edit')
+                    $group->put('{id:[0-9]+}', \Ares\Forum\Controller\TopicController::class . ':edit')
                         ->setName('edit-forum-topic');
                     $group->delete('{id:[0-9]+}', \Ares\Forum\Controller\TopicController::class . ':delete')
                         ->setName('delete-forum-topic');
@@ -208,7 +212,7 @@ return function (App $app) {
                     $group->post('/create', \Ares\Forum\Controller\ThreadController::class . ':create');
                     $group->get('/{topic_id:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Forum\Controller\ThreadController::class . ':list');
                     $group->get('/{topic_id:[0-9]+}/{slug}', \Ares\Forum\Controller\ThreadController::class . ':thread');
-                    $group->post('/{id:[0-9]+}', \Ares\Forum\Controller\ThreadController::class . ':edit');
+                    $group->put('/{id:[0-9]+}', \Ares\Forum\Controller\ThreadController::class . ':edit');
                     $group->delete('/{topic:[0-9]+}/{id:[0-9]+}', \Ares\Forum\Controller\ThreadController::class . ':delete')
                         ->setName('delete-forum-thread');
                 });
@@ -241,7 +245,7 @@ return function (App $app) {
             $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}',
                 \Ares\Settings\Controller\SettingsController::class . ':list');
             $group->post('/get', \Ares\Settings\Controller\SettingsController::class . ':get');
-            $group->post('/set', \Ares\Settings\Controller\SettingsController::class . ':set')
+            $group->put('/set', \Ares\Settings\Controller\SettingsController::class . ':set')
                 ->setName('set-global-setting');
         });
 

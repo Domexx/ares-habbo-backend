@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Entity;
@@ -47,13 +47,13 @@ class RolePermission extends DataObject implements RolePermissionInterface
     }
 
     /**
-     * @param int $role_id
+     * @param int $roleId
      *
      * @return RolePermission
      */
-    public function setRoleId(int $role_id): RolePermission
+    public function setRoleId(int $roleId): RolePermission
     {
-        return $this->setData(RolePermissionInterface::COLUMN_ROLE_ID, $role_id);
+        return $this->setData(RolePermissionInterface::COLUMN_ROLE_ID, $roleId);
     }
 
     /**
@@ -65,13 +65,13 @@ class RolePermission extends DataObject implements RolePermissionInterface
     }
 
     /**
-     * @param int $permission_id
+     * @param int $permissionId
      *
      * @return RolePermission
      */
-    public function setPermissionId(int $permission_id): RolePermission
+    public function setPermissionId(int $permissionId): RolePermission
     {
-        return $this->setData(RolePermissionInterface::COLUMN_PERMISSION_ID, $permission_id);
+        return $this->setData(RolePermissionInterface::COLUMN_PERMISSION_ID, $permissionId);
     }
 
     /**
@@ -83,12 +83,12 @@ class RolePermission extends DataObject implements RolePermissionInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return RolePermission
      */
-    public function setCreatedAt(\DateTime $created_at): RolePermission
+    public function setCreatedAt(\DateTime $createdAt): RolePermission
     {
-        return $this->setData(RolePermissionInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(RolePermissionInterface::COLUMN_CREATED_AT, $createdAt);
     }
 }

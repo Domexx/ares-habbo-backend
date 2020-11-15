@@ -1,14 +1,15 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Settings\Controller;
 
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\Settings\Entity\Setting;
@@ -26,21 +27,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class SettingsController extends BaseController
 {
     /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var SettingsRepository
-     */
-    private SettingsRepository $settingsRepository;
-
-    /**
-     * @var UpdateSettingsService
-     */
-    private UpdateSettingsService $updateSettingsService;
-
-    /**
      * SettingsController constructor.
      *
      * @param   ValidationService       $validationService
@@ -48,22 +34,18 @@ class SettingsController extends BaseController
      * @param   UpdateSettingsService   $updateSettingsService
      */
     public function __construct(
-        ValidationService $validationService,
-        SettingsRepository $settingsRepository,
-        UpdateSettingsService $updateSettingsService
-    ) {
-        $this->validationService     = $validationService;
-        $this->settingsRepository    = $settingsRepository;
-        $this->updateSettingsService = $updateSettingsService;
-    }
+        private ValidationService $validationService,
+        private SettingsRepository $settingsRepository,
+        private UpdateSettingsService $updateSettingsService
+    ) {}
 
     /**
      * @param Request  $request
      * @param Response $response
      *
      * @return Response
-     * @throws SettingsException
      * @throws ValidationException
+     * @throws NoSuchEntityException
      */
     public function get(Request $request, Response $response): Response
     {
@@ -79,10 +61,6 @@ class SettingsController extends BaseController
 
         /** @var Setting $configData */
         $configData = $this->settingsRepository->get($key, 'key');
-
-        if (!$configData) {
-            throw new SettingsException(__('Key not found in Config'));
-        }
 
         return $this->respond(
             $response,
@@ -111,8 +89,8 @@ class SettingsController extends BaseController
         $settings = $this->settingsRepository
             ->getPaginatedList(
                 $this->settingsRepository->getDataObjectManager(),
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -128,7 +106,7 @@ class SettingsController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
-     * @throws SettingsException
+     * @throws NoSuchEntityException
      * @throws ValidationException
      */
     public function set(Request $request, Response $response): Response

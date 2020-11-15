@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Article\Service;
@@ -11,8 +11,10 @@ use Ares\Article\Entity\Article;
 use Ares\Article\Exception\ArticleException;
 use Ares\Article\Repository\ArticleRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Cocur\Slugify\Slugify;
+use DateTime;
 
 /**
  * Class CreateArticleService
@@ -22,28 +24,15 @@ use Cocur\Slugify\Slugify;
 class CreateArticleService
 {
     /**
-     * @var ArticleRepository
-     */
-    private ArticleRepository $articleRepository;
-
-    /**
-     * @var Slugify
-     */
-    private Slugify $slug;
-
-    /**
      * CreateArticleService constructor.
      *
      * @param ArticleRepository $articleRepository
      * @param Slugify           $slug
      */
     public function __construct(
-        ArticleRepository $articleRepository,
-        Slugify $slug
-    ) {
-        $this->articleRepository = $articleRepository;
-        $this->slug = $slug;
-    }
+        private ArticleRepository $articleRepository,
+        private Slugify $slug
+    ) {}
 
     /**
      * Creates new article with given data.
@@ -54,16 +43,17 @@ class CreateArticleService
      * @return CustomResponseInterface
      * @throws ArticleException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function execute(int $userId, array $data): CustomResponseInterface
     {
         $article = $this->getNewArticle($userId, $data);
 
         /** @var Article $existingArticle */
-        $existingArticle = $this->articleRepository->get($article->getTitle(), 'title');
+        $existingArticle = $this->articleRepository->get($article->getTitle(), 'title', true);
 
         if ($existingArticle) {
-            throw new ArticleException(__('Article with given Title already exists.'), 422);
+            throw new ArticleException(__('Article with given Title already exists.'), 409);
         }
 
         /** @var Article $article */
@@ -95,6 +85,7 @@ class CreateArticleService
             ->setHidden($data['hidden'])
             ->setPinned($data['pinned'])
             ->setLikes(0)
-            ->setDislikes(0);
+            ->setDislikes(0)
+            ->setCreatedAt(new DateTime());
     }
 }

@@ -1,16 +1,16 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Payment\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Payment\Entity\Payment;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 /**
  * Class PaymentRepository
@@ -32,10 +32,10 @@ class PaymentRepository extends BaseRepository
      * @param int $page
      * @param int $resultPerPage
      *
-     * @return LengthAwarePaginator
+     * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function getPaginatedPayments(int $page, int $resultPerPage): LengthAwarePaginator
+    public function getPaginatedPayments(int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
             ->orderBy('id', 'DESC')
@@ -45,7 +45,7 @@ class PaymentRepository extends BaseRepository
     }
 
     /**
-     * @param int $userId
+     * @param int|null $userId
      *
      * @return Payment|null
      */

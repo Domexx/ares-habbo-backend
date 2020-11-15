@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Entity;
@@ -47,13 +47,13 @@ class UserBadge extends DataObject implements UserBadgeInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return UserBadge
      */
-    public function setUserId(int $user_id): UserBadge
+    public function setUserId(int $userId): UserBadge
     {
-        return $this->setData(UserBadgeInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(UserBadgeInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -65,13 +65,13 @@ class UserBadge extends DataObject implements UserBadgeInterface
     }
 
     /**
-     * @param int $slot_id
+     * @param int $slotId
      *
      * @return UserBadge
      */
-    public function setSlotId(int $slot_id): UserBadge
+    public function setSlotId(int $slotId): UserBadge
     {
-        return $this->setData(UserBadgeInterface::COLUMN_SLOT_ID, $slot_id);
+        return $this->setData(UserBadgeInterface::COLUMN_SLOT_ID, $slotId);
     }
 
     /**
@@ -83,12 +83,12 @@ class UserBadge extends DataObject implements UserBadgeInterface
     }
 
     /**
-     * @param string $badge_code
+     * @param string $badgeCode
      *
      * @return UserBadge
      */
-    public function setBadgeCode(string $badge_code): UserBadge
+    public function setBadgeCode(string $badgeCode): UserBadge
     {
-        return $this->setData(UserBadgeInterface::COLUMN_BADGE_CODE, $badge_code);
+        return $this->setData(UserBadgeInterface::COLUMN_BADGE_CODE, $badgeCode);
     }
 }

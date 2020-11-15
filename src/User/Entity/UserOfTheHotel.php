@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Entity;
@@ -55,13 +55,13 @@ class UserOfTheHotel extends DataObject implements UserOfTheHotelInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return UserOfTheHotel
      */
-    public function setUserId(int $user_id): UserOfTheHotel
+    public function setUserId(int $userId): UserOfTheHotel
     {
-        return $this->setData(UserOfTheHotelInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(UserOfTheHotelInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -73,13 +73,13 @@ class UserOfTheHotel extends DataObject implements UserOfTheHotelInterface
     }
 
     /**
-     * @param int $to_timestamp
+     * @param int $toTimestamp
      *
      * @return UserOfTheHotel
      */
-    public function setToTimestamp(int $to_timestamp): UserOfTheHotel
+    public function setToTimestamp(int $toTimestamp): UserOfTheHotel
     {
-        return $this->setData(UserOfTheHotelInterface::COLUMN_TO_TIMESTAMP, $to_timestamp);
+        return $this->setData(UserOfTheHotelInterface::COLUMN_TO_TIMESTAMP, $toTimestamp);
     }
 
     /**
@@ -91,13 +91,13 @@ class UserOfTheHotel extends DataObject implements UserOfTheHotelInterface
     }
 
     /**
-     * @param \DateTime $created_at
+     * @param \DateTime $createdAt
      *
      * @return UserOfTheHotel
      */
-    public function setCreatedAt(\DateTime $created_at): UserOfTheHotel
+    public function setCreatedAt(\DateTime $createdAt): UserOfTheHotel
     {
-        return $this->setData(UserOfTheHotelInterface::COLUMN_CREATED_AT, $created_at);
+        return $this->setData(UserOfTheHotelInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
@@ -112,6 +112,10 @@ class UserOfTheHotel extends DataObject implements UserOfTheHotelInterface
 
         if ($user) {
             return $user;
+        }
+
+        if (!isset($this)) {
+            return null;
         }
 
         /** @var UserOfTheHotelRepository $userOfTheWeekRepository */

@@ -1,13 +1,14 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Service;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Role\Entity\Permission;
 use Ares\Role\Entity\Role;
@@ -16,6 +17,7 @@ use Ares\Role\Exception\RoleException;
 use Ares\Role\Repository\PermissionRepository;
 use Ares\Role\Repository\RolePermissionRepository;
 use Ares\Role\Repository\RoleRepository;
+use DateTime;
 
 /**
  * Class CreateChildPermission
@@ -25,21 +27,6 @@ use Ares\Role\Repository\RoleRepository;
 class CreateRolePermissionService
 {
     /**
-     * @var RolePermissionRepository
-     */
-    private RolePermissionRepository $rolePermissionRepository;
-
-    /**
-     * @var PermissionRepository
-     */
-    private PermissionRepository $permissionRepository;
-
-    /**
-     * @var RoleRepository
-     */
-    private RoleRepository $roleRepository;
-
-    /**
      * CreateChildPermission constructor.
      *
      * @param RolePermissionRepository $rolePermissionRepository
@@ -47,21 +34,18 @@ class CreateRolePermissionService
      * @param RoleRepository           $roleRepository
      */
     public function __construct(
-        RolePermissionRepository $rolePermissionRepository,
-        PermissionRepository $permissionRepository,
-        RoleRepository $roleRepository
-    ) {
-        $this->rolePermissionRepository = $rolePermissionRepository;
-        $this->permissionRepository = $permissionRepository;
-        $this->roleRepository = $roleRepository;
-    }
+        private RolePermissionRepository $rolePermissionRepository,
+        private PermissionRepository $permissionRepository,
+        private RoleRepository $roleRepository
+    ) {}
 
     /**
      * @param array $data
      *
      * @return CustomResponseInterface
-     * @throws RoleException
      * @throws DataObjectManagerException
+     * @throws RoleException
+     * @throws NoSuchEntityException
      */
     public function execute(array $data): CustomResponseInterface
     {
@@ -76,10 +60,6 @@ class CreateRolePermissionService
 
         /** @var Permission $permission */
         $permission = $this->permissionRepository->get($permissionId);
-
-        if (!$role || !$permission) {
-            throw new RoleException(__('Could not found given Role or Permission'));
-        }
 
         /** @var RolePermission $existingRolePermission */
         $existingRolePermission = $this->rolePermissionRepository
@@ -113,7 +93,8 @@ class CreateRolePermissionService
 
         $rolePermission
             ->setRoleId($roleId)
-            ->setPermissionId($permissionId);
+            ->setPermissionId($permissionId)
+            ->setCreatedAt(new DateTime());
 
         return $rolePermission;
     }

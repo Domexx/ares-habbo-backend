@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Photo\Entity\Contract;
@@ -19,4 +19,6 @@ interface PhotoInterface
     public const COLUMN_ROOM_ID = 'room_id';
     public const COLUMN_TIMESTAMP = 'timestamp';
     public const COLUMN_URL = 'url';
+    public const COLUMN_LIKES = 'likes';
+    public const COLUMN_DISLIKES = 'dislikes';
 }

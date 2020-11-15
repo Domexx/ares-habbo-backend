@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Forum\Controller;
@@ -14,6 +14,7 @@ use Ares\Forum\Service\Topic\CreateTopicService;
 use Ares\Forum\Service\Topic\EditTopicService;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -27,26 +28,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class TopicController extends BaseController
 {
     /**
-     * @var TopicRepository
-     */
-    private TopicRepository $topicRepository;
-
-    /**
-     * @var CreateTopicService
-     */
-    private CreateTopicService $createTopicService;
-
-    /**
-     * @var ValidationService
-     */
-    private ValidationService $validationService;
-
-    /**
-     * @var EditTopicService
-     */
-    private EditTopicService $editTopicService;
-
-    /**
      * TopicController constructor.
      *
      * @param   TopicRepository         $topicRepository
@@ -55,16 +36,11 @@ class TopicController extends BaseController
      * @param   ValidationService       $validationService
      */
     public function __construct(
-        TopicRepository $topicRepository,
-        CreateTopicService $createTopicService,
-        EditTopicService $editTopicService,
-        ValidationService $validationService
-    ) {
-        $this->topicRepository    = $topicRepository;
-        $this->createTopicService = $createTopicService;
-        $this->editTopicService   = $editTopicService;
-        $this->validationService  = $validationService;
-    }
+        private TopicRepository $topicRepository,
+        private CreateTopicService $createTopicService,
+        private EditTopicService $editTopicService,
+        private ValidationService $validationService
+    ) {}
 
     /**
      * @param Request  $request
@@ -74,6 +50,7 @@ class TopicController extends BaseController
      * @throws DataObjectManagerException
      * @throws TopicException
      * @throws ValidationException
+     * @throws NoSuchEntityException
      */
     public function create(Request $request, Response $response): Response
     {
@@ -99,7 +76,7 @@ class TopicController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
-     * @throws TopicException
+     * @throws NoSuchEntityException
      * @throws ValidationException
      */
     public function edit(Request $request, Response $response): Response
@@ -141,8 +118,8 @@ class TopicController extends BaseController
 
         $topics = $this->topicRepository
             ->getPaginatedTopicList(
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -166,10 +143,10 @@ class TopicController extends BaseController
         /** @var int $id */
         $id = $args['id'];
 
-        $deleted = $this->topicRepository->delete((int) $id);
+        $deleted = $this->topicRepository->delete($id);
 
         if (!$deleted) {
-            throw new TopicException(__('Topic could not be deleted.'), 409);
+            throw new TopicException(__('Topic could not be deleted'), 409);
         }
 
         return $this->respond(

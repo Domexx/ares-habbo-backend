@@ -1,14 +1,15 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Controller\Gift;
 
 use Ares\Framework\Controller\BaseController;
-use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\AuthenticationException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\User\Entity\User;
 use Ares\User\Exception\Gift\DailyGiftException;
 use Ares\User\Service\Gift\PickGiftService;
@@ -24,20 +25,13 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class DailyGiftController extends BaseController
 {
     /**
-     * @var PickGiftService
-     */
-    private PickGiftService $pickGiftService;
-
-    /**
      * DailyGiftController constructor.
      *
      * @param PickGiftService $pickGiftService
      */
     public function __construct(
-        PickGiftService $pickGiftService
-    ) {
-        $this->pickGiftService = $pickGiftService;
-    }
+        private PickGiftService $pickGiftService
+    ) {}
 
     /**
      * Pick daily gift route.
@@ -46,8 +40,9 @@ class DailyGiftController extends BaseController
      * @param Response $response
      *
      * @return Response
+     * @throws AuthenticationException
      * @throws DailyGiftException
-     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function pick(Request $request, Response $response): ResponseInterface
     {

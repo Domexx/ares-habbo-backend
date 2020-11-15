@@ -1,14 +1,15 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Room\Controller;
 
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Room\Entity\Room;
 use Ares\Room\Exception\RoomException;
 use Ares\Room\Repository\RoomRepository;
@@ -23,29 +24,22 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class RoomController extends BaseController
 {
     /**
-     * @var RoomRepository
-     */
-    private RoomRepository $roomRepository;
-
-    /**
      * RoomController constructor.
      *
      * @param RoomRepository $roomRepository
      */
     public function __construct(
-        RoomRepository $roomRepository
-    ) {
-        $this->roomRepository = $roomRepository;
-    }
+        private RoomRepository $roomRepository
+    ) {}
 
     /**
      * @param Request  $request
      * @param Response $response
-     * @param          $args
+     * @param array    $args
      *
      * @return Response
-     * @throws RoomException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function room(Request $request, Response $response, array $args): Response
     {
@@ -53,11 +47,7 @@ class RoomController extends BaseController
         $id = $args['id'];
 
         /** @var Room $room */
-        $room = $this->roomRepository->get((int) $id);
-
-        if (!$room) {
-            throw new RoomException(__('No specific Room found'), 404);
-        }
+        $room = $this->roomRepository->get($id);
         $room->getGuild();
         $room->getUser();
 
@@ -87,8 +77,8 @@ class RoomController extends BaseController
 
         $rooms = $this->roomRepository
             ->getPaginatedRoomList(
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -111,7 +101,7 @@ class RoomController extends BaseController
         $room = $this->roomRepository->getMostVisitedRoom();
 
         if (!$room) {
-            throw new RoomException(__('No Room found'), 404);
+            throw new RoomException(__('No Room was found'), 404);
         }
 
         return $this->respond(

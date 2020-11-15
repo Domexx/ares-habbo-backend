@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
  *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Community\Controller;
@@ -23,21 +23,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class CommunityController extends BaseController
 {
     /**
-     * @var GuildRepository
-     */
-    private GuildRepository $guildRepository;
-
-    /**
-     * @var RoomRepository
-     */
-    private RoomRepository $roomRepository;
-
-    /**
-     * @var ArticleRepository
-     */
-    private ArticleRepository $articleRepository;
-
-    /**
      * CommunityController constructor.
      *
      * @param   GuildRepository    $guildRepository
@@ -45,14 +30,10 @@ class CommunityController extends BaseController
      * @param   ArticleRepository  $articleRepository
      */
     public function __construct(
-        GuildRepository $guildRepository,
-        RoomRepository $roomRepository,
-        ArticleRepository $articleRepository
-    ) {
-        $this->guildRepository   = $guildRepository;
-        $this->roomRepository    = $roomRepository;
-        $this->articleRepository = $articleRepository;
-    }
+        private GuildRepository $guildRepository,
+        private RoomRepository $roomRepository,
+        private ArticleRepository $articleRepository
+    ) {}
 
     /**
      * Searches with term in groups, rooms and news.
@@ -78,8 +59,8 @@ class CommunityController extends BaseController
         $rooms = $this->roomRepository
             ->searchRooms(
                 $term,
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -113,8 +94,8 @@ class CommunityController extends BaseController
         $guilds = $this->guildRepository
             ->searchGuilds(
                 $term,
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(
@@ -148,8 +129,8 @@ class CommunityController extends BaseController
         $articles = $this->articleRepository
             ->searchArticles(
                 $term,
-                (int) $page,
-                (int) $resultPerPage
+                $page,
+                $resultPerPage
             );
 
         return $this->respond(

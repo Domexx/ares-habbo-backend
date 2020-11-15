@@ -1,8 +1,8 @@
 <?php
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Controller;
@@ -23,21 +23,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class UserHallOfFameController extends BaseController
 {
     /**
-     * @var UserRepository
-     */
-    private UserRepository $userRepository;
-
-    /**
-     * @var UserSettingRepository
-     */
-    private UserSettingRepository $userSettingRepository;
-
-    /**
-     * @var UserCurrencyRepository
-     */
-    private UserCurrencyRepository $userCurrencyRepository;
-
-    /**
      * UserHallOfFameController constructor.
      *
      * @param UserRepository         $userRepository
@@ -45,14 +30,10 @@ class UserHallOfFameController extends BaseController
      * @param UserCurrencyRepository $userCurrencyRepository
      */
     public function __construct(
-        UserRepository $userRepository,
-        UserSettingRepository $userSettingRepository,
-        UserCurrencyRepository $userCurrencyRepository
-    ) {
-        $this->userRepository = $userRepository;
-        $this->userSettingRepository = $userSettingRepository;
-        $this->userCurrencyRepository = $userCurrencyRepository;
-    }
+        private UserRepository $userRepository,
+        private UserSettingRepository $userSettingRepository,
+        private UserCurrencyRepository $userCurrencyRepository
+    ) {}
 
     /**
      * @param Request  $request

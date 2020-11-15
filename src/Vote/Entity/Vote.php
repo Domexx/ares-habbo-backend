@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 /**
- * Ares (https://ares.to)
- *
- * @license https://gitlab.com/arescms/ares-backend/LICENSE (MIT License)
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *  
+ * @see LICENSE (MIT)
  */
 
 namespace Ares\Vote\Entity;
@@ -47,13 +47,13 @@ class Vote extends DataObject implements VoteInterface
     }
 
     /**
-     * @param int $user_id
+     * @param int $userId
      *
      * @return Vote
      */
-    public function setUserId(int $user_id): Vote
+    public function setUserId(int $userId): Vote
     {
-        return $this->setData(VoteInterface::COLUMN_USER_ID, $user_id);
+        return $this->setData(VoteInterface::COLUMN_USER_ID, $userId);
     }
 
     /**
@@ -65,13 +65,13 @@ class Vote extends DataObject implements VoteInterface
     }
 
     /**
-     * @param int $entity_id
+     * @param int $entityId
      *
      * @return Vote
      */
-    public function setEntityId(int $entity_id): Vote
+    public function setEntityId(int $entityId): Vote
     {
-        return $this->setData(VoteInterface::COLUMN_ENTITY_ID, $entity_id);
+        return $this->setData(VoteInterface::COLUMN_ENTITY_ID, $entityId);
     }
 
     /**
@@ -83,13 +83,13 @@ class Vote extends DataObject implements VoteInterface
     }
 
     /**
-     * @param int $vote_entity
+     * @param int $voteEntity
      *
      * @return Vote
      */
-    public function setVoteEntity(int $vote_entity): Vote
+    public function setVoteEntity(int $voteEntity): Vote
     {
-        return $this->setData(VoteInterface::COLUMN_VOTE_ENTITY, $vote_entity);
+        return $this->setData(VoteInterface::COLUMN_VOTE_ENTITY, $voteEntity);
     }
 
     /**
@@ -101,12 +101,12 @@ class Vote extends DataObject implements VoteInterface
     }
 
     /**
-     * @param int $vote_type
+     * @param int $voteType
      *
      * @return Vote
      */
-    public function setVoteType(int $vote_type): Vote
+    public function setVoteType(int $voteType): Vote
     {
-        return $this->setData(VoteInterface::COLUMN_VOTE_TYPE, $vote_type);
+        return $this->setData(VoteInterface::COLUMN_VOTE_TYPE, $voteType);
     }
 }
