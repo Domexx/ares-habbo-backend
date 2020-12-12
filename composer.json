@@ -19,15 +19,16 @@
         }
     ],
     "require": {
-        "ext-sockets": "*",
         "ext-json": "*",
-        "domexx/ares-core": "2.0.0"
+        "ext-sockets": "*",
+        "domexx/ares-core": "3.2.4",
+        "robmorgan/phinx": "dev-master"
     },
     "config": {
         "sort-packages": true,
         "optimize-autoloader": true,
         "platform": {
-            "php": "7.4"
+            "php": "8.0"
         }
     },
     "autoload": {

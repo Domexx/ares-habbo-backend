@@ -9,8 +9,8 @@ namespace Ares\Guild\Controller;
 
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Guild\Entity\Guild;
-use Ares\Guild\Exception\GuildException;
 use Ares\Guild\Repository\GuildMemberRepository;
 use Ares\Guild\Repository\GuildRepository;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -24,7 +24,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class GuildController extends BaseController
 {
     /**
-     * RoomController constructor.
+     * GuildController constructor.
      *
      * @param   GuildRepository         $guildRepository
      * @param   GuildMemberRepository   $guildMemberRepository
@@ -40,7 +40,7 @@ class GuildController extends BaseController
      * @param             $args
      *
      * @return Response
-     * @throws GuildException|DataObjectManagerException
+     * @throws DataObjectManagerException|NoSuchEntityException
      */
     public function guild(Request $request, Response $response, array $args): Response
     {
@@ -49,13 +49,6 @@ class GuildController extends BaseController
 
         /** @var Guild $guild */
         $guild = $this->guildRepository->getGuild($id);
-
-        /**
-         * @TODO UJEFU
-         */
-        if (!$guild) {
-            throw new GuildException(__('No Guild was found'));
-        }
 
         return $this->respond(
             $response,
@@ -134,6 +127,7 @@ class GuildController extends BaseController
      * @param Response $response
      *
      * @return Response
+     * @throws NoSuchEntityException
      */
     public function mostMembers(Request $request, Response $response): Response
     {

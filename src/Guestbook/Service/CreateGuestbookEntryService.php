@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -9,8 +9,12 @@ namespace Ares\Guestbook\Service;
 
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Guestbook\Entity\Guestbook;
+use Ares\Guestbook\Exception\GuestbookException;
+use Ares\Guestbook\Interfaces\Response\GuestbookResponseCodeInterface;
 use Ares\Guestbook\Repository\GuestbookRepository;
+use PHLAK\Config\Config;
 
 /**
  * Class CreateGuestbookEntryService
@@ -22,10 +26,12 @@ class CreateGuestbookEntryService
     /**
      * CreateGuestbookEntryService constructor.
      *
-     * @param   GuestbookRepository  $guestbookRepository
+     * @param GuestbookRepository $guestbookRepository
+     * @param Config              $config
      */
     public function __construct(
-        private GuestbookRepository $guestbookRepository
+        private GuestbookRepository $guestbookRepository,
+        private Config $config
     ) {}
 
     /**
@@ -33,10 +39,25 @@ class CreateGuestbookEntryService
      * @param array $data
      *
      * @return CustomResponseInterface
-     * @throws DataObjectManagerException
+     * @throws DataObjectManagerException|GuestbookException
      */
     public function execute(int $userId, array $data): CustomResponseInterface
     {
+        $commentCount = $this->guestbookRepository
+            ->getUserCommentCount(
+                $userId,
+                $data['profile_id'],
+                $data['guild_id']
+            );
+
+        if ($commentCount >= $this->config->get('hotel_settings.guestbook.comment_max')) {
+            throw new GuestbookException(
+                __('User exceeded allowed comments'),
+                GuestbookResponseCodeInterface::RESPONSE_GUESTBOOK_USER_EXCEEDED_COMMENTS,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
+        }
+
         $entry = $this->getNewEntry($userId, $data);
 
         /** @var Guestbook $entry */

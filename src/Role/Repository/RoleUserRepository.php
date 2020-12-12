@@ -7,6 +7,7 @@
 
 namespace Ares\Role\Repository;
 
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Role\Entity\RoleUser;
 use Illuminate\Database\QueryException;
@@ -47,6 +48,7 @@ class RoleUserRepository extends BaseRepository
      * @param int $userId
      *
      * @return RoleUser|null
+     * @throws NoSuchEntityException
      */
     public function getUserAssignedRole(int $roleId, int $userId): ?RoleUser
     {
@@ -54,9 +56,9 @@ class RoleUserRepository extends BaseRepository
             ->where([
                 'role_id' => $roleId,
                 'user_id' => $userId
-            ])->limit(1);
+            ]);
 
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria, true);
     }
 
     /**
@@ -84,7 +86,7 @@ class RoleUserRepository extends BaseRepository
 
         return array_values(
             array_unique(
-                $this->getList($searchCriteria)->get('name')
+                $this->getList($searchCriteria)->get('name') ?? []
             )
         );
     }

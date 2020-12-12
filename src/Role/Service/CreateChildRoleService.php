@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -10,12 +10,13 @@ namespace Ares\Role\Service;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Role\Entity\Role;
 use Ares\Role\Entity\RoleHierarchy;
 use Ares\Role\Exception\RoleException;
+use Ares\Role\Interfaces\Response\RoleResponseCodeInterface;
 use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RoleRepository;
-use DateTime;
 
 /**
  * Class CreateChildRoleService
@@ -54,7 +55,11 @@ class CreateChildRoleService
         $isCycle = $this->checkForCycle($parentRoleId, $childRoleId);
 
         if ($isCycle) {
-            throw new RoleException(__('Cycle detected for given Role notations'));
+            throw new RoleException(
+                __('Cycle detected for given Role notations'),
+                RoleResponseCodeInterface::RESPONSE_ROLE_CYCLE_DETECTED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         /** @var Role $parentRole */
@@ -88,7 +93,7 @@ class CreateChildRoleService
         $roleHierarchy
             ->setParentRoleId($parentRoleId)
             ->setChildRoleId($childRoleId)
-            ->setCreatedAt(new DateTime());
+            ->setCreatedAt(new \DateTime());
 
         return $roleHierarchy;
     }

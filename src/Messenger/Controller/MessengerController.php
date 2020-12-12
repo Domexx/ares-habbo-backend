@@ -26,7 +26,7 @@ class MessengerController extends BaseController
     /**
      * MessengerController constructor.
      *
-     * @param MessengerRepository    $messengerRepository
+     * @param MessengerRepository $messengerRepository
      */
     public function __construct(
         private MessengerRepository $messengerRepository

@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -14,7 +14,6 @@ use Ares\Forum\Repository\ThreadRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
-use DateTime;
 
 /**
  * Class CreateCommentService
@@ -50,7 +49,8 @@ class CreateCommentService
         $comment = $this->commentRepository->save($comment);
         $comment->getUser();
 
-        return response()->setData($comment);
+        return response()
+            ->setData($comment);
     }
 
     /**
@@ -74,6 +74,6 @@ class CreateCommentService
             ->setIsEdited(0)
             ->setLikes(0)
             ->setDislikes(0)
-            ->setCreatedAt(new DateTime());
+            ->setCreatedAt(new \DateTime());
     }
 }

@@ -63,4 +63,25 @@ class GuestbookRepository extends BaseRepository
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
+
+    /**
+     * @param int      $userId
+     * @param int|null $profileId
+     * @param int|null $guildId
+     *
+     * @return int
+     */
+    public function getUserCommentCount(int $userId, ?int $profileId, ?int $guildId): int
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->where([
+                'user_id' => $userId,
+                'profile_id' => $profileId
+            ])->where([
+                'user_id' => $userId,
+                'guild_id' => $guildId
+            ]);
+
+        return $this->getList($searchCriteria)->count();
+    }
 }

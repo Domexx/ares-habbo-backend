@@ -11,10 +11,13 @@ use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\ValidationService;
 use Ares\Photo\Entity\Photo;
 use Ares\Photo\Exception\PhotoException;
+use Ares\Photo\Interfaces\Response\PhotoResponseCodeInterface;
 use Ares\Photo\Repository\PhotoRepository;
+use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Entity\User;
 use Ares\User\Repository\UserRepository;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -79,7 +82,7 @@ class PhotoController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'username' => 'required'
+            UserInterface::COLUMN_USERNAME => 'required'
         ]);
 
         /** @var string $username */
@@ -144,7 +147,11 @@ class PhotoController extends BaseController
         $photo = $this->photoRepository->delete($id);
 
         if (!$photo) {
-            throw new PhotoException(__('Photo could not be deleted'));
+            throw new PhotoException(
+                __('Photo could not be deleted'),
+                PhotoResponseCodeInterface::RESPONSE_PHOTO_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

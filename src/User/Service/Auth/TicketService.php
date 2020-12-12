@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -10,7 +10,6 @@ namespace Ares\User\Service\Auth;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\User\Entity\User;
 use Ares\User\Repository\UserRepository;
-use Exception;
 
 /**
  * Class TicketService
@@ -53,7 +52,7 @@ class TicketService
      * @param   object  $user
      *
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
     public function hash(object $user): string
     {

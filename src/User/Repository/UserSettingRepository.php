@@ -8,6 +8,7 @@
 namespace Ares\User\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Model\Query\Collection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\User\Entity\UserSetting;
@@ -64,6 +65,7 @@ class UserSettingRepository extends BaseRepository
      * @return UserSetting|null
      *
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function getUserWithMostRespects(): ?UserSetting
     {
@@ -73,6 +75,6 @@ class UserSettingRepository extends BaseRepository
             ->limit(1)
             ->addRelation('user');
 
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria);
     }
 }

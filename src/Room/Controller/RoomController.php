@@ -11,7 +11,6 @@ use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Room\Entity\Room;
-use Ares\Room\Exception\RoomException;
 use Ares\Room\Repository\RoomRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -93,16 +92,12 @@ class RoomController extends BaseController
      * @param Response $response
      *
      * @return Response
-     * @throws RoomException
+     * @throws NoSuchEntityException
      */
     public function mostVisited(Request $request, Response $response): Response
     {
         /** @var Room $room */
         $room = $this->roomRepository->getMostVisitedRoom();
-
-        if (!$room) {
-            throw new RoomException(__('No Room was found'), 404);
-        }
 
         return $this->respond(
             $response,

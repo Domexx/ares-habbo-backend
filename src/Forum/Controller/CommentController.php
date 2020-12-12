@@ -8,7 +8,9 @@
 namespace Ares\Forum\Controller;
 
 use Ares\Forum\Entity\Comment;
+use Ares\Forum\Entity\Contract\CommentInterface;
 use Ares\Forum\Exception\CommentException;
+use Ares\Forum\Interfaces\Response\ForumResponseCodeInterface;
 use Ares\Forum\Repository\CommentRepository;
 use Ares\Forum\Service\Comment\CreateCommentService;
 use Ares\Forum\Service\Comment\EditCommentService;
@@ -17,6 +19,7 @@ use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
@@ -61,8 +64,8 @@ class CommentController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'thread_id' => 'required|numeric',
-            'content'   => 'required'
+            CommentInterface::COLUMN_THREAD_ID => 'required|numeric',
+            CommentInterface::COLUMN_CONTENT => 'required'
         ]);
 
         /** @var User $user */
@@ -91,8 +94,8 @@ class CommentController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'thread_id' => 'required|numeric',
-            'content'   => 'required'
+            CommentInterface::COLUMN_THREAD_ID => 'required|numeric',
+            CommentInterface::COLUMN_CONTENT => 'required'
         ]);
 
         /** @var Comment $comment */
@@ -156,7 +159,11 @@ class CommentController extends BaseController
         $deleted = $this->commentRepository->delete($id);
 
         if (!$deleted) {
-            throw new CommentException(__('Comment could not be deleted'), 409);
+            throw new CommentException(
+                __('Comment could not be deleted'),
+                ForumResponseCodeInterface::RESPONSE_FORUM_COMMENT_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

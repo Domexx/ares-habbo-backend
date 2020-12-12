@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -10,9 +10,11 @@ namespace Ares\Vote\Service;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Model\DataObject;
 use Ares\Vote\Entity\Vote;
 use Ares\Vote\Exception\VoteException;
+use Ares\Vote\Interfaces\Response\VoteResponseCodeInterface;
 use Ares\Vote\Repository\VoteRepository;
 
 /**
@@ -51,17 +53,25 @@ class CreateVoteService
         $existingVote = $this->voteRepository->getExistingVote($vote, $userId);
 
         if ($existingVote) {
-            throw new VoteException(__('User already voted for this entity'), 422);
+            throw new VoteException(
+                __('User already voted for this entity'),
+                VoteResponseCodeInterface::RESPONSE_VOTE_ENTITY_ALREADY_VOTED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         $entityRepository = $this->getVoteEntityService->execute($vote->getVoteEntity());
 
         if (!$entityRepository) {
-            throw new VoteException(__('Related EntityRepository could not be found'));
+            throw new VoteException(
+                __('Related EntityRepository could not be found'),
+                VoteResponseCodeInterface::RESPONSE_VOTE_ENTITY_REPOSITORY_NOT_FOUND,
+                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+            );
         }
 
         /** @var DataObject $entity */
-        $entity = $entityRepository->get($vote->getEntityId());
+        $entityRepository->get($vote->getEntityId());
 
         $vote = $this->voteRepository->save($vote);
 

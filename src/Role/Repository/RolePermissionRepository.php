@@ -1,12 +1,13 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
 namespace Ares\Role\Repository;
 
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Role\Entity\RolePermission;
 
@@ -50,6 +51,7 @@ class RolePermissionRepository extends BaseRepository
      * @param int $permissionId
      *
      * @return RolePermission|null
+     * @throws NoSuchEntityException
      */
     public function getExistingRolePermission(int $roleId, int $permissionId): ?RolePermission
     {
@@ -57,8 +59,8 @@ class RolePermissionRepository extends BaseRepository
             ->where([
                 'role_id' => $roleId,
                 'permission_id' => $permissionId
-            ])->limit(1);
+            ]);
 
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria, true);
     }
 }

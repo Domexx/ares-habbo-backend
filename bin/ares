@@ -1,0 +1,19 @@
+#!/usr/bin/env php
+<?php
+/**
+ * @copyright Copyright (c) Ares (https://www.ares.to)
+ *
+ * @see LICENSE (MIT)
+ */
+ 
+use Symfony\Component\Console\Application;
+
+require dirname(__DIR__).'/vendor/autoload.php';
+
+$app = new Application('ares-console');
+
+foreach (require dirname(__DIR__).'/app/etc/commands.php' as $command) {
+	$app->add(new $command());
+}
+
+$app->run();

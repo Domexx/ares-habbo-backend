@@ -16,7 +16,6 @@ use Ares\User\Entity\UserSetting;
 use Ares\User\Repository\UserOfTheHotelRepository;
 use Ares\User\Repository\UserRepository;
 use Ares\User\Repository\UserSettingRepository;
-use DateTime;
 
 /**
  * Class ChangeUserOfTheHotelService
@@ -41,7 +40,7 @@ class ChangeUserOfTheHotelService
     /**
      * @return CustomResponseInterface
      *
-     * @throws DataObjectManagerException
+     * @throws DataObjectManagerException|NoSuchEntityException
      */
     public function execute(): CustomResponseInterface
     {
@@ -82,6 +81,6 @@ class ChangeUserOfTheHotelService
         return $newUser
             ->setUserId($userData->getId())
             ->setToTimestamp(strtotime('+1 week'))
-            ->setCreatedAt(new DateTime());
+            ->setCreatedAt(new \DateTime());
     }
 }

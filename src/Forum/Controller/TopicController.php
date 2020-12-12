@@ -7,8 +7,10 @@
 
 namespace Ares\Forum\Controller;
 
+use Ares\Forum\Entity\Contract\TopicInterface;
 use Ares\Forum\Entity\Topic;
 use Ares\Forum\Exception\TopicException;
+use Ares\Forum\Interfaces\Response\ForumResponseCodeInterface;
 use Ares\Forum\Repository\TopicRepository;
 use Ares\Forum\Service\Topic\CreateTopicService;
 use Ares\Forum\Service\Topic\EditTopicService;
@@ -16,6 +18,7 @@ use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\ValidationService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -58,8 +61,8 @@ class TopicController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'title'       => 'required',
-            'description' => 'required',
+            TopicInterface::COLUMN_TITLE => 'required|regex:/^[a-zA-Z0-9]+$/',
+            TopicInterface::COLUMN_DESCRIPTION => 'required',
         ]);
 
         $customResponse = $this->createTopicService->execute($parsedData);
@@ -146,7 +149,11 @@ class TopicController extends BaseController
         $deleted = $this->topicRepository->delete($id);
 
         if (!$deleted) {
-            throw new TopicException(__('Topic could not be deleted'), 409);
+            throw new TopicException(
+                __('Topic could not be deleted'),
+                ForumResponseCodeInterface::RESPONSE_FORUM_TOPIC_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

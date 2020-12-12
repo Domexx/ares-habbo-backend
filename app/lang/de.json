@@ -56,6 +56,7 @@
   "User with given E-Mail already exists": "User mit angegebener E-Mail existiert bereits",
   "Settings for given user does not exist": "Einstellungen für angegebenen User existieren nicht",
   "User is not allowed to change the Username": "User ist nicht berechtigt den Usernamen zu ändern",
+  "You cannot use the same Username or a User with this username already exists": "Du kannst nicht den selben Usernamen benutzen oder es existiert schon ein User mit diesem Usernamen",
   "User with given username already exists": "User mit angegebenen Username existiert bereits",
 
   "You dont have the special rights to execute that action": "Du besitzt nicht die nötigen Rechte um die Aktion auszuführen",
@@ -65,7 +66,7 @@
 
   "You already have an ongoing payment": "Du hast gerade eine laufende Zahlung",
   "Guestbook entry could not be deleted": "Gästebucheintrag konnte nicht gelöscht werden",
-  "Article with given Title already exists": "Artikel mit angegebenen Titel existiert bereits",
+  "Article with given Title and Slug already exists": "Artikel mit angegebenen Titel und Slug existiert bereits",
   "Topic with given Title already exists": "Topic mit angegebenen Titel existiert bereits",
   "There is already an existing Thread or the Topic could not be found": "Es existiert bereits ein Thread oder das Topic konnte nicht gefunden werden",
   "Topic with the title %s already exists": "Es existiert bereits ein Topic mit dem Titel %s",
@@ -75,5 +76,6 @@
   "Could not create the socket": "Socket konnte nicht erstellt werden",
   "The command %s already exists": "Kommando %s existiert bereits",
   "Permission %s already exists": "Permission %s existiert bereits",
-  "Role %s already exists": "Rolle %s existiert bereits"
+  "Role %s already exists": "Rolle %s existiert bereits",
+  "User exceeded allowed comments": "User hat zu viele Kommentare gepostet"
 }

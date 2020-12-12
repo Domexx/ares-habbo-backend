@@ -72,7 +72,7 @@ class ChangeGeneralSettingsService
         } catch (Exception $exception) {
             throw new UserSettingsException(
                 $exception->getMessage(),
-                500,
+                $exception->getCode(),
                 $exception
             );
         }

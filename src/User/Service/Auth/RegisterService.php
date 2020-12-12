@@ -9,13 +9,14 @@ namespace Ares\User\Service\Auth;
 
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\TokenService;
 use Ares\User\Entity\User;
 use Ares\User\Exception\RegisterException;
+use Ares\User\Interfaces\Response\UserResponseCodeInterface;
 use Ares\User\Interfaces\UserCurrencyTypeInterface;
 use Ares\User\Repository\UserRepository;
 use Ares\User\Service\Currency\CreateCurrencyService;
-use Exception;
 use PHLAK\Config\Config;
 use ReallySimpleJWT\Exception\ValidateException;
 
@@ -29,16 +30,18 @@ class RegisterService
     /**
      * LoginService constructor.
      *
-     * @param   UserRepository         $userRepository
-     * @param   TokenService           $tokenService
-     * @param   TicketService          $ticketService
-     * @param   Config                 $config
-     * @param   CreateCurrencyService  $createCurrencyService
+     * @param UserRepository        $userRepository
+     * @param TokenService          $tokenService
+     * @param TicketService         $ticketService
+     * @param HashService           $hashService
+     * @param Config                $config
+     * @param CreateCurrencyService $createCurrencyService
      */
     public function __construct(
         private UserRepository $userRepository,
         private TokenService $tokenService,
         private TicketService $ticketService,
+        private HashService $hashService,
         private Config $config,
         private CreateCurrencyService $createCurrencyService
     ) {}
@@ -52,7 +55,7 @@ class RegisterService
      * @throws RegisterException
      * @throws ValidateException
      * @throws DataObjectManagerException
-     * @throws Exception
+     * @throws \Exception
      */
     public function register(array $data): CustomResponseInterface
     {
@@ -64,7 +67,11 @@ class RegisterService
             );
 
         if ($isAlreadyRegistered) {
-            throw new RegisterException(__('Username or E-Mail is already taken'), 422);
+            throw new RegisterException(
+                __('Username or E-Mail is already taken'),
+                UserResponseCodeInterface::RESPONSE_AUTH_REGISTER_TAKEN,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         $this->isEligible($data);
@@ -106,7 +113,7 @@ class RegisterService
      * @param array $data
      *
      * @return User
-     * @throws Exception
+     * @throws \Exception
      */
     private function getNewUser(array $data): User
     {
@@ -114,12 +121,7 @@ class RegisterService
 
         return $user
             ->setUsername($data['username'])
-            ->setPassword(password_hash(
-                    $data['password'],
-                    PASSWORD_ARGON2ID,
-                    ['memory_cost' => 8, 'time_cost' => 1, 'threads' => 1]
-                )
-            )
+            ->setPassword($this->hashService->hash($data['password']))
             ->setMail($data['mail'])
             ->setLook($data['look'])
             ->setGender($data['gender'])
@@ -141,16 +143,17 @@ class RegisterService
      */
     private function isEligible($data): bool
     {
-        $dataObjectManager = $this->userRepository->getDataObjectManager();
-
         /** @var int $maxAccountsPerIp */
         $maxAccountsPerIp = $this->config->get('hotel_settings.register.max_accounts_per_ip');
-        $accountExistence = $dataObjectManager
-            ->where('ip_register', $data['ip_register'])
-            ->count();
+        $accountExistence = $this->userRepository->getAccountCountByIp($data['ip_register']);
 
         if ($accountExistence >= $maxAccountsPerIp) {
-            throw new RegisterException(__('You can only have %s Accounts', [$maxAccountsPerIp]));
+            throw new RegisterException(
+                __('You can only have %s Accounts',
+                    [$maxAccountsPerIp]),
+                UserResponseCodeInterface::RESPONSE_AUTH_REGISTER_EXCEEDED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_FORBIDDEN
+            );
         }
 
         return true;
@@ -174,7 +177,11 @@ class RegisterService
         $looks = array_merge($boyLooks, $girlLooks);
 
         if ($data['gender'] !== "M" && $data['gender'] !== "F") {
-            throw new RegisterException(__('The gender must be valid'), 422);
+            throw new RegisterException(
+                __('The gender must be valid'),
+                UserResponseCodeInterface::RESPONSE_AUTH_REGISTER_GENDER,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         if (!in_array($data['look'], $looks, true)) {

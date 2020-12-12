@@ -7,15 +7,18 @@
 
 namespace Ares\Article\Controller;
 
-use Ares\Article\Exception\CommentException;
+use Ares\Article\Entity\Contract\CommentInterface;
+use Ares\Article\Interfaces\Response\ArticleResponseCodeInterface;
 use Ares\Article\Repository\CommentRepository;
 use Ares\Article\Service\CreateCommentService;
 use Ares\Article\Service\EditCommentService;
+use Ares\Article\Exception\CommentException;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
@@ -52,7 +55,7 @@ class CommentController extends BaseController
      * @throws AuthenticationException
      * @throws DataObjectManagerException
      * @throws ValidationException
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|CommentException
      */
     public function create(Request $request, Response $response): Response
     {
@@ -60,8 +63,8 @@ class CommentController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'content'    => 'required',
-            'article_id' => 'required|numeric'
+            CommentInterface::COLUMN_CONTENT => 'required',
+            CommentInterface::COLUMN_ARTICLE_ID => 'required|numeric'
         ]);
 
         /** @var User $user */
@@ -90,8 +93,8 @@ class CommentController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'comment_id' => 'required|numeric',
-            'content'    => 'required'
+            CommentInterface::COLUMN_ID => 'required|numeric',
+            CommentInterface::COLUMN_CONTENT => 'required'
         ]);
 
         $customResponse = $this->editCommentService->execute($parsedData);
@@ -153,7 +156,11 @@ class CommentController extends BaseController
         $deleted = $this->commentRepository->delete($id);
 
         if (!$deleted) {
-            throw new CommentException(__('Comment could not be deleted'), 409);
+            throw new CommentException(
+                __('Comment could not be deleted'),
+                ArticleResponseCodeInterface::RESPONSE_ARTICLE_COMMENT_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

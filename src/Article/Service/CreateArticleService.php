@@ -9,12 +9,13 @@ namespace Ares\Article\Service;
 
 use Ares\Article\Entity\Article;
 use Ares\Article\Exception\ArticleException;
+use Ares\Article\Interfaces\Response\ArticleResponseCodeInterface;
 use Ares\Article\Repository\ArticleRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Cocur\Slugify\Slugify;
-use DateTime;
 
 /**
  * Class CreateArticleService
@@ -50,10 +51,14 @@ class CreateArticleService
         $article = $this->getNewArticle($userId, $data);
 
         /** @var Article $existingArticle */
-        $existingArticle = $this->articleRepository->get($article->getTitle(), 'title', true);
+        $existingArticle = $this->articleRepository->getExistingArticle($article->getTitle(), $article->getSlug());
 
         if ($existingArticle) {
-            throw new ArticleException(__('Article with given Title already exists.'), 409);
+            throw new ArticleException(
+                __('Article with given Title and Slug already exists'),
+                ArticleResponseCodeInterface::RESPONSE_ARTICLE_TITLE_EXIST,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         /** @var Article $article */
@@ -86,6 +91,6 @@ class CreateArticleService
             ->setPinned($data['pinned'])
             ->setLikes(0)
             ->setDislikes(0)
-            ->setCreatedAt(new DateTime());
+            ->setCreatedAt(new \DateTime());
     }
 }

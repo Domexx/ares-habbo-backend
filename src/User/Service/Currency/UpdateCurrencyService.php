@@ -1,13 +1,15 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
 namespace Ares\User\Service\Currency;
 
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\User\Exception\UserCurrencyException;
+use Ares\User\Interfaces\Response\UserResponseCodeInterface;
 use Ares\User\Repository\UserCurrencyRepository;
 use Exception;
 
@@ -42,7 +44,11 @@ class UpdateCurrencyService
         $currencies = $this->userCurrencyRepository->getUserCurrency($userId, $type);
 
         if (!$currencies) {
-            throw new UserCurrencyException(__('No Currencies were found'), 404);
+            throw new UserCurrencyException(
+                __('No Currencies were found'),
+                UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_FOUND,
+                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+            );
         }
 
         foreach ($currencies as $currency) {
@@ -50,7 +56,11 @@ class UpdateCurrencyService
             try {
                 $this->userCurrencyRepository->save($currency);
             } catch (Exception) {
-                throw new UserCurrencyException(__('Currency could not be updated.'), 422);
+                throw new UserCurrencyException(
+                    __('Currency could not be updated.'),
+                    UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_UPDATED,
+                    HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+                );
             }
         }
     }

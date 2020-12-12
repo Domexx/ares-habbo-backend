@@ -12,9 +12,12 @@ use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
+use Ares\Vote\Entity\Contract\VoteInterface;
 use Ares\Vote\Exception\VoteException;
+use Ares\Vote\Interfaces\Response\VoteResponseCodeInterface;
 use Ares\Vote\Repository\VoteRepository;
 use Ares\Vote\Service\CreateVoteService;
 use Ares\Vote\Service\DeleteVoteService;
@@ -68,9 +71,9 @@ class VoteController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'entity_id'   => 'required|numeric',
-            'vote_entity' => 'required|numeric',
-            'vote_type'   => 'required|numeric'
+            VoteInterface::COLUMN_ENTITY_ID => 'required|numeric',
+            VoteInterface::COLUMN_VOTE_ENTITY => 'required|numeric',
+            VoteInterface::COLUMN_VOTE_TYPE => 'required|numeric'
         ]);
 
         /** @var User $user */
@@ -91,7 +94,11 @@ class VoteController extends BaseController
 
         if (!$result) {
             $this->deleteVoteService->execute($user->getId(), $parsedData);
-            throw new VoteException(__('The entity could not be incremented'), 500);
+            throw new VoteException(
+                __('The entity could not be incremented'),
+                VoteResponseCodeInterface::RESPONSE_VOTE_ENTITY_COULD_NOT_BE_INCREMENTED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(
@@ -143,9 +150,9 @@ class VoteController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'entity_id'   => 'required|numeric',
-            'vote_entity' => 'required|numeric',
-            'vote_type'   => 'required|numeric'
+            VoteInterface::COLUMN_ENTITY_ID => 'required|numeric',
+            VoteInterface::COLUMN_VOTE_ENTITY => 'required|numeric',
+            VoteInterface::COLUMN_VOTE_TYPE => 'required|numeric'
         ]);
 
         /** @var User $user */
@@ -154,7 +161,11 @@ class VoteController extends BaseController
         $customResponse = $this->deleteVoteService->execute($user->getId(), $parsedData);
 
         if (!$customResponse->getData()) {
-            throw new VoteException(__('Vote could not be deleted'), 409);
+            throw new VoteException(
+                __('Vote could not be deleted'),
+                VoteResponseCodeInterface::RESPONSE_VOTE_ENTITY_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         $result = $this->decrementVoteService
@@ -166,7 +177,11 @@ class VoteController extends BaseController
 
         if (!$result) {
             $this->createVoteService->execute($user->getId(), $parsedData);
-            throw new VoteException(__('The entity could not be incremented'), 500);
+            throw new VoteException(
+                __('The entity could not be incremented'),
+                VoteResponseCodeInterface::RESPONSE_VOTE_ENTITY_COULD_NOT_BE_INCREMENTED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

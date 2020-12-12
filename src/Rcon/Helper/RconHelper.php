@@ -8,6 +8,7 @@
 namespace Ares\Rcon\Helper;
 
 use Ares\Rcon\Exception\RconException;
+use Ares\Rcon\Interfaces\Response\RconResponseCodeInterface;
 use PHLAK\Config\Config;
 
 /**
@@ -43,14 +44,17 @@ class RconHelper
             'data' => $parameter
         ], JSON_THROW_ON_ERROR);
 
-        $executor = socket_write($socket, $encodedData, strlen($encodedData));
+        $executor = @socket_write($socket, $encodedData, strlen($encodedData));
 
         if (!$executor) {
-            throw new RconException(__('Could not send the provided Command'));
+            throw new RconException(
+                __('Could not send the provided Command'),
+            RconResponseCodeInterface::RESPONSE_RCON_COULD_NOT_SEND_COMMAND
+            );
         }
 
         return json_decode(
-            socket_read($socket, 2048), true, 512, JSON_THROW_ON_ERROR
+            @socket_read($socket, 2048), true, 512, JSON_THROW_ON_ERROR
         );
     }
 
@@ -73,7 +77,10 @@ class RconHelper
         $isConnectionEstablished = $this->connectToSocket($socket, $host, $port);
 
         if (!$isConnectionEstablished) {
-            throw new RconException(__('Could not establish a connection to the rcon server'));
+            throw new RconException(
+                __('Could not establish a connection to the rcon server'),
+                RconResponseCodeInterface::RESPONSE_RCON_NO_CONNECTION
+            );
         }
 
         return $this;
@@ -90,7 +97,7 @@ class RconHelper
      */
     public function connectToSocket($socket, $host, $port): bool
     {
-        return socket_connect($socket, $host, $port);
+        return @socket_connect($socket, $host, $port);
     }
 
     /**
@@ -101,14 +108,17 @@ class RconHelper
      */
     public function createSocket(): \Socket
     {
-        $socket = socket_create(
+        $socket = @socket_create(
             AF_INET,
             SOCK_STREAM,
             SOL_TCP
         );
 
         if (!$socket) {
-            throw new RconException(__('Could not create the socket'), 409);
+            throw new RconException(
+                __('Could not create the socket'),
+                RconResponseCodeInterface::RESPONSE_RCON_COULD_NOT_CREATE_SOCKET
+            );
         }
 
         return $socket;

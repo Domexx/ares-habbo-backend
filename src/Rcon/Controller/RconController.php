@@ -9,17 +9,15 @@ namespace Ares\Rcon\Controller;
 
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
-use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
+use Ares\Rcon\Entity\Contract\RconInterface;
 use Ares\Rcon\Exception\RconException;
 use Ares\Rcon\Service\CreateRconCommandService;
 use Ares\Rcon\Service\DeleteRconCommandService;
 use Ares\Rcon\Service\ExecuteRconCommandService;
-use Ares\Role\Exception\RoleException;
 use Ares\User\Entity\User;
-use JsonException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -51,10 +49,7 @@ class RconController extends BaseController
      *
      * @return Response
      * @throws AuthenticationException
-     * @throws DataObjectManagerException
-     * @throws JsonException
      * @throws RconException
-     * @throws RoleException
      * @throws ValidationException
      * @throws NoSuchEntityException
      */
@@ -64,7 +59,7 @@ class RconController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'command' => 'required'
+            RconInterface::COLUMN_COMMAND => 'required'
         ]);
 
         /** @var User $user */

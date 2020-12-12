@@ -12,8 +12,11 @@ use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\ValidationService;
+use Ares\Guestbook\Entity\Contract\GuestbookInterface;
 use Ares\Guestbook\Exception\GuestbookException;
+use Ares\Guestbook\Interfaces\Response\GuestbookResponseCodeInterface;
 use Ares\Guestbook\Repository\GuestbookRepository;
 use Ares\Guestbook\Service\CreateGuestbookEntryService;
 use Ares\Guild\Entity\Guild;
@@ -64,9 +67,9 @@ class GuestbookController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'content' => 'required',
-            'profile_id' => 'numeric',
-            'guild_id' => 'numeric'
+            GuestbookInterface::COLUMN_CONTENT => 'required',
+            GuestbookInterface::COLUMN_PROFILE_ID => 'numeric',
+            GuestbookInterface::COLUMN_GUILD_ID => 'numeric'
         ]);
 
         /** @var int $profileId */
@@ -85,7 +88,11 @@ class GuestbookController extends BaseController
         $guild = $this->guildRepository->get($guildId, 'id', true);
 
         if (!$profile && !$guild) {
-            throw new GuestbookException(__('The associated Entities could not be found'));
+            throw new GuestbookException(
+                __('The associated Entities could not be found'),
+                GuestbookResponseCodeInterface::RESPONSE_GUESTBOOK_ASSOCIATED_ENTITIES_NOT_FOUND,
+                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+            );
         }
 
         $parsedData['profile_id'] = (!$profile) ? null : $profile->getId();
@@ -186,7 +193,11 @@ class GuestbookController extends BaseController
         $deleted = $this->guestbookRepository->delete($id);
 
         if (!$deleted) {
-            throw new GuestbookException(__('Guestbook entry could not be deleted'), 409);
+            throw new GuestbookException(
+                __('Guestbook entry could not be deleted'),
+                GuestbookResponseCodeInterface::RESPONSE_GUESTBOOK_ENTRY_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

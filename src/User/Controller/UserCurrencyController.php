@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -10,6 +10,7 @@ namespace Ares\User\Controller;
 use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
+use Ares\User\Entity\Contract\UserCurrencyInterface;
 use Ares\User\Exception\UserCurrencyException;
 use Ares\User\Service\Currency\UpdateCurrencyService;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -49,9 +50,9 @@ class UserCurrencyController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'user_id' => 'required',
-            'type'    => 'required',
-            'amount'  => 'required'
+            UserCurrencyInterface::COLUMN_USER_ID => 'required',
+            UserCurrencyInterface::COLUMN_TYPE => 'required',
+            UserCurrencyInterface::COLUMN_AMOUNT => 'required'
         ]);
 
         $this->updateCurrencyService->execute(

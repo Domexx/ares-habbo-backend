@@ -1,16 +1,16 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
 namespace Ares\Vote\Service;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Vote\Entity\Vote;
-use Ares\Vote\Exception\VoteException;
 use Ares\Vote\Repository\VoteRepository;
 
 /**
@@ -37,7 +37,7 @@ class DeleteVoteService
      *
      * @return CustomResponseInterface
      * @throws DataObjectManagerException
-     * @throws VoteException
+     * @throws NoSuchEntityException
      */
     public function execute(int $userId, array $data): CustomResponseInterface
     {
@@ -49,13 +49,9 @@ class DeleteVoteService
             $userId
         );
 
-        if (!$vote) {
-            throw new VoteException(__('No Vote was found'), 404);
-        }
-
-        $deleted = $this->voteRepository->delete($vote->getId());
+        $this->voteRepository->delete($vote->getId());
 
         return response()
-            ->setData($deleted);
+            ->setData(true);
     }
 }

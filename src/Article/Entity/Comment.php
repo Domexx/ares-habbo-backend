@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -74,13 +74,13 @@ class Comment extends DataObject implements CommentInterface
     }
 
     /**
-     * @param int $article_id
+     * @param int $articleId
      *
      * @return Comment
      */
-    public function setArticleId(int $article_id): Comment
+    public function setArticleId(int $articleId): Comment
     {
-        return $this->setData(CommentInterface::COLUMN_ARTICLE_ID, $article_id);
+        return $this->setData(CommentInterface::COLUMN_ARTICLE_ID, $articleId);
     }
 
     /**

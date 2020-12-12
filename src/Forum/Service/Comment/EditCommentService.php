@@ -12,7 +12,6 @@ use Ares\Forum\Repository\CommentRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
-use DateTime;
 
 /**
  * Class EditCommentService
@@ -51,7 +50,7 @@ class EditCommentService
         $comment
             ->setContent($content)
             ->setIsEdited(1)
-            ->setUpdatedAt(new DateTime());
+            ->setUpdatedAt(new \DateTime());
 
         /** @var Comment $comment */
         $comment = $this->commentRepository->save($comment);

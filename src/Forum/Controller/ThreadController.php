@@ -7,8 +7,10 @@
 
 namespace Ares\Forum\Controller;
 
+use Ares\Forum\Entity\Contract\ThreadInterface;
 use Ares\Forum\Entity\Thread;
 use Ares\Forum\Exception\ThreadException;
+use Ares\Forum\Interfaces\Response\ForumResponseCodeInterface;
 use Ares\Forum\Repository\ThreadRepository;
 use Ares\Forum\Service\Thread\CreateThreadService;
 use Ares\Forum\Service\Thread\EditThreadService;
@@ -17,15 +19,21 @@ use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
+/**
+ * Class ThreadController
+ *
+ * @package Ares\Forum\Controller
+ */
 class ThreadController extends BaseController
 {
     /**
-     * CommentController constructor.
+     * ThreadController constructor.
      *
      * @param   ThreadRepository        $threadRepository
      * @param   CreateThreadService     $createThreadService
@@ -56,16 +64,16 @@ class ThreadController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'title'       => 'required',
-            'description' => 'required',
-            'content'     => 'required',
-            'topic_id'    => 'required|numeric'
+            ThreadInterface::COLUMN_TITLE => 'nullable|regex:/^[a-zA-Z0-9]+$/',
+            ThreadInterface::COLUMN_DESCRIPTION => 'nullable',
+            ThreadInterface::COLUMN_CONTENT => 'nullable',
+            ThreadInterface::COLUMN_TOPIC_ID => 'required|numeric'
         ]);
 
         /** @var User $user */
-        $user = user($request);
+        $userId = user($request)->getId();
 
-        $customResponse = $this->createThreadService->execute($user->getId(), $parsedData);
+        $customResponse = $this->createThreadService->execute($userId, $parsedData);
 
         return $this->respond(
             $response,
@@ -74,12 +82,13 @@ class ThreadController extends BaseController
     }
 
     /**
-     * @param Request     $request
-     * @param Response    $response
-     * @param             $args
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
      *
      * @return Response
-     * @throws ThreadException|DataObjectManagerException
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function thread(Request $request, Response $response, array $args): Response
     {
@@ -95,10 +104,6 @@ class ThreadController extends BaseController
                 $topicId,
                 $slug
             );
-
-        if (!$thread) {
-            throw new ThreadException(__('No Thread was found'), 404);
-        }
 
         return $this->respond(
             $response,
@@ -157,7 +162,11 @@ class ThreadController extends BaseController
         $deleted = $this->threadRepository->delete($id);
 
         if (!$deleted) {
-            throw new ThreadException(__('Thread could not be deleted.'), 409);
+            throw new ThreadException(
+                __('Thread could not be deleted.'),
+                ForumResponseCodeInterface::RESPONSE_FORUM_THREAD_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

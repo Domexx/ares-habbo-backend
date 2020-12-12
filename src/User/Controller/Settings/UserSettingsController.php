@@ -13,6 +13,8 @@ use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
+use Ares\User\Entity\Contract\UserInterface;
+use Ares\User\Entity\Contract\UserSettingInterface;
 use Ares\User\Entity\User;
 use Ares\User\Exception\UserSettingsException;
 use Ares\User\Service\Settings\ChangeEmailService;
@@ -63,13 +65,13 @@ class UserSettingsController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'block_following' => 'required',
-            'block_friendrequests' => 'required',
-            'block_roominvites' => 'required',
-            'block_camera_follow' => 'required',
-            'block_alerts' => 'required',
-            'ignore_bots' => 'required',
-            'ignore_pets' => 'required'
+            UserSettingInterface::COLUMN_BLOCK_FOLLOWING => 'required',
+            UserSettingInterface::COLUMN_BLOCK_FRIENDREQUESTS => 'required',
+            UserSettingInterface::COLUMN_BLOCK_ROOMINVITES => 'required',
+            UserSettingInterface::COLUMN_BLOCK_CAMERA_FOLLOW => 'required',
+            UserSettingInterface::COLUMN_BLOCK_ALERTS => 'required',
+            UserSettingInterface::COLUMN_IGNORE_BOTS => 'required',
+            UserSettingInterface::COLUMN_IGNORE_PETS => 'required'
         ]);
 
         /** @var User $user */
@@ -104,8 +106,8 @@ class UserSettingsController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'new_password' => 'required',
-            'password' => 'required'
+            UserInterface::COLUMN_PASSWORD => 'required',
+            'new_password' => 'required'
         ]);
 
         /** @var User $user */
@@ -141,8 +143,8 @@ class UserSettingsController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'email' => 'required',
-            'password' => 'required'
+            UserInterface::COLUMN_MAIL => 'required',
+            UserInterface::COLUMN_PASSWORD => 'required'
         ]);
 
         /** @var User $user */
@@ -150,7 +152,7 @@ class UserSettingsController extends BaseController
 
         $customResponse = $this->changeEmailService->execute(
             $user,
-            $parsedData['email'],
+            $parsedData['mail'],
             $parsedData['password']
         );
 
@@ -177,8 +179,8 @@ class UserSettingsController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'username' => 'required',
-            'password' => 'required'
+            UserInterface::COLUMN_USERNAME => 'required',
+            UserInterface::COLUMN_PASSWORD => 'required'
         ]);
 
         /** @var User $user */

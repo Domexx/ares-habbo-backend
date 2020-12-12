@@ -83,91 +83,91 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @return int
+     * @return mixed
      */
-    public function getCanChangeName(): int
+    public function getCanChangeName(): mixed
     {
         return $this->getData(UserSettingInterface::COLUMN_CAN_CHANGE_NAME);
     }
 
     /**
-     * @param int $canChangeName
+     * @param mixed $canChangeName
      *
      * @return UserSetting
      */
-    public function setCanChangeName(int $canChangeName): UserSetting
+    public function setCanChangeName(mixed $canChangeName): UserSetting
     {
         return $this->setData(UserSettingInterface::COLUMN_CAN_CHANGE_NAME, $canChangeName);
     }
 
     /**
-     * @return int
+     * @return mixed
      */
-    public function getBlockFollowing(): int
+    public function getBlockFollowing(): mixed
     {
         return $this->getData(UserSettingInterface::COLUMN_BLOCK_FOLLOWING);
     }
 
     /**
-     * @param int $blockFollowing
+     * @param mixed $blockFollowing
      *
      * @return UserSetting
      */
-    public function setBlockFollowing(int $blockFollowing): UserSetting
+    public function setBlockFollowing(mixed $blockFollowing): UserSetting
     {
         return $this->setData(UserSettingInterface::COLUMN_BLOCK_FOLLOWING, $blockFollowing);
     }
 
     /**
-     * @return int
+     * @return mixed
      */
-    public function getBlockFriendRequests(): int
+    public function getBlockFriendRequests(): mixed
     {
         return $this->getData(UserSettingInterface::COLUMN_BLOCK_FRIENDREQUESTS);
     }
 
     /**
-     * @param int $blockFriendRequests
+     * @param mixed $blockFriendRequests
      *
      * @return UserSetting
      */
-    public function setBlockFriendRequests(int $blockFriendRequests): UserSetting
+    public function setBlockFriendRequests(mixed $blockFriendRequests): UserSetting
     {
         return $this->setData(UserSettingInterface::COLUMN_BLOCK_FRIENDREQUESTS, $blockFriendRequests);
     }
 
     /**
-     * @return int
+     * @return mixed
      */
-    public function getBlockRoomInvites(): int
+    public function getBlockRoomInvites(): mixed
     {
         return $this->getData(UserSettingInterface::COLUMN_BLOCK_ROOMINVITES);
     }
 
     /**
-     * @param int $blockRoomInvites
+     * @param mixed $blockRoomInvites
      *
      * @return UserSetting
      */
-    public function setBlockRoomInvites(int $blockRoomInvites): UserSetting
+    public function setBlockRoomInvites(mixed $blockRoomInvites): UserSetting
     {
         return $this->setData(UserSettingInterface::COLUMN_BLOCK_ROOMINVITES, $blockRoomInvites);
     }
 
     /**
-     * @return int
+     * @return mixed
      */
-    public function getBlockCameraFollow(): int
+    public function getBlockCameraFollow(): mixed
     {
         return $this->getData(UserSettingInterface::COLUMN_BLOCK_CAMERA_FOLLOW);
     }
 
     /**
-     * @param int $blockCameraFollow
+     * @param mixed $blockCameraFollow
      *
      * @return UserSetting
      */
-    public function setBlockCameraFollow(int $blockCameraFollow): UserSetting
+    public function setBlockCameraFollow(mixed $blockCameraFollow): UserSetting
     {
         return $this->setData(UserSettingInterface::COLUMN_BLOCK_CAMERA_FOLLOW, $blockCameraFollow);
     }
@@ -191,55 +191,55 @@ class UserSetting extends DataObject implements UserSettingInterface
     }
 
     /**
-     * @return int
+     * @return mixed
      */
-    public function getBlockAlerts(): int
+    public function getBlockAlerts(): mixed
     {
         return $this->getData(UserSettingInterface::COLUMN_BLOCK_ALERTS);
     }
 
     /**
-     * @param int $block_alerts
+     * @param mixed $blockAlerts
      *
      * @return UserSetting
      */
-    public function setBlockAlerts(int $block_alerts): UserSetting
+    public function setBlockAlerts(mixed $blockAlerts): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_BLOCK_ALERTS, $block_alerts);
+        return $this->setData(UserSettingInterface::COLUMN_BLOCK_ALERTS, $blockAlerts);
     }
 
     /**
-     * @return int
+     * @return mixed
      */
-    public function getIgnoreBots(): int
+    public function getIgnoreBots(): mixed
     {
         return $this->getData(UserSettingInterface::COLUMN_IGNORE_BOTS);
     }
 
     /**
-     * @param int $ignore_bots
+     * @param mixed $ignoreBots
      *
      * @return UserSetting
      */
-    public function setIgnoreBots(int $ignore_bots): UserSetting
+    public function setIgnoreBots(mixed $ignoreBots): UserSetting
     {
-        return $this->setData(UserSettingInterface::COLUMN_IGNORE_BOTS, $ignore_bots);
+        return $this->setData(UserSettingInterface::COLUMN_IGNORE_BOTS, $ignoreBots);
     }
 
     /**
-     * @return int
+     * @return mixed
      */
-    public function getIgnorePets(): int
+    public function getIgnorePets(): mixed
     {
         return $this->getData(UserSettingInterface::COLUMN_IGNORE_PETS);
     }
 
     /**
-     * @param int $ignorePets
+     * @param mixed $ignorePets
      *
      * @return UserSetting
      */
-    public function setIgnorePets(int $ignorePets): UserSetting
+    public function setIgnorePets(mixed $ignorePets): UserSetting
     {
         return $this->setData(UserSettingInterface::COLUMN_IGNORE_PETS, $ignorePets);
     }

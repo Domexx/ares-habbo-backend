@@ -9,11 +9,11 @@ namespace Ares\Forum\Service\Thread;
 
 use Ares\Forum\Entity\Thread;
 use Ares\Forum\Entity\Topic;
-use Ares\Forum\Exception\ThreadException;
 use Ares\Forum\Repository\ThreadRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
-use Ares\User\Entity\User;
+use Cocur\Slugify\Slugify;
 
 /**
  * Class EditThreadService
@@ -25,59 +25,37 @@ class EditThreadService
     /**
      * EditThreadService constructor.
      *
-     * @param   ThreadRepository  $threadRepository
+     * @param ThreadRepository $threadRepository
+     * @param Slugify          $slug
      */
     public function __construct(
-        private ThreadRepository $threadRepository
+        private ThreadRepository $threadRepository,
+        private Slugify $slug
     ) {}
 
     /**
      * @param Topic $topic
-     * @param User  $user
+     * @param int   $userId
      * @param array $data
      *
      * @return CustomResponseInterface
-     * @throws ThreadException
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
-    public function execute(Topic $topic, User $user, array $data): CustomResponseInterface
+    public function execute(Topic $topic, int $userId, array $data): CustomResponseInterface
     {
-        /** @var string $title */
-        $slug = $data['slug'];
-
-        /** @var string $title */
-        $title = $data['title'];
-
-        /** @var string $description */
-        $description = $data['description'];
-
-        /** @var string $content */
-        $content = $data['content'];
-
-        /**
-         * @TODO ueufe
-         */
-        $searchCriteria = $this->threadRepository
-            ->getDataObjectManager()
-            ->where([
-                'user_id' => $user->getId(),
-                'topic_id' => $topic->getId(),
-                'slug' => $slug
-            ]);
-
-        /** @var Thread $thread */
         $thread = $this->threadRepository
-            ->getList($searchCriteria)
-            ->first();
-
-        if (!$thread) {
-            throw new ThreadException(__('No Thread was found'));
-        }
+            ->getExistingThread(
+                $userId,
+                $topic->getId(),
+                $data['slug']
+            );
 
         $thread
-            ->setTitle($title)
-            ->setDescription($description)
-            ->setContent($content)
+            ->setTitle($data['title'] ?: $thread->getTitle())
+            ->setSlug($this->slug->slugify($data['title']))
+            ->setDescription($data['description'] ?: $thread->getDescription())
+            ->setContent($data['content'] ?: $thread->getContent())
             ->setUpdatedAt(new \DateTime());
 
         /** @var Thread $thread */

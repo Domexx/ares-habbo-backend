@@ -31,10 +31,10 @@
       "rcon_port": 3001
     },
     "news": {
-      "comment_size": 10
+      "comment_max": 3
     },
-    "profile": {
-      "entry_size": 10
+    "guestbook": {
+      "comment_max": 3
     }
   },
   "api_settings": {
@@ -47,6 +47,12 @@
       "email": "validation.email",
       "password_confirmation:same": "register.password.same",
       "password:min": "register.password.min"
+    },
+    "password": {
+      "algorithm": "PASSWORD_ARGON2ID",
+      "memory_cost": 8,
+      "time_cost": 1,
+      "threads": 1
     },
     "slug": {
       "trim": true

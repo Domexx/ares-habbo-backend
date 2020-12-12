@@ -8,6 +8,7 @@
 namespace Ares\Room\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Room\Entity\Room;
@@ -83,12 +84,13 @@ class RoomRepository extends BaseRepository
 
     /**
      * @return Room|null
+     * @throws NoSuchEntityException
      */
     public function getMostVisitedRoom(): ?Room
     {
         $searchCriteria = $this->getDataObjectManager()
             ->orderBy('users', 'DESC');
 
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria);
     }
 }

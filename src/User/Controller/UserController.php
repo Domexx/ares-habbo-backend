@@ -11,6 +11,9 @@ use Ares\Framework\Controller\BaseController;
 use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
+use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Service\ValidationService;
+use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Entity\User;
 use Ares\User\Repository\UserRepository;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -26,10 +29,12 @@ class UserController extends BaseController
     /**
      * UserController constructor.
      *
-     * @param   UserRepository  $userRepository
+     * @param UserRepository    $userRepository
+     * @param ValidationService $validationService
      */
     public function __construct(
-        private UserRepository $userRepository
+        private UserRepository $userRepository,
+        private ValidationService $validationService
     ) {}
 
     /**
@@ -49,11 +54,38 @@ class UserController extends BaseController
         $user = user($request);
         $user->getRoles();
         $user->getCurrencies();
+        $user->getPermissions();
 
         return $this->respond(
             $response,
             response()
                 ->setData($user)
+        );
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws NoSuchEntityException
+     * @throws ValidationException
+     */
+    public function getLook(Request $request, Response $response): Response
+    {
+        /** @var array $parsedData */
+        $parsedData = $request->getParsedBody();
+
+        $this->validationService->validate($parsedData, [
+            UserInterface::COLUMN_USERNAME => 'required',
+        ]);
+
+        $userLook = $this->userRepository->getUserLook($parsedData['username']);
+
+        return $this->respond(
+            $response,
+            response()
+                ->setData($userLook)
         );
     }
 

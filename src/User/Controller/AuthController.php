@@ -13,15 +13,17 @@ use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\ValidationService;
+use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Entity\User;
 use Ares\User\Exception\LoginException;
 use Ares\User\Exception\RegisterException;
+use Ares\User\Interfaces\Response\UserResponseCodeInterface;
 use Ares\User\Service\Auth\DetermineIpService;
 use Ares\User\Service\Auth\LoginService;
 use Ares\User\Service\Auth\RegisterService;
 use Ares\User\Service\Auth\TicketService;
-use Exception;
 use PHLAK\Config\Config;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -73,8 +75,8 @@ class AuthController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'username' => 'required',
-            'password' => 'required'
+            UserInterface::COLUMN_USERNAME => 'required',
+            UserInterface::COLUMN_PASSWORD => 'required'
         ]);
 
         /** @var string $determinedIp */
@@ -97,7 +99,7 @@ class AuthController extends BaseController
      * @param Response $response
      *
      * @return Response Returns a Response with the given Data
-     * @throws Exception
+     * @throws \Exception
      */
     public function register(Request $request, Response $response): Response
     {
@@ -105,11 +107,11 @@ class AuthController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'username' => 'required|min:3|max:12',
-            'mail' => 'required|email|min:9',
-            'look' => 'required',
-            'gender' => 'required|default:M|regex:/[M.F]/',
-            'password' => 'required|min:6',
+            UserInterface::COLUMN_USERNAME => 'required|min:2|max:12|regex:/^[a-zA-Z\d]+$/',
+            UserInterface::COLUMN_MAIL => 'required|email|min:9',
+            UserInterface::COLUMN_LOOK => 'required',
+            UserInterface::COLUMN_GENDER => 'required|default:M|regex:/[M.F]/',
+            UserInterface::COLUMN_PASSWORD => 'required|min:6',
             'password_confirmation' => 'required|same:password'
         ]);
 
@@ -145,7 +147,11 @@ class AuthController extends BaseController
         $girlLooks = $this->config->get('hotel_settings.register.looks.girl');
 
         if (!is_array($boyLooks) || !is_array($girlLooks)) {
-            throw new RegisterException(__('There are no viable Looks available'));
+            throw new RegisterException(
+                __('There are no viable Looks available'),
+                UserResponseCodeInterface::RESPONSE_AUTH_REGISTER_NO_VIABLE_LOOKS,
+                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+            );
         }
 
         /** @var array $boyList */

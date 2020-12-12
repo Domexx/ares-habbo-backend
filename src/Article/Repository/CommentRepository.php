@@ -45,4 +45,21 @@ class CommentRepository extends BaseRepository
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
+
+    /**
+     * @param int $userId
+     * @param int $articleId
+     *
+     * @return int
+     */
+    public function getUserCommentCount(int $userId, int $articleId): int
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->where([
+                'user_id' => $userId,
+                'article_id' => $articleId
+            ]);
+
+        return $this->getList($searchCriteria)->count();
+    }
 }

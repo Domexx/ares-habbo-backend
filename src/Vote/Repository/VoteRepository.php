@@ -1,12 +1,13 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
 namespace Ares\Vote\Repository;
 
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Vote\Entity\Vote;
 use Ares\Framework\Model\Query\Collection;
@@ -45,6 +46,7 @@ class VoteRepository extends BaseRepository
      * @param int  $userId
      *
      * @return Vote|null
+     * @throws NoSuchEntityException
      */
     public function getExistingVote(Vote $vote, int $userId): ?Vote
     {
@@ -56,7 +58,7 @@ class VoteRepository extends BaseRepository
             ]);
 
         /** @var Vote $vote */
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria, true, false);
     }
 
     /**
@@ -66,6 +68,7 @@ class VoteRepository extends BaseRepository
      * @param int $userId
      *
      * @return Vote|null
+     * @throws NoSuchEntityException
      */
     public function getVoteForDeletion(int $entityId, int $voteEntity, int $voteType, int $userId): ?Vote
     {
@@ -78,6 +81,6 @@ class VoteRepository extends BaseRepository
             ]);
 
         /** @var Vote $vote */
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria, true);
     }
 }

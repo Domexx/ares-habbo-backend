@@ -12,8 +12,11 @@ use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException as ValidationExceptionAlias;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\ValidationService;
+use Ares\Role\Entity\Contract\PermissionInterface;
 use Ares\Role\Exception\RoleException;
+use Ares\Role\Interfaces\Response\RoleResponseCodeInterface;
 use Ares\Role\Repository\PermissionRepository;
 use Ares\Role\Service\CreateRolePermissionService;
 use Ares\Role\Service\CreatePermissionService;
@@ -111,7 +114,7 @@ class RolePermissionController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'name' => 'required'
+            PermissionInterface::COLUMN_NAME => 'required'
         ]);
 
         $customResponse = $this->createPermissionService->execute($parsedData);
@@ -138,7 +141,7 @@ class RolePermissionController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'name' => 'required'
+            PermissionInterface::COLUMN_NAME => 'required'
         ]);
 
         $customResponse = $this->createRolePermissionService->execute($parsedData);
@@ -166,7 +169,11 @@ class RolePermissionController extends BaseController
         $deleted = $this->permissionRepository->delete($id);
 
         if (!$deleted) {
-            throw new RoleException(__('Permission could not be deleted'), 409);
+            throw new RoleException(
+                __('Permission could not be deleted'),
+                RoleResponseCodeInterface::RESPONSE_ROLE_PERMISSION_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

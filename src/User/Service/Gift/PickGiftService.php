@@ -10,15 +10,15 @@ namespace Ares\User\Service\Gift;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Rcon\Exception\RconException;
 use Ares\Rcon\Service\ExecuteRconCommandService;
 use Ares\Role\Exception\RoleException;
 use Ares\User\Entity\Gift\DailyGift;
 use Ares\User\Entity\User;
 use Ares\User\Exception\Gift\DailyGiftException;
+use Ares\User\Interfaces\Response\UserResponseCodeInterface;
 use Ares\User\Repository\Gift\DailyGiftRepository;
-use Exception;
-use JsonException;
 use PHLAK\Config\Config;
 
 /**
@@ -66,13 +66,17 @@ class PickGiftService
             $pickTime = $dailyGift->getPickTime();
 
             if (time() <= $pickTime) {
-                throw new DailyGiftException(__('User already picked the daily gift.'), 409);
+                throw new DailyGiftException(
+                    __('User already picked the daily gift.'),
+                    UserResponseCodeInterface::RESPONSE_GIFT_ALREADY_PICKED,
+                    HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+                );
             }
             $this->applyGift($dailyGift, $user, $dailyGift->getAmount());
         } catch (Exception $exception) {
             throw new DailyGiftException(
                 $exception->getMessage(),
-                500,
+                $exception->getCode(),
                 $exception
             );
         }
@@ -85,7 +89,7 @@ class PickGiftService
      * Returns random gift amount.
      *
      * @return int
-     * @throws Exception
+     * @throws \Exception
      */
     private function getRandomGiftAmount(): int
     {
@@ -124,7 +128,7 @@ class PickGiftService
         } catch (Exception $exception) {
             throw new DailyGiftException(
                 $exception->getMessage(),
-                500,
+                $exception->getCode(),
                 $exception
             );
         }
@@ -139,10 +143,10 @@ class PickGiftService
      *
      * @return DailyGift|null
      * @throws DataObjectManagerException
-     * @throws JsonException
+     * @throws \JsonException
      * @throws RconException
      * @throws RoleException
-     * @throws Exception
+     * @throws \Exception
      */
     private function getNewDailyGift(User $user): ?DailyGift
     {

@@ -7,6 +7,8 @@
 
 namespace Ares\Article\Controller;
 
+use Ares\Article\Entity\Contract\ArticleInterface;
+use Ares\Article\Interfaces\Response\ArticleResponseCodeInterface;
 use Ares\Article\Service\CreateArticleService;
 use Ares\Article\Service\EditArticleService;
 use Ares\Framework\Controller\BaseController;
@@ -17,6 +19,7 @@ use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Service\ValidationService;
 use Ares\User\Entity\User;
@@ -64,12 +67,12 @@ class ArticleController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'title'       => 'required',
-            'description' => 'required',
-            'content'     => 'required',
-            'image'       => 'required',
-            'hidden'      => 'required|numeric',
-            'pinned'      => 'required|numeric'
+            ArticleInterface::COLUMN_TITLE => 'required',
+            ArticleInterface::COLUMN_DESCRIPTION => 'required',
+            ArticleInterface::COLUMN_CONTENT => 'required',
+            ArticleInterface::COLUMN_IMAGE => 'required',
+            ArticleInterface::COLUMN_HIDDEN => 'required|numeric',
+            ArticleInterface::COLUMN_PINNED => 'required|numeric'
         ]);
 
         /** @var User $user */
@@ -99,8 +102,7 @@ class ArticleController extends BaseController
         $slug = $args['slug'];
 
         /** @var Article $article */
-        $article = $this->articleRepository->get($slug, 'slug');
-        $article->getUser();
+        $article = $this->articleRepository->getArticleWithCommentCount($slug);
 
         return $this->respond(
             $response,
@@ -116,7 +118,7 @@ class ArticleController extends BaseController
      * @return Response
      * @throws DataObjectManagerException
      * @throws NoSuchEntityException
-     * @throws ValidationException
+     * @throws ValidationException|ArticleException
      */
     public function editArticle(Request $request, Response $response): Response
     {
@@ -124,13 +126,13 @@ class ArticleController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'article_id'  => 'required|numeric',
-            'title'       => 'required',
-            'description' => 'required',
-            'content'     => 'required',
-            'image'       => 'required',
-            'hidden'      => 'required|numeric',
-            'pinned'      => 'required|numeric'
+            ArticleInterface::COLUMN_ID => 'required|numeric',
+            ArticleInterface::COLUMN_TITLE => 'nullable|regex:/^[a-zA-Z0-9]+$/',
+            ArticleInterface::COLUMN_DESCRIPTION => 'nullable',
+            ArticleInterface::COLUMN_CONTENT => 'nullable',
+            ArticleInterface::COLUMN_IMAGE => 'nullable',
+            ArticleInterface::COLUMN_HIDDEN => 'required|numeric',
+            ArticleInterface::COLUMN_PINNED => 'required|numeric'
         ]);
 
         $customResponse = $this->editArticleService->execute($parsedData);
@@ -211,7 +213,11 @@ class ArticleController extends BaseController
         $deleted = $this->articleRepository->delete($id);
 
         if (!$deleted) {
-            throw new ArticleException(__('Article could not be deleted'), 409);
+            throw new ArticleException(
+                __('Article could not be deleted'),
+                ArticleResponseCodeInterface::RESPONSE_ARTICLE_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -9,11 +9,12 @@ namespace Ares\User\Entity;
 
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Model\DataObject;
+use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RoleRepository;
+use Ares\Role\Repository\RoleUserRepository;
 use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Repository\UserCurrencyRepository;
 use Ares\User\Repository\UserRepository;
-use DateTime;
 use Ares\Framework\Model\Query\Collection;
 
 /**
@@ -38,7 +39,8 @@ class User extends DataObject implements UserInterface
     /** @var array */
     public const RELATIONS = [
         'roles' => 'getRoles',
-        'currencies' => 'getCurrencies'
+        'currencies' => 'getCurrencies',
+        'permissions' => 'getPermissions'
     ];
 
     /**
@@ -313,36 +315,36 @@ class User extends DataObject implements UserInterface
 
 
     /**
-     * @return DateTime
+     * @return \DateTime
      */
-    public function getCreatedAt(): DateTime
+    public function getCreatedAt(): \DateTime
     {
         return $this->getData(UserInterface::COLUMN_CREATED_AT);
     }
 
     /**
-     * @param DateTime $createdAt
+     * @param \DateTime $createdAt
      * @return User
      */
-    public function setCreatedAt(DateTime $createdAt): User
+    public function setCreatedAt(\DateTime $createdAt): User
     {
         return $this->setData(UserInterface::COLUMN_CREATED_AT, $createdAt);
     }
 
     /**
-     * @return DateTime
+     * @return \DateTime
      */
-    public function getUpdatedAt(): DateTime
+    public function getUpdatedAt(): \DateTime
     {
         return $this->getData(UserInterface::COLUMN_UPDATED_AT);
     }
 
     /**
-     * @param DateTime $updatedAt
+     * @param \DateTime $updatedAt
      *
      * @return User
      */
-    public function setUpdatedAt(DateTime $updatedAt): User
+    public function setUpdatedAt(\DateTime $updatedAt): User
     {
         return $this->setData(UserInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
@@ -394,6 +396,56 @@ class User extends DataObject implements UserInterface
     public function setRoles(Collection $roles): User
     {
         return $this->setData('roles', $roles);
+    }
+
+    /**
+     * @return Collection|null
+     * @throws DataObjectManagerException
+     */
+    public function getPermissions(): ?array
+    {
+        $permissions = $this->getData('permissions');
+
+        if ($permissions) {
+            return $permissions;
+        }
+
+        /** @var RoleUserRepository $roleUserRepository */
+        $roleUserRepository = repository(RoleUserRepository::class);
+
+        /** @var RoleHierarchyRepository $roleHierarchyRepository */
+        $roleHierarchyRepository = repository(RoleHierarchyRepository::class);
+
+        /** @var array $userRoleIds */
+        $userRoleIds = $roleUserRepository->getUserRoleIds($this->getId());
+
+        if (!isset($this) || !$userRoleIds) {
+            return null;
+        }
+
+        /** @var array $allRoleIds */
+        $allRoleIds = $roleHierarchyRepository->getAllRoleIdsHierarchy($userRoleIds);
+
+        /** @var array $permissions */
+        $permissions = $roleUserRepository->getUserPermissions($allRoleIds);
+
+        if (!$permissions) {
+            return null;
+        }
+
+        $this->setPermissions($permissions);
+
+        return $permissions;
+    }
+
+    /**
+     * @param Collection $permissions
+     *
+     * @return User
+     */
+    public function setPermissions(array $permissions): User
+    {
+        return $this->setData('permissions', $permissions);
     }
 
     /**

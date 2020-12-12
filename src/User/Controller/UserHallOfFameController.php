@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -119,7 +119,8 @@ class UserHallOfFameController extends BaseController
 
         return $this->respond(
             $response,
-            response()->setData($users)
+            response()
+                ->setData($users)
         );
     }
 }

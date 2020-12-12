@@ -14,9 +14,11 @@ use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Factory\DataObjectManagerFactory;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\TokenService;
 use Ares\User\Entity\User;
 use Ares\User\Exception\LoginException;
+use Ares\User\Interfaces\Response\UserResponseCodeInterface;
 use Ares\User\Repository\UserRepository;
 use ReallySimpleJWT\Exception\ValidateException;
 
@@ -60,14 +62,23 @@ class LoginService
         $user = $this->userRepository->get($data['username'], 'username', true);
 
         if (!$user || !password_verify($data['password'], $user->getPassword())) {
-            throw new LoginException(__('general.failed'), 403);
+            throw new LoginException(
+                __('Data combination was not found'),
+                UserResponseCodeInterface::RESPONSE_AUTH_LOGIN_FAILED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+            );
         }
 
         /** @var Ban $isBanned */
         $isBanned = $this->banRepository->get($user->getId(), 'user_id', true);
 
         if ($isBanned && $isBanned->getBanExpire() > time()) {
-            throw new BanException(__('You are banned because of %s', [$isBanned->getBanReason()]), 401);
+            throw new BanException(
+                __('You are banned because of %s',
+                    [$isBanned->getBanReason()]),
+                UserResponseCodeInterface::RESPONSE_AUTH_LOGIN_BANNED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_FORBIDDEN
+            );
         }
 
         $user->setLastLogin(time());

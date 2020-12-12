@@ -12,9 +12,12 @@ use Ares\Framework\Exception\AuthenticationException;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Service\ValidationService;
+use Ares\Payment\Entity\Contract\PaymentInterface;
 use Ares\Payment\Entity\Payment;
 use Ares\Payment\Exception\PaymentException;
+use Ares\Payment\Interfaces\Response\PaymentResponseCodeInterface;
 use Ares\Payment\Repository\PaymentRepository;
 use Ares\Payment\Service\CreatePaymentService;
 use Ares\User\Entity\User;
@@ -58,8 +61,8 @@ class PaymentController extends BaseController
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            'code' => 'required',
-            'type' => 'required|numeric'
+            PaymentInterface::COLUMN_CODE => 'required',
+            PaymentInterface::COLUMN_TYPE => 'required|numeric'
         ]);
 
         /** @var User $user */
@@ -146,7 +149,11 @@ class PaymentController extends BaseController
         $deleted = $this->paymentRepository->delete($id);
 
         if (!$deleted) {
-            throw new PaymentException(__('Payment could not be deleted'), 409);
+            throw new PaymentException(
+                __('Payment could not be deleted'),
+                PaymentResponseCodeInterface::RESPONSE_PAYMENT_NOT_DELETED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $this->respond(

@@ -7,12 +7,15 @@
 
 namespace Ares\Vote\Service\Votes;
 
+use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Framework\Model\DataObject;
 use Ares\Vote\Exception\VoteException;
+use Ares\Vote\Interfaces\Response\VoteResponseCodeInterface;
 use Ares\Vote\Interfaces\VoteTypeInterface;
 use Ares\Vote\Service\GetVoteEntityService;
-use Exception;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class DecrementVoteService
@@ -53,7 +56,11 @@ class DecrementVoteService
         $entityRepository = $this->getVoteEntityService->execute($voteEntity);
 
         if (!$entityRepository) {
-            throw new VoteException(__('Related EntityRepository could not be found'));
+            throw new VoteException(
+                __('Related EntityRepository could not be found'),
+                VoteResponseCodeInterface::RESPONSE_VOTE_ENTITY_REPOSITORY_NOT_FOUND,
+                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+            );
         }
 
         /** @var DataObject $entity */
@@ -75,7 +82,7 @@ class DecrementVoteService
             $entityRepository->save($entity);
 
             return true;
-        } catch (Exception) {
+        } catch (\Exception) {
             return false;
         }
     }

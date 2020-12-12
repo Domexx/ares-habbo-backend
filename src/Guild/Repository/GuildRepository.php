@@ -8,6 +8,7 @@
 namespace Ares\Guild\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Guild\Entity\Guild;
@@ -57,6 +58,7 @@ class GuildRepository extends BaseRepository
 
     /**
      * @return Guild|null
+     * @throws NoSuchEntityException
      */
     public function getMostMemberGuild(): ?Guild
     {
@@ -74,7 +76,7 @@ class GuildRepository extends BaseRepository
             ->orderBy('member_count', 'DESC')
             ->limit(1);
 
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria);
     }
 
     /**
@@ -104,10 +106,11 @@ class GuildRepository extends BaseRepository
     }
 
     /**
-     * @param int  $id
+     * @param int $id
      *
      * @return Guild|null
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function getGuild(int $id): ?Guild
     {
@@ -127,6 +130,6 @@ class GuildRepository extends BaseRepository
             ->addRelation('room')
             ->limit(1);
 
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria);
     }
 }

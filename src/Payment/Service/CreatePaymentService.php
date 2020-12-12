@@ -8,9 +8,12 @@
 namespace Ares\Payment\Service;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Payment\Entity\Payment;
 use Ares\Payment\Exception\PaymentException;
+use Ares\Payment\Interfaces\Response\PaymentResponseCodeInterface;
 use Ares\Payment\Repository\PaymentRepository;
 
 /**
@@ -23,7 +26,7 @@ class CreatePaymentService
     /**
      * CreatePaymentService constructor.
      *
-     * @param   PaymentRepository  $paymentRepository
+     * @param PaymentRepository  $paymentRepository
      */
     public function __construct(
         private PaymentRepository $paymentRepository
@@ -36,6 +39,7 @@ class CreatePaymentService
      * @return CustomResponseInterface
      * @throws DataObjectManagerException
      * @throws PaymentException
+     * @throws NoSuchEntityException
      */
     public function execute(int $userId, array $data): CustomResponseInterface
     {
@@ -45,7 +49,11 @@ class CreatePaymentService
         $existingPayment = $this->paymentRepository->getExistingPayment($payment->getUserId());
 
         if ($existingPayment) {
-            throw new PaymentException(__('You already have an ongoing payment'));
+            throw new PaymentException(
+                __('You already have an ongoing payment'),
+                PaymentResponseCodeInterface::RESPONSE_PAYMENT_ALREADY_ONGOING,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         /** @var Payment $payment */

@@ -1,21 +1,21 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
 namespace Ares\Rcon\Service;
 
-use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Rcon\Exception\RconException;
+use Ares\Rcon\Interfaces\Response\RconResponseCodeInterface;
 use Ares\Rcon\Model\Rcon;
 use Ares\Rcon\Repository\RconRepository;
 use Ares\Role\Exception\RoleException;
 use Ares\Role\Service\CheckAccessService;
-use JsonException;
 
 /**
  * Class ExecuteRconCommandService
@@ -44,10 +44,7 @@ class ExecuteRconCommandService
      * @param bool  $fromSystem
      *
      * @return CustomResponseInterface
-     * @throws DataObjectManagerException
-     * @throws JsonException
      * @throws RconException
-     * @throws RoleException
      * @throws NoSuchEntityException
      */
     public function execute(int $userId, array $data, bool $fromSystem = false): CustomResponseInterface
@@ -55,29 +52,40 @@ class ExecuteRconCommandService
         /** @var \Ares\Rcon\Entity\Rcon $existingCommand */
         $existingCommand = $this->rconRepository->get($data['command'], 'command');
 
-        if (!$fromSystem && $existingCommand->getPermission() !== null) {
-            $permissionName = $existingCommand
-                ->getPermission()
-                ->getName();
-        }
+        try {
+            if (!$fromSystem && $existingCommand->getPermission() !== null) {
+                $permissionName = $existingCommand
+                    ->getPermission()
+                    ->getName();
+            }
 
-        $hasAccess = $this->checkAccessService
-            ->execute(
-                $userId,
-                $permissionName ?? null
+            $hasAccess = $this->checkAccessService
+                ->execute(
+                    $userId,
+                    $permissionName ?? null
+                );
+
+            if (!$hasAccess) {
+                throw new RoleException(
+                    __('You dont have the special rights to execute that action'),
+                    RconResponseCodeInterface::RESPONSE_RCON_NO_RIGHTS_TO_EXECUTE,
+                    HttpResponseCodeInterface::HTTP_RESPONSE_FORBIDDEN
+                );
+            }
+
+            $executeCommand = $this->rcon
+                ->buildConnection()
+                ->sendCommand(
+                    $this->rcon->getSocket(),
+                    $data['command'],
+                    $data['params'] ?? null
+                );
+        } catch(\Exception $e) {
+            throw new RconException(
+              $e->getMessage(),
+              $e->getCode()
             );
-
-        if (!$hasAccess) {
-            throw new RoleException(__('You dont have the special rights to execute that action'));
         }
-
-        $executeCommand = $this->rcon
-            ->buildConnection()
-            ->sendCommand(
-                $this->rcon->getSocket(),
-                $data['command'],
-                $data['params'] ?? null
-            );
 
         return response()
             ->setData($executeCommand);

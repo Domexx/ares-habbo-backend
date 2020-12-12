@@ -9,9 +9,9 @@ namespace Ares\Forum\Repository;
 
 use Ares\Forum\Entity\Thread;
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
-use Ares\Framework\Model\Query\Collection;
 
 /**
  * Class ThreadRepository
@@ -33,10 +33,11 @@ class ThreadRepository extends BaseRepository
      * @param int    $topicId
      * @param string $slug
      *
-     * @return Collection
+     * @return Thread|null
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
-    public function getSingleThread(int $topicId, string $slug): Collection
+    public function getSingleThread(int $topicId, string $slug): ?Thread
     {
         $searchCriteria = $this->getDataObjectManager()
             ->addRelation('user')
@@ -46,7 +47,7 @@ class ThreadRepository extends BaseRepository
             ]);
 
         /** @var Thread $thread */
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria);
     }
 
     /**
@@ -65,5 +66,26 @@ class ThreadRepository extends BaseRepository
             ->addRelation('user');
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
+    }
+
+    /**
+     * @param int    $userId
+     * @param int    $topicId
+     * @param string $slug
+     *
+     * @return Thread|null
+     * @throws NoSuchEntityException
+     */
+    public function getExistingThread(int $userId, int $topicId, string $slug): ?Thread
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->where([
+                'user_id' => $userId,
+                'topic_id' => $topicId,
+                'slug' => $slug
+            ]);
+
+        /** @var Thread $thread */
+        return $this->getOneBy($searchCriteria);
     }
 }

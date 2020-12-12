@@ -10,9 +10,11 @@ namespace Ares\Role\Service;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Role\Entity\Role;
 use Ares\Role\Entity\RoleUser;
 use Ares\Role\Exception\RoleException;
+use Ares\Role\Interfaces\Response\RoleResponseCodeInterface;
 use Ares\Role\Repository\RoleRepository;
 use Ares\Role\Repository\RoleUserRepository;
 use Ares\User\Entity\User;
@@ -69,7 +71,11 @@ class AssignUserToRoleService
             );
 
         if ($isRoleAlreadyAssigned) {
-            throw new RoleException(__('There is already a Role assigned to that User'));
+            throw new RoleException(
+                __('There is already a Role assigned to that User'),
+                RoleResponseCodeInterface::RESPONSE_ROLE_ALREADY_ASSIGNED_TO_USER,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         $roleUser = $this->getNewRoleUser($role->getId(), $user->getId());

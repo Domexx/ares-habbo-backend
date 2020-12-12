@@ -8,6 +8,7 @@
 namespace Ares\Payment\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Payment\Entity\Payment;
@@ -48,6 +49,7 @@ class PaymentRepository extends BaseRepository
      * @param int|null $userId
      *
      * @return Payment|null
+     * @throws NoSuchEntityException
      */
     public function getExistingPayment(?int $userId): ?Payment
     {
@@ -57,6 +59,6 @@ class PaymentRepository extends BaseRepository
                 'processed' => 0
             ]);
 
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria, true);
     }
 }

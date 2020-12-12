@@ -8,6 +8,7 @@
 namespace Ares\User\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\User\Entity\UserOfTheHotel;
 
@@ -31,6 +32,7 @@ class UserOfTheHotelRepository extends BaseRepository
      * @return UserOfTheHotel|null
      *
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
      */
     public function getCurrentUser(): ?UserOfTheHotel
     {
@@ -38,6 +40,6 @@ class UserOfTheHotelRepository extends BaseRepository
             ->latest()
             ->addRelation('user');
 
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria, true);
     }
 }

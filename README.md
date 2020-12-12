@@ -4,7 +4,7 @@
 ==========================
 
 ## Introduction
-This project is the backend api part of the custom Ares CMS for Habbo. You can easily create your custom Frontend Application 
+This project is the backend api part of the custom Ares CMS for Habbo. You can easily create your custom Frontend Application
 while not worrying about the Backend, Ares takes care of everything.
 
 It can be used for fast creating and expanding Habbo Retros.
@@ -12,7 +12,7 @@ It can be used for fast creating and expanding Habbo Retros.
 ## Installation
 #### Preferable with nginx on debian 10
 
-##### 1. Clone project. 
+##### 1. Clone project.
 ```console
 $ git clone https://github.com/Domexx/ares-habbo-backend.git
 ```
@@ -73,6 +73,17 @@ TOKEN_DURATION=86400
 TOKEN_SECRET="Secret123!456$"
 
 ```
+##### 6. Setup your database with Morningstar or whatever you are going to use.
+```console
+$ ---------
+```
+
+##### 7. Migrate Ares tables to your database.
+```console
+$ vendor/bin/phinx migrate
+```
+
+##### 8. Finished.
 
 ## Expand project
 
@@ -83,7 +94,7 @@ In the controller class you can define functions that are called by calling a ro
 which can be defined in the app/routes/routes.php.
 Auth protected routes can be used with setting middleware 'AuthMiddleware',
 between route path and route action call.
- 
+
 ```php
 <?php
 

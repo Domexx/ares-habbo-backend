@@ -1,7 +1,7 @@
 <?php
 /**
  * @copyright Copyright (c) Ares (https://www.ares.to)
- *  
+ *
  * @see LICENSE (MIT)
  */
 
@@ -10,13 +10,14 @@ namespace Ares\Forum\Service\Thread;
 use Ares\Forum\Entity\Thread;
 use Ares\Forum\Entity\Topic;
 use Ares\Forum\Exception\ThreadException;
+use Ares\Forum\Interfaces\Response\ForumResponseCodeInterface;
 use Ares\Forum\Repository\ThreadRepository;
 use Ares\Forum\Repository\TopicRepository;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Cocur\Slugify\Slugify;
-use DateTime;
 
 /**
  * Class CreateThreadService
@@ -77,7 +78,11 @@ class CreateThreadService
         $existingThread = $this->threadRepository->get($data['title'], 'title', true);
 
         if (!$topic || $existingThread) {
-            throw new ThreadException(__('There is already an existing Thread or the Topic could not be found'));
+            throw new ThreadException(
+                __('There is already an existing Thread or the Topic could not be found'),
+                ForumResponseCodeInterface::RESPONSE_FORUM_THREAD_THREAD_EXISTS_OR_NO_TOPIC,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         return $thread
@@ -89,6 +94,6 @@ class CreateThreadService
             ->setContent($data['content'])
             ->setLikes(0)
             ->setDislikes(0)
-            ->setCreatedAt(new DateTime());
+            ->setCreatedAt(new \DateTime());
     }
 }

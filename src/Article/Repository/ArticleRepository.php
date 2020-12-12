@@ -8,6 +8,7 @@
 namespace Ares\Article\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
+use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Framework\Model\Query\Collection;
 use Ares\Framework\Model\Query\PaginatedCollection;
@@ -122,15 +123,15 @@ class ArticleRepository extends BaseRepository
      * @param string $slug
      *
      * @return Article|null
-     * @throws DataObjectManagerException
+     * @throws DataObjectManagerException|NoSuchEntityException
      */
     public function getArticleWithCommentCount(string $slug): ?Article
     {
         $searchCriteria = $this->getDataObjectManager()
             ->select([
-                'ares_articles.id', 'ares_articles.author_id', 'ares_articles.title', 'ares_articles.slug',
-                'ares_articles.description', 'ares_articles.image', 'ares_articles.likes', 'ares_articles.dislikes',
-                'ares_articles.created_at'
+                'ares_articles.id', 'ares_articles.author_id', 'ares_articles.content',
+                'ares_articles.title', 'ares_articles.slug', 'ares_articles.description',
+                'ares_articles.image', 'ares_articles.likes', 'ares_articles.dislikes', 'ares_articles.created_at'
             ])->selectRaw(
                 'count(ares_articles_comments.article_id) as comments'
             )->leftJoin(
@@ -142,6 +143,24 @@ class ArticleRepository extends BaseRepository
             ->where('slug', $slug)
             ->addRelation('user');
 
-        return $this->getList($searchCriteria)->first();
+        return $this->getOneBy($searchCriteria);
+    }
+
+    /**
+     * @param string $title
+     * @param string $slug
+     *
+     * @return Article|null
+     * @throws NoSuchEntityException
+     */
+    public function getExistingArticle(string $title, string $slug): ?Article
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->where([
+                'title' => $title,
+                'slug' => $slug
+            ]);
+
+        return $this->getOneBy($searchCriteria, true);
     }
 }
