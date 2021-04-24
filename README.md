@@ -20,7 +20,7 @@ $ git clone https://github.com/Domexx/ares-habbo-backend.git
 ```console
 $ cd ares-habbo-backend
 ```
-##### 3. Copy dotenv config.
+##### 3. Rename dotenv config.
 ```console
 $ cp .env.example .env 
 ```
