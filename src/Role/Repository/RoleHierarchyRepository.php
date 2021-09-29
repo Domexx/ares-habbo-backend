@@ -32,7 +32,7 @@ class RoleHierarchyRepository extends BaseRepository
      *
      * @return array|null
      */
-    private function getChildIds(array $parentIds): ?array
+    public function getChildIds(array $parentIds): ?array
     {
         $searchCriteria = $this->getDataObjectManager()
             ->whereIn('parent_role_id', $parentIds);
@@ -60,7 +60,6 @@ class RoleHierarchyRepository extends BaseRepository
 
         return $this->getList($searchCriteria)->get('parent_role_id');
     }
-
 
     /**
      * @param array $parentIds

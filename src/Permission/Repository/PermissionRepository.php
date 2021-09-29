@@ -41,4 +41,12 @@ class PermissionRepository extends BaseRepository
 
         return $this->getList($searchCriteria);
     }
+
+    public function getPermissionById(int $permissionId) {
+        $searchCriteria = $this->getDataObjectManager()
+            ->where('id', $permissionId)
+            ->addRelation('users');
+
+        return $this->getOneBy($searchCriteria);
+    }
 }

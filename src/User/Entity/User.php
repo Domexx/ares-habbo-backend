@@ -12,6 +12,9 @@ use Ares\Framework\Model\DataObject;
 use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RoleRepository;
 use Ares\Role\Repository\RoleRankRepository;
+use Ares\Role\Entity\Role;
+use Ares\Permission\Repository\PermissionRepository;
+use Ares\Permission\Entity\Permission;
 use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Repository\UserCurrencyRepository;
 use Ares\User\Repository\UserRepository;
@@ -38,7 +41,7 @@ class User extends DataObject implements UserInterface
 
     /** @var array */
     public const RELATIONS = [
-        'roles' => 'getRoles',
+        'role' => 'getRole',
         'currencies' => 'getCurrencies',
         'permissions' => 'getPermissions'
     ];
@@ -350,52 +353,53 @@ class User extends DataObject implements UserInterface
     }
 
     /**
-     * @return Collection|null
+     * @return Role|null
      * @throws DataObjectManagerException
      */
-    public function getRoles(): ?Collection
+    public function getRole(): ?Role
     {
-        $roles = $this->getData('roles');
+        $role = $this->getData('role');
 
-        if ($roles) {
-            return $roles;
+        if ($role) {
+            return $role;
         }
 
         if (!isset($this)) {
             return null;
         }
 
-        /** @var UserRepository $userRepository */
-        $userRepository = repository(UserRepository::class);
+        /** @var PermissionRepository $permissionRepository */
+        $permissionRepository = repository(PermissionRepository::class);
 
         /** @var RoleRepository $roleRepository */
         $roleRepository = repository(RoleRepository::class);
 
-        $roles = $userRepository->getManyToMany(
+        /** @var Role $role */
+        $role = $permissionRepository->getManyToMany(
             $roleRepository,
-            $this->getId(),
-            'ares_roles_user',
-            'user_id',
+            $this->getRank(),
+            'ares_roles_rank',
+            'rank_id',
             'role_id'
-        );
+        )->first();
 
-        if (!$roles->toArray()) {
+        if (!$role) {
             return null;
         }
 
-        $this->setRoles($roles);
+        $this->setRole($role);
 
-        return $roles;
+        return $role;
     }
 
     /**
-     * @param Collection $roles
+     * @param Role $roles
      *
      * @return User
      */
-    public function setRoles(Collection $roles): User
+    public function setRole(Role $roles): User
     {
-        return $this->setData('roles', $roles);
+        return $this->setData('role', $roles);
     }
 
     /**

@@ -46,6 +46,20 @@ class RoleRankRepository extends BaseRepository {
 
     /**
      * @param int $roleId
+     *
+     * @return array|null
+     * @throws QueryException
+     */
+    public function getRoleRankIds(int $roleId) : ?array {
+        $searchCriteria = $this->getDataObjectManager()
+        ->select('rank_id')
+        ->where('role_id', $roleId);
+
+        return $this->getList($searchCriteria)->get('rank_id');
+    }
+
+    /**
+     * @param int $roleId
      * @param int $rankId
      *
      * @return RoleRank|null

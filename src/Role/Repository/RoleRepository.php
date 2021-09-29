@@ -42,4 +42,25 @@ class RoleRepository extends BaseRepository
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
+
+    /**
+     * @param int $roleId
+     *
+     * @return Role|null
+     */
+    public function getRoleById(int $roleId) : Role {
+        $searchCriteria = $this->getDataObjectManager()->where(['id' => $roleId])->addRelation('permission');
+
+        return $this->getOneBy($searchCriteria);
+    }
+
+    /**
+     *
+     * @return Role|null
+     */
+    public function getRootRole() : Role
+    {
+        $searchCriteria = $this->getDataObjectManager()->where(['isRoot' => '1']);
+        return $this->getOneBy($searchCriteria);
+    }
 }

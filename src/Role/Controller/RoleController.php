@@ -16,6 +16,7 @@ use Ares\Role\Entity\Contract\RoleHierarchyInterface;
 use Ares\Role\Entity\Contract\RoleInterface;
 use Ares\Role\Entity\Contract\RoleRankInterface;
 use Ares\Role\Exception\RoleException;
+use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RoleRepository;
 use Ares\Role\Service\AssignRankToRoleService;
 use Ares\Role\Service\CreateChildRoleService;
@@ -47,7 +48,8 @@ class RoleController extends BaseController
         private AssignRankToRoleService $assignRankToRoleService,
         private ValidationService $validationService,
         private DeleteRoleService $deleteRoleService,
-        private RoleRepository $roleRepository
+        private RoleRepository $roleRepository,
+        private RoleHierarchyRepository $roleHierarchyRepository
     ) {}
 
     /**
@@ -77,6 +79,128 @@ class RoleController extends BaseController
             response()
                 ->setData($roles)
         );
+    }
+    
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     */
+    public function treeView(Request $request, Response $response): Response
+    {
+        $rootRole = $this->roleRepository->getRootRole(); //First I look up for a role that has isRoot as true
+
+        $rootChildren = $this->roleHierarchyRepository->getChildIds([$rootRole->getId()]); //Then looking at ares_roles_hierarchy I get all role children Ids
+
+        $rootRole->children = [];
+
+        if(count($rootChildren) > 0) { //If role has children then...
+            foreach($rootChildren as $rootChild) { //for each child
+                $groupRole = $this->roleRepository->getRoleById($rootChild); //look for its corresponding role based on the Id
+                
+                $groupChildren = $this->roleHierarchyRepository->getChildIds([$rootChild]); //Now get the child children Ids
+
+                $groupRole->children = [];
+
+                if(count($groupChildren) > 0) { //Repeat the same thing, if child has children
+                    foreach($groupChildren as $groupChild) {  //for each child' child
+                        $roleRank = $this->roleRepository->getRoleById($groupChild); //get its corresponding role based on the Id
+                        $roleRank->getPermission(); //Now MERGE its rank
+                        array_push($groupRole->children, $roleRank);  //Push the role to child children        
+                    }
+                }
+
+                array_push($rootRole->children, $groupRole); //Push the role to root children
+            }
+        }
+
+        return $this->respond($response, response()->setData($rootRole));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     */
+    public function roleCategories(Request $request, Response $response): Response
+    {
+        //First I look up for a role that has isRoot as true
+        $rootRole = $this->roleRepository->getRootRole();
+
+        //Then looking at ares_roles_hierarchy I get all role children Ids
+        $rootChildren = $this->roleHierarchyRepository->getChildIds([$rootRole->getId()]);
+
+        $rootRole->children = [];
+
+        //If root has children (categories) then...
+        if(count($rootChildren) > 0) {
+            foreach($rootChildren as $rootChild) { //for each child
+                $groupRole = $this->roleRepository->getRoleById($rootChild); //look for its corresponding role based on the Id
+
+                array_push($rootRole->children, $groupRole); //Push the role to root children
+            }
+        }
+
+        return $this->respond($response, response()->setData($rootRole->children));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     */
+    public function categoryById(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $roleId */
+        $roleId = $args['id'];
+
+        //Role Category Information
+        $role = $this->roleRepository->getRoleById($roleId);
+
+        //TODO THROW ERROR IF ROLE IS NOT A ROOT CHILD (MEANING THIS IS NOT A CATEGORY)
+
+        //Get Role Category Children Ids
+        $roleChildren = $this->roleHierarchyRepository->getChildIds([$roleId]);
+
+        //Set Role Category Children
+        $role->children = [];
+
+        if(count($roleChildren) > 0) { //If role has children then...
+            foreach($roleChildren as $roleChild) { //for each child
+                //Role Rank Information
+                $roleRank = $this->roleRepository->getRoleById($roleChild);
+                $roleRank->getPermission();
+                array_push($role->children, $roleRank);
+            }
+        }
+
+        return $this->respond($response, response()->setData($role));
+    }
+
+        /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     */
+    public function roleById(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $roleId */
+        $roleId = $args['id'];
+
+        //Role Category Information
+        $role = $this->roleRepository->getRoleById($roleId);
+
+        $role->getPermission();
+
+        return $this->respond($response, response()->setData($role));
     }
 
     /**

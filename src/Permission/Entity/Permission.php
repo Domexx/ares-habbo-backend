@@ -13,6 +13,8 @@ use Ares\Permission\Entity\Contract\PermissionInterface;
 use Ares\Permission\Repository\PermissionRepository;
 use Ares\User\Repository\UserRepository;
 use Ares\Framework\Model\Query\Collection;
+use Ares\Role\Entity\Role;
+use Ares\Role\Repository\RoleRepository;
 
 /**
  * Class Permission
@@ -26,7 +28,8 @@ class Permission extends DataObject implements PermissionInterface
 
     /** @var array **/
     public const RELATIONS = [
-      'users' => 'getUsers'
+      'users' => 'getUsers',
+      'role' => 'getRole'
     ];
 
     /**
@@ -184,5 +187,50 @@ class Permission extends DataObject implements PermissionInterface
     public function setUsers(Collection $users): Permission
     {
         return $this->setData('users', $users);
+    }
+
+    /**
+     * @return Role|null
+     *
+     * @throws DataObjectManagerException
+     */
+    public function getRole(): ?Role
+    {
+        $role = $this->getData('role');
+
+        if ($role) {
+            return $role;
+        }
+
+        if (!isset($this)) {
+            return null;
+        }
+
+        /** @var PermissionRepository $permissionRepository */
+        $permissionRepository = repository(PermissionRepository::class);
+
+        /** @var RoleRepository $roleRepository */
+        $roleRepository = repository(RoleRepository::class);
+
+        $role = $permissionRepository->getOneToOne($roleRepository, $this->getId(), 'id');
+
+        if(!$role) {
+            return null;
+        }
+
+        $this->setRole($role);
+
+        return $role;
+
+    }
+
+    /**
+     * @param Role $role
+     *
+     * @return Permission
+     */
+    public function setRole(Role $role): Permission
+    {
+        return $this->setData('role', $role);
     }
 }

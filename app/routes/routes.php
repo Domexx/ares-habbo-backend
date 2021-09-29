@@ -173,10 +173,16 @@ return function (App $app) {
                 });
 
                 $group->group('/permissions', function ($group) {
-                    $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Role\Controller\RolePermissionController::class . ':list')->setName('list-all-permissions');
+                    $group->get('/list', \Ares\Role\Controller\RolePermissionController::class . ':list')->setName('list-all-permissions');
                 });
 
-                $group->get('/view/my-permissions', \Ares\Role\Controller\RolePermissionController::class . ':userPermissions');
+                $group->group('/view', function($group) {
+                    $group->get('/my-permissions', \Ares\Role\Controller\RolePermissionController::class . ':userPermissions');
+                    $group->get('/role-tree', \Ares\Role\Controller\RoleController::class . ':treeView');
+                    $group->get('/categories', \Ares\Role\Controller\RoleController::class . ':roleCategories');
+                    $group->get('/category/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':categoryById');
+                    $group->get('/role/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':roleById');
+                });
             });
 
             // Payments

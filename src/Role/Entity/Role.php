@@ -8,7 +8,10 @@
 namespace Ares\Role\Entity;
 
 use Ares\Framework\Model\DataObject;
+use Ares\Permission\Entity\Permission;
+use Ares\Permission\Repository\PermissionRepository;
 use Ares\Role\Entity\Contract\RoleInterface;
+use Ares\Role\Repository\RoleRepository;
 
 /**
  * Class Role
@@ -19,6 +22,11 @@ class Role extends DataObject implements RoleInterface
 {
     /** @var string */
     public const TABLE = 'ares_roles';
+
+    /** @var array **/
+    public const RELATIONS = [
+        'permission' => 'getPermission'
+    ];
 
     /**
      * @return int
@@ -93,6 +101,24 @@ class Role extends DataObject implements RoleInterface
     }
 
     /**
+     * @return bool
+     */
+    public function igetIsRoot(): bool
+    {
+        return $this->getData(RoleInterface::COLUMN_IS_ROOT);
+    }
+
+    /**
+     * @param bool $isRoot
+     *
+     * @return Role
+     */
+    public function setIsRoot(bool $isRoot): Role
+    {
+        return $this->setData(RoleInterface::COLUMN_IS_ROOT, $isRoot);
+    }
+
+    /**
      * @return \DateTime
      */
     public function getCreatedAt(): \DateTime
@@ -126,5 +152,59 @@ class Role extends DataObject implements RoleInterface
     public function setUpdatedAt(\DateTime $updatedAt): Role
     {
         return $this->setData(RoleInterface::COLUMN_UPDATED_AT, $updatedAt);
+    }
+
+        /**
+     * @return Permission|null
+     *
+     * @throws DataObjectManagerException
+     */
+    public function getPermission(): ?Permission
+    {
+        /** @var User $user */
+        $permission = $this->getData('permission');
+
+        if ($permission) {
+            return $permission;
+        }
+
+        if(!isset($this)) {
+            return null;
+        }
+
+        /** @var RoleRepository $roleRepository */
+        $roleRepository = repository(RoleRepository::class);
+
+        /** @var PermissionRepository $permissionRepository */
+        $permissionRepository = repository(PermissionRepository::class);
+
+        /** @var Permission $permission */
+        $permission = $roleRepository->getManyToMany(
+            $permissionRepository, 
+            $this->getId(), 
+            'ares_roles_rank', 
+            'role_id',
+            'rank_id'
+        )->first();
+
+        if(!$permission) {
+            return null;
+        }
+
+        $permission->getUsers();
+
+        $this->setPermission($permission);
+
+        return $permission;
+    }
+
+    /**
+     * @param Permission $permission
+     *
+     * @return Role
+     */
+    public function setPermission(Permission $permission): Role
+    {
+        return $this->setData('permission', $permission);
     }
 }

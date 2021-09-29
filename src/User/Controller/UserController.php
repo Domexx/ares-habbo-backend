@@ -52,7 +52,7 @@ class UserController extends BaseController
     {
         /** @var User $user */
         $user = user($request);
-        $user->getRoles();
+        $user->getRole();
         $user->getCurrencies();
         $user->getPermissions();
 

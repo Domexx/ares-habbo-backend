@@ -59,23 +59,9 @@ class RolePermissionController extends BaseController
      */
     public function list(Request $request, Response $response, array $args): Response
     {
-        /** @var int $page */
-        $page = $args['page'];
+        $permissions = $this->permissionRepository->getPermissionList();
 
-        /** @var int $resultPerPage */
-        $resultPerPage = $args['rpp'];
-
-        $permissions = $this->permissionRepository
-            ->getPaginatedPermissionList(
-                $page,
-                $resultPerPage
-            );
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($permissions)
-        );
+        return $this->respond($response, response()->setData($permissions));
     }
 
     /**

@@ -42,4 +42,10 @@ class PermissionRepository extends BaseRepository
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
+
+    public function getPermissionList() {
+        $searchCriteria = $this->getDataObjectManager()->orderBy('id');
+
+        return $this->getList($searchCriteria);
+    }
 }

@@ -77,8 +77,7 @@ class AssignRankToRoleService {
 
         $this->roleRankRepository->save($roleRank);
 
-        return response()
-            ->setData(true);
+        return response()->setData(true);
     }
 
         /**
