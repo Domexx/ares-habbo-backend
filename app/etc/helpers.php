@@ -173,7 +173,7 @@ if (!function_exists('user')) {
         $userRepository = container()->get(UserRepository::class);
 
         /** @var User $user */
-        $user = $userRepository->get((int) $authUser, User::COLUMN_ID, $isCached);
+        $user = $userRepository->get((int) $authUser, User::COLUMN_ID, true, $isCached);
 
         if (!$user) {
             throw new AuthenticationException(

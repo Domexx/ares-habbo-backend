@@ -9,6 +9,7 @@ namespace Ares\Role\Service;
 
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Role\Repository\RoleHierarchyRepository;
+use Ares\Role\Repository\RolePermissionRepository;
 use Ares\Role\Repository\RoleRankRepository;
 
 /**
@@ -26,6 +27,7 @@ class FetchUserPermissionService
      */
     public function __construct(
         private RoleRankRepository $roleRankRepository,
+        private RolePermissionRepository $rolePermissionRepository,
         private RoleHierarchyRepository $roleHierarchyRepository
     ) {}
 
@@ -34,20 +36,17 @@ class FetchUserPermissionService
      *
      * @return CustomResponseInterface
      */
-    public function execute(int $rank): CustomResponseInterface
+    public function execute(int $rank_id): CustomResponseInterface
     {
-        /** @var array $rankRoleIds */
-        $rankRoleIds = $this->roleRankRepository->getRankRoleIds($rank);
+        /** @var int $roleId */
+        $roleId = $this->roleRankRepository->getRoleId($rank_id);
         
-        if (!$rankRoleIds) {
+        if (!$roleId) {
             return response()->setData([]);
         }
 
-        /** @var array $allRoleIds */
-        $allRoleIds = $this->roleHierarchyRepository->getAllRoleIdsHierarchy($rankRoleIds);
-
         /** @var array $permissions */
-        $permissions = $this->roleRankRepository->getRankPermissions($allRoleIds);
+        $permissions = $this->rolePermissionRepository->getRolePermissions($roleId);
 
         return response()->setData($permissions);
     }

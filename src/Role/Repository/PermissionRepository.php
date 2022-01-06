@@ -10,6 +10,7 @@ namespace Ares\Role\Repository;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
+use Ares\Role\Entity\Contract\PermissionInterface;
 use Ares\Role\Entity\Permission;
 
 /**
@@ -38,14 +39,38 @@ class PermissionRepository extends BaseRepository
     public function getPaginatedPermissionList(int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
-            ->orderBy('id', 'DESC');
+            ->orderBy(PermissionInterface::COLUMN_ID, 'DESC');
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
 
+    /**
+    *
+    * @return Collection
+    * @throws DataObjectManagerException
+    */
     public function getPermissionList() {
-        $searchCriteria = $this->getDataObjectManager()->orderBy('id');
+        $searchCriteria = $this->getDataObjectManager()
+            ->orderBy(PermissionInterface::COLUMN_ID);
 
         return $this->getList($searchCriteria);
+    }
+
+    /**
+    * @param int $permissionId
+    *
+    * @return Permission
+    * @throws DataObjectManagerException
+    */
+    public function getPermissionById(int $permissionId) {
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                PermissionInterface::COLUMN_ID, 
+                PermissionInterface::COLUMN_NAME, 
+                PermissionInterface::COLUMN_DESCRIPTION
+            ])
+            ->where(PermissionInterface::COLUMN_ID, $permissionId);
+
+        return $this->getOneBy($searchCriteria);
     }
 }

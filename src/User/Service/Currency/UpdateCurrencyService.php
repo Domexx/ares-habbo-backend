@@ -11,6 +11,8 @@ use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\User\Exception\UserCurrencyException;
 use Ares\User\Interfaces\Response\UserResponseCodeInterface;
 use Ares\User\Repository\UserCurrencyRepository;
+use Ares\User\Repository\UserRepository;
+use Ares\User\Entity\User;
 use Exception;
 
 /**
@@ -26,7 +28,8 @@ class UpdateCurrencyService
      * @param UserCurrencyRepository $userCurrencyRepository
      */
     public function __construct(
-        private UserCurrencyRepository $userCurrencyRepository
+        private UserCurrencyRepository $userCurrencyRepository,
+        private UserRepository  $userRepository
     ) {}
 
     /**
@@ -41,26 +44,61 @@ class UpdateCurrencyService
      */
     public function execute(int $userId, int $type, int $amount): void
     {
-        $currencies = $this->userCurrencyRepository->getUserCurrency($userId, $type);
+        if($type === -1) {
+            /** @var User $user */
+            $user = $this->userRepository->get($userId, 'id', false, false);
 
-        if (!$currencies) {
-            throw new UserCurrencyException(
-                __('No Currencies were found'),
-                UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_FOUND,
-                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
-            );
-        }
+            if(!$user) {
+                throw new UserCurrencyException(
+                    __('No Currencies were found'),
+                    UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_FOUND,
+                    HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+                );
+            }
 
-        foreach ($currencies as $currency) {
-            $currency->setAmount($amount);
+            $user->setCredits($amount);
+            
             try {
-                $this->userCurrencyRepository->save($currency);
+                $this->userRepository->save($user);
             } catch (Exception) {
                 throw new UserCurrencyException(
                     __('Currency could not be updated.'),
                     UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_UPDATED,
                     HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
                 );
+            }
+        } else {
+            $currencies = $this->userCurrencyRepository->getUserCurrency($userId, $type);
+
+            if (!$currencies) {
+                throw new UserCurrencyException(
+                    __('No Currencies were found'),
+                    UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_FOUND,
+                    HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+                );
+            }
+
+            foreach ($currencies as $currency) {
+                $currency->setAmount($amount);
+                try {
+                    //TODO Improve this line...
+                    $this->userCurrencyRepository
+                            ->getDataObjectManager()
+                            ->where([
+                                'user_id' => $userId,
+                                'type' => $type
+                            ])
+                            ->update([
+                                'amount' => $amount
+                            ]);
+
+                } catch (Exception) {
+                    throw new UserCurrencyException(
+                        __('Currency could not be updated.'),
+                        UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_UPDATED,
+                        HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+                    );
+                }
             }
         }
     }

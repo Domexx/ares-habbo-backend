@@ -8,6 +8,7 @@
 namespace Ares\Role\Repository;
 
 use Ares\Framework\Exception\NoSuchEntityException;
+use Ares\Framework\Model\Query\Collection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Role\Entity\RolePermission;
 
@@ -48,12 +49,12 @@ class RolePermissionRepository extends BaseRepository
 
     /**
      * @param int $roleId
-     * @param int $permissionId
+     * @param int $userId
      *
-     * @return RolePermission|null
+     * @return RoleUser|null
      * @throws NoSuchEntityException
      */
-    public function getExistingRolePermission(int $roleId, int $permissionId): ?RolePermission
+    public function getPermissionAssignedRole(int $roleId, int $permissionId): ?RolePermission
     {
         $searchCriteria = $this->getDataObjectManager()
             ->where([
@@ -61,6 +62,24 @@ class RolePermissionRepository extends BaseRepository
                 'permission_id' => $permissionId
             ]);
 
-        return $this->getOneBy($searchCriteria, true);
+        return $this->getOneBy($searchCriteria, true, false);
+    }
+
+    /**
+     * @param int $roleId
+     *
+     * @return Collection|null
+     */
+    public function getRolePermissions(int $roleId): Collection
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->addRelation('permission')
+            ->where([
+                'role_id' => $roleId
+            ]);
+
+        $list = $this->getList($searchCriteria);
+
+        return $list;
     }
 }

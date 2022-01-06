@@ -97,9 +97,9 @@ class Rcon extends DataObject implements RconInterface
     }
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getPermissionId(): int
+    public function getPermissionId(): ?int
     {
         return $this->getData(RconInterface::COLUMN_PERMISSION_ID);
     }
@@ -128,6 +128,10 @@ class Rcon extends DataObject implements RconInterface
         }
 
         if (!isset($this)) {
+            return null;
+        }
+
+        if(!$this->getPermissionId()) {
             return null;
         }
 

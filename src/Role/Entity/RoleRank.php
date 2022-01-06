@@ -47,7 +47,7 @@ class RoleRank extends DataObject implements RoleRankInterface
     }
 
     /**
-     * @param int $role_id
+     * @param int $roleId
      *
      * @return RoleRank
      */

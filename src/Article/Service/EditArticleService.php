@@ -49,10 +49,11 @@ class EditArticleService
         $articleId = $data['id'];
 
         /** @var Article $article */
+        //TODO This doesnt depend on cache, because of 'comments count'
         $article = $this->articleRepository->get($articleId, ArticleInterface::COLUMN_ID, false, false);
         
         /** @var Article $existingArticle */
-        $existingArticle = $this->articleRepository->getExistingArticle($article->getTitle(), $article->getSlug());
+        $existingArticle = $this->articleRepository->getExistingArticle($data['title'], $this->slug->slugify($data['title']));
 
         if ($existingArticle && $existingArticle->getId() !== $article->getId()) {
 

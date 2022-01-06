@@ -10,6 +10,8 @@ namespace Ares\Role\Repository;
 
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Repository\BaseRepository;
+use Ares\Permission\Entity\Permission as Rank;
+use Ares\Role\Entity\Role;
 use Ares\Role\Entity\RoleRank;
 use Ares\Role\Entity\Contract\RoleRankInterface;
 use Illuminate\Database\QueryException;
@@ -33,15 +35,21 @@ class RoleRankRepository extends BaseRepository {
     /**
      * @param int $rankId
      *
-     * @return array|null
-     * @throws QueryException
+     * @return int|null
      */
-    public function getRankRoleIds(int $rankId) : ?array {
+    public function getRoleId(int $rankId) : ?int {
+
         $searchCriteria = $this->getDataObjectManager()
-        ->select('role_id')
         ->where('rank_id', $rankId);
 
-        return $this->getList($searchCriteria)->get('role_id');
+        /** @var RoleRank $roleRank */
+        $roleRank = $this->getOneBy($searchCriteria, true);
+
+        if(!$roleRank) {
+            return null;
+        }
+
+        return $roleRank->getRoleId();
     }
 
     /**
@@ -54,7 +62,7 @@ class RoleRankRepository extends BaseRepository {
         $searchCriteria = $this->getDataObjectManager()
         ->select('rank_id')
         ->where('role_id', $roleId);
-
+        //TODO this must be only for one
         return $this->getList($searchCriteria)->get('rank_id');
     }
 
@@ -66,41 +74,10 @@ class RoleRankRepository extends BaseRepository {
      * @throws NoSuchEntityException
      */
     public function getRankAssignedRole(int $roleId, int $rankId): ?RoleRank {
-        $searchCriteria = $this->getDataObjectManager()->where([
-            RoleRankInterface::COLUMN_ROLE_ID => $roleId,
-            RoleRankInterface::COLUMN_RANK_ID => $rankId
-        ]);
-
-        return $this->getOneBy($searchCriteria, true, false);
-    }
-
-    /**
-     * @param array $allRankRoleIds
-     *
-     * @return array|null
-     */
-    public function getRankPermissions(array $allRankRoleIds): ?array
-    {
         $searchCriteria = $this->getDataObjectManager()
-            ->select([
-                'ares_roles_permission.id',
-                'ares_roles_permission.role_id',
-                'ares_roles_permission.permission_id'
-            ])->from('ares_roles_permission')
-            ->leftJoin(
-                'ares_permissions',
-                'ares_permissions.id',
-                '=',
-                'ares_roles_permission.permission_id'
-            )->whereIn(
-                'ares_roles_permission.role_id',
-                $allRankRoleIds
-            )->select('ares_permissions.name');
-
-        return array_values(
-            array_unique(
-                $this->getList($searchCriteria)->get('name') ?? []
-            )
-        );
+        ->where(RoleRankInterface::COLUMN_ROLE_ID, '=', $roleId)
+        ->orWhere(RoleRankInterface::COLUMN_RANK_ID, '=', $rankId);
+        //TODO I dont like this...
+        return $this->getOneBy($searchCriteria, true, false);
     }
 }

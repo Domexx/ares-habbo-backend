@@ -4,6 +4,7 @@
     "start_points": 3000,
     "start_pixels": 4000,
     "start_motto": "Ares is cool!",
+    "start_home_room": 0,
     "register": {
       "max_accounts_per_ip": 3,
       "looks": {

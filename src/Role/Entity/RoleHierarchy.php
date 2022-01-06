@@ -20,6 +20,8 @@ class RoleHierarchy extends DataObject implements RoleHierarchyInterface
     /** @var string */
     public const TABLE = 'ares_roles_hierarchy';
 
+    // TODO ADD ORDER ID 
+
     /**
      * @return int
      */
@@ -72,6 +74,24 @@ class RoleHierarchy extends DataObject implements RoleHierarchyInterface
     public function setChildRoleId(int $childRoleId): RoleHierarchy
     {
         return $this->setData(RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID, $childRoleId);
+    }
+
+    /**
+     * @return int
+     */
+    public function getOrderId(): int
+    {
+        return $this->getData(RoleHierarchyInterface::COLUMN_ORDER_ID);
+    }
+
+    /**
+     * @param int $orderId
+     *
+     * @return RoleHierarchy
+     */
+    public function setOrderId(int $orderId): RoleHierarchy
+    {
+        return $this->setData(RoleHierarchyInterface::COLUMN_ORDER_ID, $orderId);
     }
 
     /**

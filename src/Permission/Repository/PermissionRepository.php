@@ -42,11 +42,32 @@ class PermissionRepository extends BaseRepository
         return $this->getList($searchCriteria);
     }
 
-    public function getPermissionById(int $permissionId) {
+    public function getListOfPermissions() : Collection {
         $searchCriteria = $this->getDataObjectManager()
-            ->where('id', $permissionId)
-            ->addRelation('users');
+            ->addRelation('role');
 
-        return $this->getOneBy($searchCriteria);
+        return $this->getList($searchCriteria, false);
+    }
+
+    public function getPermissionById(int $permissionId, bool $appendUsers = false) {
+        $searchCriteria = $this->getDataObjectManager()
+            ->select(['permissions.*'])
+            ->where('id', $permissionId)
+            ->addRelation('role');
+
+        if($appendUsers) {
+            $searchCriteria = $searchCriteria->addRelation('users');
+        }
+
+        return $this->getOneBy($searchCriteria, true, false);
+    }
+
+    public function getListOfColumns() : array {
+        //TODO Edit Ares Core - DataObjectManagerFactory make Manager be able to access to SchemaBuilder to retrieve list of columns safely.
+        $searchCriteria = $this->getDataObjectManager()
+            ->getConnection()
+            ->select('SHOW COLUMNS FROM `permissions`');
+            
+        return $searchCriteria;
     }
 }

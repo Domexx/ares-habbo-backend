@@ -9,6 +9,7 @@ namespace Ares\Setting\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Model\Query\PaginatedCollection;
+use Ares\Framework\Model\Query\Collection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Setting\Entity\Setting;
 
@@ -42,5 +43,15 @@ class SettingRepository extends BaseRepository
             $page,
             $resultPerPage
         );
+    }
+
+    /**
+     *
+     * @return PaginatedCollection
+     * @throws DataObjectManagerException
+     */
+    public function getSettingList(): Collection
+    {
+        return $this->getList($this->getDataObjectManager());
     }
 }

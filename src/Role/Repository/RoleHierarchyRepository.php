@@ -36,12 +36,13 @@ class RoleHierarchyRepository extends BaseRepository
     {
         $searchCriteria = $this->getDataObjectManager()
             ->whereIn('parent_role_id', $parentIds);
+            //orderBy('order_id');
 
         if($searchCriteria->count() == 0) {
             return [];
         }
 
-        return $this->getList($searchCriteria)->get('child_role_id');
+        return $this->getList($searchCriteria, true)->get('child_role_id');
     }
 
     /**
@@ -109,6 +110,20 @@ class RoleHierarchyRepository extends BaseRepository
         }
 
         return false;
+    }
+
+    /**
+     * @param int $parentRoleId
+     * @param int $findingChildId
+     *
+     * @return bool
+     * @throws QueryException
+     */
+    public function hasChild(int $roleId): bool
+    {
+        $childIds = $this->getChildIds([$roleId]);
+
+        return count($childIds) > 0;
     }
 
      /**
@@ -193,13 +208,13 @@ class RoleHierarchyRepository extends BaseRepository
     /**
      * @param array $rootRoleIds
      *
-     * @return array
+     * @return mixed
      * @throws QueryException
      */
-    public function getAllRoleIdsHierarchy(array $rootRoleIds): array
+    public function getAllRoleIdsHierarchy(array $rootRoleIds): mixed
     {
         $childRoleIds = $this->getAllChildRoleIds($rootRoleIds);
 
-        return array_merge($rootRoleIds, $childRoleIds);
+        return (count($childRoleIds) > 0) ? array_merge($rootRoleIds, $childRoleIds) : $rootRoleIds;
     }
 }

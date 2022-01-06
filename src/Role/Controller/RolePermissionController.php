@@ -14,12 +14,15 @@ use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\Role\Entity\Contract\PermissionInterface;
+use Ares\Role\Entity\Contract\RolePermissionInterface;
+use Ares\Role\Entity\RolePermission;
 use Ares\Role\Exception\RoleException;
 use Ares\Role\Repository\PermissionRepository;
-use Ares\Role\Service\CreateRolePermissionService;
 use Ares\Role\Service\CreatePermissionService;
 use Ares\Role\Service\DeleteRolePermissionService;
+use Ares\Role\Service\DeleteRolePermissionsService;
 use Ares\Role\Service\FetchUserPermissionService;
+use Ares\Role\Service\ToggleRolePermissionService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -35,18 +38,19 @@ class RolePermissionController extends BaseController
      *
      * @param PermissionRepository        $permissionRepository
      * @param CreatePermissionService     $createPermissionService
-     * @param CreateRolePermissionService $createRolePermissionService
      * @param FetchUserPermissionService  $fetchUserPermissionService
      * @param ValidationService           $validationService
      * @param DeleteRolePermissionService $deleteRolePermissionService
+     * @param ToggleRolePermissionService $toggleRolePermissionService
      */
     public function __construct(
         private PermissionRepository $permissionRepository,
         private CreatePermissionService $createPermissionService,
-        private CreateRolePermissionService $createRolePermissionService,
         private FetchUserPermissionService $fetchUserPermissionService,
         private ValidationService $validationService,
-        private DeleteRolePermissionService $deleteRolePermissionService
+        private DeleteRolePermissionService $deleteRolePermissionService,
+        private DeleteRolePermissionsService $deleteRolePermissionsService,
+        private ToggleRolePermissionService $toggleRolePermissionService
     ) {}
 
     /**
@@ -113,51 +117,41 @@ class RolePermissionController extends BaseController
     }
 
     /**
-     * @param Request  $request
+     * @param Request $request
      * @param Response $response
-     *
+     * 
      * @return Response
-     * @throws DataObjectManagerException
-     * @throws NoSuchEntityException
      * @throws RoleException
-     * @throws ValidationException
+     * @throws DataObjectManagerException
      */
-    public function createRolePermission(Request $request, Response $response): Response
-    {
+    public function toggleRolePermission(Request $request, Response $response) {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
 
         $this->validationService->validate($parsedData, [
-            PermissionInterface::COLUMN_NAME => 'required'
+            RolePermissionInterface::COLUMN_ROLE_ID => 'numeric|required',
+            RolePermissionInterface::COLUMN_PERMISSION_ID => 'numeric|required'
         ]);
 
-        $customResponse = $this->createRolePermissionService->execute($parsedData);
-
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        $customResponse = $this->toggleRolePermissionService->execute($parsedData);
+        
+        return $this->respond($response, $customResponse);
     }
 
     /**
-     * @param Request  $request
+     * @param Request $request
      * @param Response $response
-     * @param array    $args
-     *
+     * @param array $args
+     * 
      * @return Response
-     * @throws RoleException
-     * @throws DataObjectManagerException
+     * 
      */
-    public function deleteRolePermission(Request $request, Response $response, array $args): Response
-    {
+    public function deleteAllRolePermissions(Request $request, Response $response, array $args) {
         /** @var int $id */
         $id = $args['id'];
 
-        $customResponse = $this->deleteRolePermissionService->execute($id);
+        $customResponse = $this->deleteRolePermissionsService->execute($id);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 }

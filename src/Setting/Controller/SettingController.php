@@ -60,7 +60,44 @@ class SettingController extends BaseController
         $key = $parsedData['key'];
 
         /** @var Setting $configData */
-        $configData = $this->settingsRepository->get($key, 'key');
+        $configData = $this->settingsRepository->get($key, 'key', false, false);
+
+        return $this->respond(
+            $response,
+            response()
+                ->setData($configData)
+        );
+    }
+
+        /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws ValidationException
+     * @throws NoSuchEntityException
+     */
+    public function getMultiple(Request $request, Response $response): Response
+    {
+        /** @var array $parsedData */
+        $parsedData = $request->getParsedBody();
+
+        $this->validationService->validate($parsedData, [
+            'keys' => 'required'
+        ]);
+
+        /** @var string[] $key */
+        $keys = explode(',', $parsedData['keys']);
+
+        /** @var Setting[] $configData */
+        $configData = [];
+
+        foreach($keys as $key) {
+            /** @var Setting $settingData */
+            $settingData = $this->settingsRepository->get($key, 'key', false, false);
+
+            array_push($configData, $settingData);
+        }
 
         return $this->respond(
             $response,
@@ -86,7 +123,12 @@ class SettingController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $settings = $this->settingsRepository->getPaginatedSettingList($page, $resultPerPage);
+        $settings = $this->settingsRepository
+            ->getPaginatedList(
+                $this->settingsRepository->getDataObjectManager(),
+                $page,
+                $resultPerPage
+            );
 
         return $this->respond(
             $response,

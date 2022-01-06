@@ -206,13 +206,20 @@ class Permission extends DataObject implements PermissionInterface
             return null;
         }
 
-        /** @var PermissionRepository $permissionRepository */
-        $permissionRepository = repository(PermissionRepository::class);
-
         /** @var RoleRepository $roleRepository */
         $roleRepository = repository(RoleRepository::class);
 
-        $role = $permissionRepository->getOneToOne($roleRepository, $this->getId(), 'id');
+        /** @var PermissionRepository $permissionRepository */
+        $permissionRepository = repository(PermissionRepository::class);
+
+        /** @var Role $role */
+        $role = $permissionRepository->getManyToMany(
+            $roleRepository, 
+            $this->getId(), 
+            'ares_roles_rank', 
+            'rank_id',
+            'role_id'
+        )->first();
 
         if(!$role) {
             return null;
@@ -221,7 +228,6 @@ class Permission extends DataObject implements PermissionInterface
         $this->setRole($role);
 
         return $role;
-
     }
 
     /**

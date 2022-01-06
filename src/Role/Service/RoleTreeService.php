@@ -19,13 +19,13 @@ use Ares\Permission\Repository\PermissionRepository;
 use Ares\Role\Repository\RoleHierarchyRepository;
 
 /**
- * Class AssignRanktoRoleService
+ * Class RoleTreeService
  *
  * @package Ares\Role\Service
  */
-class AssignRankToRoleService {
+class RoleTreeService {
     /**
-     * AssignRankToRoleService constructor.
+     * RoleTreeService constructor.
      *
      * @param RoleRankRepository    $roleRankRepository
      * @param RoleRepository        $roleRepository
@@ -70,7 +70,11 @@ class AssignRankToRoleService {
         $roleChildren = [];
 
         foreach($roleChildrenIds as $roleChildId) {
-            $roleChild = $this->roleRepository->getRoleById($roleChildId);
+            /** @var Role $roleChild */
+            $roleChild = $this->roleRepository->get($roleChildId);
+
+            $roleChild->getRolePermissions();
+            $roleChild->getPermissionWithUsers();
 
             if($roleChild != null) {
                 array_push($roleChildren, $roleChild);

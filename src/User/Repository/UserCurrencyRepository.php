@@ -40,7 +40,7 @@ class UserCurrencyRepository extends BaseRepository
             ->addRelation('user')
             ->orderBy('amount', 'DESC')
             ->where('type', UserCurrencyTypeInterface::CURRENCY_TYPE_POINTS)
-            ->limit(3);
+            ->limit(10);
 
         return $this->getList($searchCriteria);
     }
@@ -56,7 +56,7 @@ class UserCurrencyRepository extends BaseRepository
             ->addRelation('user')
             ->orderBy('amount', 'DESC')
             ->where('type', UserCurrencyTypeInterface::CURRENCY_TYPE_PIXELS)
-            ->limit(3);
+            ->limit(10);
 
         return $this->getList($searchCriteria);
     }

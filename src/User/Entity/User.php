@@ -12,6 +12,7 @@ use Ares\Framework\Model\DataObject;
 use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RoleRepository;
 use Ares\Role\Repository\RoleRankRepository;
+use Ares\Role\Repository\RolePermissionRepository;
 use Ares\Role\Entity\Role;
 use Ares\Permission\Repository\PermissionRepository;
 use Ares\Permission\Entity\Permission;
@@ -33,7 +34,6 @@ class User extends DataObject implements UserInterface
     /** @var array */
     public const HIDDEN = [
         UserInterface::COLUMN_PASSWORD,
-        UserInterface::COLUMN_MAIL,
         UserInterface::COLUMN_AUTH_TICKET,
         UserInterface::COLUMN_IP_CURRENT,
         UserInterface::COLUMN_IP_REGISTER
@@ -43,7 +43,8 @@ class User extends DataObject implements UserInterface
     public const RELATIONS = [
         'role' => 'getRole',
         'currencies' => 'getCurrencies',
-        'permissions' => 'getPermissions'
+        'permissions' => 'getPermissions',
+        'hidden' => 'getHidden'
     ];
 
     /**
@@ -116,6 +117,22 @@ class User extends DataObject implements UserInterface
     public function setMail(string $mail): User
     {
         return $this->setData(UserInterface::COLUMN_MAIL, $mail);
+    }
+
+    /**
+     * @return int
+     */
+    public function getAccountCreated(): int {
+        return $this->getData(UserInterface::COLUMN_ACCOUNT_CREATED);
+    }
+
+    /**
+     * @param int $accountCreated
+     * 
+     * @return User
+     */
+    public function setAccountCreated(int $accountCreated): User {
+        return $this->setData(UserInterface::COLUMN_ACCOUNT_CREATED, $accountCreated);
     }
 
     /**
@@ -265,6 +282,24 @@ class User extends DataObject implements UserInterface
     /**
      * @return int
      */
+    public function getHomeRoom(): int
+    {
+        return $this->getData(UserInterface::COLUMN_HOME_ROOM);
+    }
+
+    /**
+     * @param int $online
+     *
+     * @return User
+     */
+    public function setHomeRoom(int $homeRoom): User
+    {
+        return $this->setData(UserInterface::COLUMN_HOME_ROOM, $homeRoom);
+    }
+
+    /**
+     * @return int
+     */
     public function getOnline(): int
     {
         return $this->getData(UserInterface::COLUMN_ONLINE);
@@ -406,7 +441,7 @@ class User extends DataObject implements UserInterface
      * @return Collection|null
      * @throws DataObjectManagerException
      */
-    public function getPermissions(): ?array
+    public function getPermissions(): ?Collection
     {
         $permissions = $this->getData('permissions');
 
@@ -417,26 +452,23 @@ class User extends DataObject implements UserInterface
         /** @var RoleRankRepository $roleRankRepository */
         $roleRankRepository = repository(RoleRankRepository::class);
 
-        /** @var RoleHierarchyRepository $roleHierarchyRepository */
-        $roleHierarchyRepository = repository(RoleHierarchyRepository::class);
+        /** @var RolePermissionRepository $rolePermissionRepository */
+        $rolePermissionRepository = repository(RolePermissionRepository::class);
 
-        /** @var array $userRoleIds */
-        $userRoleIds = $roleRankRepository->getRankRoleIds($this->getRank());
+        /** @var int $roleId */
+        $roleId = $roleRankRepository->getRoleId($this->getRank());
 
-        if (!isset($this) || !$userRoleIds) {
+        if (!isset($this) || !$roleId) {
             return null;
         }
 
-        /** @var array $allRoleIds */
-        $allRoleIds = $roleHierarchyRepository->getAllRoleIdsHierarchy($userRoleIds);
-
-        /** @var array $permissions */
-        $permissions = $roleRankRepository->getRankPermissions($allRoleIds);
+        /** @var Collection $permissions */
+        $permissions = $rolePermissionRepository->getRolePermissions($roleId);
 
         if (!$permissions) {
             return null;
         }
-
+        
         $this->setPermissions($permissions);
 
         return $permissions;
@@ -447,9 +479,28 @@ class User extends DataObject implements UserInterface
      *
      * @return User
      */
-    public function setPermissions(array $permissions): User
+    public function setPermissions(Collection $permissions): User
     {
         return $this->setData('permissions', $permissions);
+    }
+
+    public function getHidden()
+    {
+        $hidden = [
+            UserInterface::COLUMN_PASSWORD => $this->getPassword(),
+            UserInterface::COLUMN_AUTH_TICKET => $this->getAuthTicket(),
+            UserInterface::COLUMN_IP_CURRENT => $this->getIpCurrent(),
+            UserInterface::COLUMN_IP_REGISTER => $this->getIpRegister()
+        ];
+
+        $this->setHidden($hidden);
+
+        return $hidden;
+    }
+    
+    public function setHidden(array $hidden): User
+    {
+        return $this->setData('hidden', $hidden);    
     }
 
     /**

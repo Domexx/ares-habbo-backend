@@ -12,6 +12,7 @@ use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
+use Ares\Role\Entity\Role;
 use Ares\Role\Entity\Contract\RoleHierarchyInterface;
 use Ares\Role\Entity\Contract\RoleInterface;
 use Ares\Role\Entity\Contract\RoleRankInterface;
@@ -21,7 +22,11 @@ use Ares\Role\Repository\RoleRepository;
 use Ares\Role\Service\AssignRankToRoleService;
 use Ares\Role\Service\CreateChildRoleService;
 use Ares\Role\Service\CreateRoleService;
+use Ares\Role\Service\DeleteChildRoleService;
 use Ares\Role\Service\DeleteRoleService;
+use Ares\Role\Service\EditRoleService;
+use Ares\Role\Service\RoleTreeService;
+use Ares\Role\Service\UpdateChildRoleParentService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -40,16 +45,23 @@ class RoleController extends BaseController
      * @param AssignRankToRoleService $assignRankToRoleService
      * @param ValidationService       $validationService
      * @param DeleteRoleService       $deleteRoleService
+     * @param DeleteChildRoleService $deleteChildRoleService
+     * @param RoleTreeService $roleTreeService
      * @param RoleRepository          $roleRepository
+     * @param RoleHierarchyRepository $roleHierarchyRepository
      */
     public function __construct(
         private CreateRoleService $createRoleService,
+        private EditRoleService $editRoleService,
         private CreateChildRoleService $createChildRoleService,
         private AssignRankToRoleService $assignRankToRoleService,
         private ValidationService $validationService,
         private DeleteRoleService $deleteRoleService,
+        private DeleteChildRoleService $deleteChildRoleService,
+        private RoleTreeService $roleTreeService,
         private RoleRepository $roleRepository,
-        private RoleHierarchyRepository $roleHierarchyRepository
+        private RoleHierarchyRepository $roleHierarchyRepository,
+        private UpdateChildRoleParentService $updateChildRoleParentService
     ) {}
 
     /**
@@ -90,6 +102,7 @@ class RoleController extends BaseController
      */
     public function treeView(Request $request, Response $response): Response
     {
+        //TODO Implement this in RoleTreeService
         $rootRole = $this->roleRepository->getRootRole(); //First I look up for a role that has isRoot as true
 
         $rootChildren = $this->roleHierarchyRepository->getChildIds([$rootRole->getId()]); //Then looking at ares_roles_hierarchy I get all role children Ids
@@ -97,17 +110,21 @@ class RoleController extends BaseController
         $rootRole->children = [];
 
         if(count($rootChildren) > 0) { //If role has children then...
-            foreach($rootChildren as $rootChild) { //for each child
-                $groupRole = $this->roleRepository->getRoleById($rootChild); //look for its corresponding role based on the Id
-                
-                $groupChildren = $this->roleHierarchyRepository->getChildIds([$rootChild]); //Now get the child children Ids
+            foreach($rootChildren as $category) { //for each child
+                /** @var Role $groupRole */
+                $groupRole = $this->roleRepository->get($category); //look for its corresponding role based on the Id
+
+                $groupChildren = $this->roleHierarchyRepository->getChildIds([$category]); //Now get the child children Ids
 
                 $groupRole->children = [];
 
                 if(count($groupChildren) > 0) { //Repeat the same thing, if child has children
                     foreach($groupChildren as $groupChild) {  //for each child' child
-                        $roleRank = $this->roleRepository->getRoleById($groupChild); //get its corresponding role based on the Id
-                        $roleRank->getPermission(); //Now MERGE its rank
+                        /** @var Role $roleRank */
+                        $roleRank = $this->roleRepository->get($groupChild); //get its corresponding role based on the Id
+                        
+                        $roleRank->getPermissionWithUsers();
+
                         array_push($groupRole->children, $roleRank);  //Push the role to child children        
                     }
                 }
@@ -125,79 +142,16 @@ class RoleController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
-     */
-    public function roleCategories(Request $request, Response $response): Response
-    {
-        //First I look up for a role that has isRoot as true
-        $rootRole = $this->roleRepository->getRootRole();
-
-        //Then looking at ares_roles_hierarchy I get all role children Ids
-        $rootChildren = $this->roleHierarchyRepository->getChildIds([$rootRole->getId()]);
-
-        $rootRole->children = [];
-
-        //If root has children (categories) then...
-        if(count($rootChildren) > 0) {
-            foreach($rootChildren as $rootChild) { //for each child
-                $groupRole = $this->roleRepository->getRoleById($rootChild); //look for its corresponding role based on the Id
-
-                array_push($rootRole->children, $groupRole); //Push the role to root children
-            }
-        }
-
-        return $this->respond($response, response()->setData($rootRole->children));
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     */
-    public function categoryById(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $roleId */
-        $roleId = $args['id'];
-
-        //Role Category Information
-        $role = $this->roleRepository->getRoleById($roleId);
-
-        //TODO THROW ERROR IF ROLE IS NOT A ROOT CHILD (MEANING THIS IS NOT A CATEGORY)
-
-        //Get Role Category Children Ids
-        $roleChildren = $this->roleHierarchyRepository->getChildIds([$roleId]);
-
-        //Set Role Category Children
-        $role->children = [];
-
-        if(count($roleChildren) > 0) { //If role has children then...
-            foreach($roleChildren as $roleChild) { //for each child
-                //Role Rank Information
-                $roleRank = $this->roleRepository->getRoleById($roleChild);
-                $roleRank->getPermission();
-                array_push($role->children, $roleRank);
-            }
-        }
-
-        return $this->respond($response, response()->setData($role));
-    }
-
-        /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     */
+    */
     public function roleById(Request $request, Response $response, array $args): Response
     {
         /** @var int $roleId */
         $roleId = $args['id'];
 
-        //Role Category Information
-        $role = $this->roleRepository->getRoleById($roleId);
+        /** @var Role $role */
+        $role = $this->roleRepository->get($roleId);
 
+        $role->getRolePermissions();
         $role->getPermission();
 
         return $this->respond($response, response()->setData($role));
@@ -268,7 +222,7 @@ class RoleController extends BaseController
      * @throws RoleException
      * @throws ValidationException
      */
-    public function assignRole(Request $request, Response $response): Response
+    public function createRankRole(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -279,6 +233,62 @@ class RoleController extends BaseController
         ]);
 
         $customResponse = $this->assignRankToRoleService->execute($parsedData);
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws RoleException
+     * @throws ValidationException|NoSuchEntityException
+     */
+    public function editRole(Request $request, Response $response): Response
+    {
+        /** @var array $parsedData */
+        $parsedData = $request->getParsedBody();
+
+        $this->validationService->validate($parsedData, [
+            RoleInterface::COLUMN_ID => 'required',
+            RoleInterface::COLUMN_NAME => 'required',
+            RoleInterface::COLUMN_DESCRIPTION => 'required'
+        ]);
+
+        $customResponse = $this->editRoleService->execute($parsedData);
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+     * @throws RoleException
+     * @throws ValidationException
+    */
+    public function updateChildRoleParent(Request $request, Response $response): Response
+    {
+        /** @var array $parsedData */
+        $parsedData = $request->getParsedBody();
+
+        $this->validationService->validate($parsedData, [
+            RoleHierarchyInterface::COLUMN_PARENT_ROLE_ID => 'numeric|required',
+            RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID => 'numeric|required'
+        ]);
+
+        $customResponse = $this->updateChildRoleParentService->execute($parsedData);
 
         return $this->respond(
             $response,
@@ -301,6 +311,28 @@ class RoleController extends BaseController
         $id = $args['id'];
 
         $customResponse = $this->deleteRoleService->execute($id);
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * @param Request     $request
+     * @param Response    $response
+     * @param             $args
+     *
+     * @return Response
+     * @throws RoleException
+     * @throws DataObjectManagerException
+     */
+    public function deleteChildRole(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $id */
+        $id = $args['id'];
+
+        $customResponse = $this->deleteChildRoleService->execute($id);
 
         return $this->respond(
             $response,

@@ -9,8 +9,10 @@ namespace Ares\User\Repository;
 
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Model\Query\Collection;
+use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\User\Entity\User;
 use Ares\Framework\Repository\BaseRepository;
+use Ares\User\Entity\Contract\UserInterface;
 
 /**
  * Class UserRepository
@@ -46,7 +48,7 @@ class UserRepository extends BaseRepository
     {
         $searchCriteria = $this->getDataObjectManager()
             ->orderBy('credits', 'DESC')
-            ->limit(3);
+            ->limit(10);
 
         return $this->getList($searchCriteria);
     }
@@ -91,5 +93,28 @@ class UserRepository extends BaseRepository
         return $this->getDataObjectManager()
             ->where('ip_register', $ipRegister)
             ->count();
+    }
+
+    /**
+     * @param int $page
+     * @param int $resultPerPage
+     *
+     * @return PaginatedCollection
+     * @throws DataObjectManagerException
+     */
+    public function getPaginatedUsersList(int $page, int $resultPerPage): PaginatedCollection
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                UserInterface::COLUMN_ID,
+                UserInterface::COLUMN_USERNAME,
+                UserInterface::COLUMN_LAST_LOGIN,
+                UserInterface::COLUMN_LAST_ONLINE,
+                UserInterface::COLUMN_LOOK,
+                UserInterface::COLUMN_RANK,
+                UserInterface::COLUMN_CREATED_AT
+            ]);
+
+        return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
 }

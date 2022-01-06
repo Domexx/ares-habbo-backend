@@ -13,9 +13,11 @@ use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
+use Ares\User\Entity\Contract\UserCurrencyInterface;
 use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Entity\User;
 use Ares\User\Repository\UserRepository;
+use Ares\User\Service\Currency\UpdateCurrencyService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -31,10 +33,12 @@ class UserController extends BaseController
      *
      * @param UserRepository    $userRepository
      * @param ValidationService $validationService
+     * @param updateCurrencyService $updateCurrencyService
      */
     public function __construct(
         private UserRepository $userRepository,
-        private ValidationService $validationService
+        private ValidationService $validationService,
+        private UpdateCurrencyService $updateCurrencyService
     ) {}
 
     /**
@@ -56,11 +60,29 @@ class UserController extends BaseController
         $user->getCurrencies();
         $user->getPermissions();
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($user)
-        );
+        return $this->respond($response, response()->setData($user));
+    }
+
+    /**
+     * @param int $userId
+     *
+     * @return Response
+     * @throws NoSuchEntityException
+     */
+    public function viewUser(Request $request, Response $response, array $args): Response
+    {
+        $userId = $args['id'];
+
+        $searchCriteria = $this->userRepository
+            ->getDataObjectManager() 
+            ->where('id', $userId)
+            ->addRelation('currencies')
+            ->addRelation('hidden');
+
+        /** @var User $user */
+        $user = $this->userRepository->getOneBy($searchCriteria, true, false);
+
+        return $this->respond($response, response()->setData($user));
     }
 
     /**
@@ -86,6 +108,39 @@ class UserController extends BaseController
             $response,
             response()
                 ->setData($userLook)
+        );
+    }
+
+    /**
+     * @param Request     $request
+     * @param Response    $response
+     *
+     * @param             $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     */
+    public function allList(Request $request, Response $response, array $args): Response
+    {
+        //BUG for some reason these variables aren't being treated as their corresponding variable type.
+
+        /** @var int $page */
+        $page = (int) $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = (int) $args['rpp'];
+
+        /** @var PaginatedCollection $users */
+        $users = $this->userRepository
+            ->getPaginatedUsersList(
+                $page,
+                $resultPerPage
+            );
+
+        return $this->respond(
+            $response,
+            response()
+                ->setData($users)
         );
     }
 

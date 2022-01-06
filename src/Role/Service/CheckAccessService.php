@@ -56,10 +56,10 @@ class CheckAccessService
             return true;
         }
 
-        $roleIds = $this->roleRankRepository->getRankRoleIds($userRank);
+        $roleId = $this->roleRankRepository->getRoleId($userRank);
 
-        if ($roleIds && count($roleIds) > 0) {
-            $allRoleIds = $this->roleHierarchyRepository->getAllRoleIdsHierarchy($roleIds);
+        if ($roleId) {
+            $allRoleIds = $this->roleHierarchyRepository->getAllRoleIdsHierarchy([$roleId]);
 
             return $this->rolePermissionRepository->isPermissionAssigned($permission->getId(), $allRoleIds);
         }

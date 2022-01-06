@@ -8,7 +8,9 @@
 namespace Ares\Role\Entity;
 
 use Ares\Framework\Model\DataObject;
+use Ares\Role\Entity\Permission;
 use Ares\Role\Entity\Contract\RolePermissionInterface;
+use Ares\Role\Repository\PermissionRepository;
 
 /**
  * Class RolePermission
@@ -19,6 +21,11 @@ class RolePermission extends DataObject implements RolePermissionInterface
 {
     /** @var string */
     public const TABLE = 'ares_roles_permission';
+
+    /** @var array **/
+    public const RELATIONS = [
+        'permission' => 'getPermission'
+    ];
 
     /**
      * @return int
@@ -90,5 +97,42 @@ class RolePermission extends DataObject implements RolePermissionInterface
     public function setCreatedAt(\DateTime $createdAt): RolePermission
     {
         return $this->setData(RolePermissionInterface::COLUMN_CREATED_AT, $createdAt);
+    }
+
+    /**
+    * @return Permission|null
+    *
+    * @throws DataObjectManagerException
+    */
+    public function getPermission(): ?Permission
+    {
+        /** @var Permission $permission */
+        $permission = $this->getData('permission');
+
+        if ($permission) {
+            return $permission;
+        }
+        
+        if(!isset($this)) {
+            return null;
+        }
+
+        /** @var PermissionRepository $permissionRepository */
+        $permissionRepository = repository(PermissionRepository::class);
+
+        $permission = $permissionRepository->getPermissionById($this->getPermissionId());
+
+        $this->setPermission($permission);
+
+        return $permission;
+    }
+
+    /**
+     * @param Permission $permissions
+     *
+     * @return RolePermission
+    */
+    public function setPermission(Permission $permission) : RolePermission {
+        return $this->setData('permission', $permission);
     }
 }

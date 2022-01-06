@@ -8,9 +8,10 @@
 namespace Ares\Role\Entity;
 
 use Ares\Framework\Model\DataObject;
-use Ares\Permission\Entity\Permission;
+use Ares\Permission\Entity\Permission as Rank;
 use Ares\Permission\Repository\PermissionRepository;
 use Ares\Role\Entity\Contract\RoleInterface;
+use Ares\Role\Repository\RolePermissionRepository;
 use Ares\Role\Repository\RoleRepository;
 
 /**
@@ -25,7 +26,9 @@ class Role extends DataObject implements RoleInterface
 
     /** @var array **/
     public const RELATIONS = [
-        'permission' => 'getPermission'
+        'permission' => 'getPermission',
+        'permissionWithUsers' => 'getPermissionWithUsers',
+        'rolePermissions' => 'getRolePermissions'
     ];
 
     /**
@@ -101,19 +104,19 @@ class Role extends DataObject implements RoleInterface
     }
 
     /**
-     * @return bool
+     * @return int
      */
-    public function igetIsRoot(): bool
+    public function getIsRoot(): int
     {
         return $this->getData(RoleInterface::COLUMN_IS_ROOT);
     }
 
     /**
-     * @param bool $isRoot
+     * @param int $isRoot
      *
      * @return Role
      */
-    public function setIsRoot(bool $isRoot): Role
+    public function setIsRoot(int $isRoot): Role
     {
         return $this->setData(RoleInterface::COLUMN_IS_ROOT, $isRoot);
     }
@@ -154,18 +157,54 @@ class Role extends DataObject implements RoleInterface
         return $this->setData(RoleInterface::COLUMN_UPDATED_AT, $updatedAt);
     }
 
-        /**
-     * @return Permission|null
+    /**
+    *
+    * @return array|null
+    */
+    public function getRolePermissions() {
+        $permissions = $this->getData('role_permissions');
+
+        if($permissions) {
+            return $permissions;
+        }
+
+        if(!isset($this)) {
+            return null;
+        }
+
+        /** @var RolePermissionRepository $rolePermissionRepository */
+        $rolePermissionRepository = repository(RolePermissionRepository::class);
+
+        /** @var Collection $permissions */
+        $permissions = $rolePermissionRepository->getRolePermissions($this->getId());
+
+        $this->setRolePermissions($permissions);
+
+        return $permissions;
+    }
+
+    /**
+     * @param mixed $permissions
+     *
+     * @return Role
+    */
+    public function setRolePermissions(mixed $permissions): Role
+    {
+        return $this->setData('role_permissions', $permissions);
+    }
+
+    /**
+     * @return Rank|null
      *
      * @throws DataObjectManagerException
      */
-    public function getPermission(): ?Permission
+    public function getPermission(bool $appendUsers = false): ?Rank
     {
-        /** @var User $user */
-        $permission = $this->getData('permission');
+        /** @var Rank $rank */
+        $rank = $this->getData('permission');
 
-        if ($permission) {
-            return $permission;
+        if ($rank) {
+            return $rank;
         }
 
         if(!isset($this)) {
@@ -178,8 +217,8 @@ class Role extends DataObject implements RoleInterface
         /** @var PermissionRepository $permissionRepository */
         $permissionRepository = repository(PermissionRepository::class);
 
-        /** @var Permission $permission */
-        $permission = $roleRepository->getManyToMany(
+        /** @var Rank $rank */
+        $rank = $roleRepository->getManyToMany(
             $permissionRepository, 
             $this->getId(), 
             'ares_roles_rank', 
@@ -187,24 +226,39 @@ class Role extends DataObject implements RoleInterface
             'rank_id'
         )->first();
 
-        if(!$permission) {
+        if(!$rank) {
             return null;
         }
 
-        $permission->getUsers();
+        if($appendUsers) {
+            $rank->getUsers();
+        }
 
-        $this->setPermission($permission);
+        $this->setPermission($rank);
 
-        return $permission;
+        return $rank;
+    }
+
+     /**
+     * @return Rank|null
+     *
+     * @throws DataObjectManagerException
+     */
+    public function getPermissionWithUsers(): ?Rank
+    {
+        /** @var Rank $rank */
+        $rank = $this->getPermission(true);
+
+        return $rank;
     }
 
     /**
-     * @param Permission $permission
+     * @param Rank $rank
      *
      * @return Role
      */
-    public function setPermission(Permission $permission): Role
+    public function setPermission(Rank $rank): Role
     {
-        return $this->setData('permission', $permission);
+        return $this->setData('permission', $rank);
     }
 }

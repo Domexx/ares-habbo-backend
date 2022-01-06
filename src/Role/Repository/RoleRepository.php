@@ -48,10 +48,16 @@ class RoleRepository extends BaseRepository
      *
      * @return Role|null
      */
-    public function getRoleById(int $roleId) : Role {
-        $searchCriteria = $this->getDataObjectManager()->where(['id' => $roleId])->addRelation('permission');
+    public function getRoleById(int $roleId, bool $appendUsers = true) : Role {
+        $searchCriteria = $this->getDataObjectManager()
+            ->addRelation('rolePermissions')
+            ->where('id', $roleId);
 
-        return $this->getOneBy($searchCriteria);
+        $appendUsers ? $searchCriteria->addRelation('permissionWithUsers') : $searchCriteria->addRelation('permission');
+
+        $role = $this->getOneBy($searchCriteria);
+
+        return $role;
     }
 
     /**
