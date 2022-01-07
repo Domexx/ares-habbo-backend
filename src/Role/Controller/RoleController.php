@@ -26,6 +26,7 @@ use Ares\Role\Service\DeleteChildRoleService;
 use Ares\Role\Service\DeleteRoleService;
 use Ares\Role\Service\EditRoleService;
 use Ares\Role\Service\RoleTreeService;
+use Ares\Role\Service\UpdateChildRoleOrderService;
 use Ares\Role\Service\UpdateChildRoleParentService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -49,6 +50,7 @@ class RoleController extends BaseController
      * @param RoleTreeService $roleTreeService
      * @param RoleRepository          $roleRepository
      * @param RoleHierarchyRepository $roleHierarchyRepository
+     * @param UpdateChildRoleOrderService $updateChildRoleOrderService
      */
     public function __construct(
         private CreateRoleService $createRoleService,
@@ -61,7 +63,8 @@ class RoleController extends BaseController
         private RoleTreeService $roleTreeService,
         private RoleRepository $roleRepository,
         private RoleHierarchyRepository $roleHierarchyRepository,
-        private UpdateChildRoleParentService $updateChildRoleParentService
+        private UpdateChildRoleParentService $updateChildRoleParentService,
+        private UpdateChildRoleOrderService $updateChildRoleOrderService
     ) {}
 
     /**
@@ -94,6 +97,12 @@ class RoleController extends BaseController
     }
     
     /**
+     * TODO Implement this is RoleTreeService
+     * 
+     * Retrieves all Role Hierarchy Tree by setting a root Role on Database.
+     * Role Tree is made up of 3 levels: Root > Categories > Normal Roles (These are attached to a Rank)
+     * Normal Roles are retrieved with their corresponding Rank and Users.
+     * 
      * @param Request  $request
      * @param Response $response
      *
@@ -102,34 +111,34 @@ class RoleController extends BaseController
      */
     public function treeView(Request $request, Response $response): Response
     {
-        //TODO Implement this in RoleTreeService
-        $rootRole = $this->roleRepository->getRootRole(); //First I look up for a role that has isRoot as true
+        $rootRole = $this->roleRepository->getRootRole();
 
-        $rootChildren = $this->roleHierarchyRepository->getChildIds([$rootRole->getId()]); //Then looking at ares_roles_hierarchy I get all role children Ids
+        $rootChildren = $this->roleHierarchyRepository->getChildIds([$rootRole->getId()]);
 
         $rootRole->children = [];
 
-        if(count($rootChildren) > 0) { //If role has children then...
-            foreach($rootChildren as $category) { //for each child
+        if(count($rootChildren) > 0) {
+            foreach($rootChildren as $category) {
                 /** @var Role $groupRole */
-                $groupRole = $this->roleRepository->get($category); //look for its corresponding role based on the Id
+                $groupRole = $this->roleRepository->get($category);
 
-                $groupChildren = $this->roleHierarchyRepository->getChildIds([$category]); //Now get the child children Ids
+                $groupChildren = $this->roleHierarchyRepository->getChildIds([$category]);
 
                 $groupRole->children = [];
 
-                if(count($groupChildren) > 0) { //Repeat the same thing, if child has children
-                    foreach($groupChildren as $groupChild) {  //for each child' child
+                if(count($groupChildren) > 0) {
+                    foreach($groupChildren as $groupChild) {
+
                         /** @var Role $roleRank */
-                        $roleRank = $this->roleRepository->get($groupChild); //get its corresponding role based on the Id
+                        $roleRank = $this->roleRepository->get($groupChild);
                         
                         $roleRank->getPermissionWithUsers();
 
-                        array_push($groupRole->children, $roleRank);  //Push the role to child children        
+                        array_push($groupRole->children, $roleRank);
                     }
                 }
 
-                array_push($rootRole->children, $groupRole); //Push the role to root children
+                array_push($rootRole->children, $groupRole);
             }
         }
 
@@ -289,6 +298,34 @@ class RoleController extends BaseController
         ]);
 
         $customResponse = $this->updateChildRoleParentService->execute($parsedData);
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+     * @throws RoleException
+     * @throws ValidationException
+    */
+    public function updateChildRoleOrder(Request $request, Response $response): Response
+    {
+        /** @var array $parsedData */
+        $parsedData = $request->getParsedBody();
+
+        $this->validationService->validate($parsedData, [
+            RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID => 'numeric|required',
+            RoleHierarchyInterface::COLUMN_ORDER_ID => 'numeric|required'
+        ]);
+
+        $customResponse = $this->updateChildRoleOrderService->execute($parsedData);
 
         return $this->respond(
             $response,

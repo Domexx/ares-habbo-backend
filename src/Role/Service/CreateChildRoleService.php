@@ -62,12 +62,6 @@ class CreateChildRoleService
             );
         }
 
-        /** @var Role $parentRole */
-        $parentRole = $this->roleRepository->get($parentRoleId);
-
-        /** @var Role $childRole */
-        $childRole = $this->roleRepository->get($childRoleId);
-
         /** @var int $parentChildrenCount */
         $parentChildrenCount = count($this->roleHierarchyRepository->getChildIds([$parentRoleId]));
 
@@ -93,7 +87,7 @@ class CreateChildRoleService
         $roleHierarchy
             ->setParentRoleId($data['parent_role_id'])
             ->setChildRoleId($data['child_role_id'])
-            ->setOrderId($orderId + 1)
+            ->setOrderId($orderId)
             ->setCreatedAt(new \DateTime());
 
         return $roleHierarchy;

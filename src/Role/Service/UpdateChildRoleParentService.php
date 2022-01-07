@@ -77,10 +77,7 @@ class UpdateChildRoleParentService
 
         /** @var RoleHierarchy $existingRoleHierarchy */
         $existingRoleHierarchy = $this->roleHierarchyRepository->get($childRoleId, RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID);
-
-        /** @var RoleHierarchy $existingRoleHierarchy */
-        //$existingRoleHierarchy = $this->roleHierarchyRepository->getDataObjectManager()->where(RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID, $childRoleId)->first();
-
+        
         if($existingRoleHierarchy->getParentRoleId() == $parentRoleId) {
             /** @var RoleHierarchy $roleHierarchy */
             $roleHierarchy = $this->roleHierarchyRepository->save($existingRoleHierarchy);
@@ -110,11 +107,19 @@ class UpdateChildRoleParentService
             }
         }
 
-        //Check How many children has the new parent has
-        // $childrenCount = $parentRole->childrenCount();
+        /** @var int $parentChildrenCount */
+        $parentChildrenCount = count($this->roleHierarchyRepository->getChildIds([$parentRoleId]));
+
+        /** @var RoleHierarchy $lastChild */
+        $lastChild = $this->roleHierarchyRepository->getDataObjectManager()
+                        ->where(RoleHierarchyInterface::COLUMN_PARENT_ROLE_ID, $parentRoleId)
+                        ->orderBy(RoleHierarchyInterface::COLUMN_ORDER_ID, 'DESC')
+                        ->first();
+
+        $lastOrderId = ($lastChild) ? (($lastChild->getChildRoleId() === $childRoleId) ? $lastChild->getOrderId() : $lastChild->getOrderId() + 1) : 1;
 
         /** @var RoleHierarchy $editedRoleHierarchy */
-        $editedRoleHierarchy = $this->getEditedChildRole($existingRoleHierarchy, $data);
+        $editedRoleHierarchy = $this->getEditedChildRole($existingRoleHierarchy, $data, $lastOrderId);
 
         /** @var RoleHierarchy $editedRoleHierarchy */
         $editedRoleHierarchy = $this->roleHierarchyRepository->save($editedRoleHierarchy);
@@ -122,17 +127,16 @@ class UpdateChildRoleParentService
         return response()->setData($editedRoleHierarchy);
     }
 
-        /**
+    /**
      * @param int $parentRoleId
      * @param int $childRoleId
      *
      * @return RoleHierarchy
-     */
-    private function getEditedChildRole(RoleHierarchy $roleHierarchy, array $data): RoleHierarchy
+    */
+    private function getEditedChildRole(RoleHierarchy $roleHierarchy, array $data, int $orderId): RoleHierarchy
     {
-
         return $roleHierarchy
-            ->setParentRoleId($data['parent_role_id']);
-            //->setOrderId(childCount)
+            ->setParentRoleId($data['parent_role_id'])
+            ->setOrderId($orderId);
     }
 }

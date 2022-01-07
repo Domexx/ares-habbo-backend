@@ -8,6 +8,7 @@
 namespace Ares\Role\Repository;
 
 use Ares\Framework\Repository\BaseRepository;
+use Ares\Role\Entity\Contract\RoleHierarchyInterface;
 use Ares\Role\Entity\RoleHierarchy;
 use Illuminate\Database\QueryException;
 
@@ -35,8 +36,8 @@ class RoleHierarchyRepository extends BaseRepository
     public function getChildIds(array $parentIds): ?array
     {
         $searchCriteria = $this->getDataObjectManager()
-            ->whereIn('parent_role_id', $parentIds);
-            //orderBy('order_id');
+            ->whereIn('parent_role_id', $parentIds)
+            ->orderBy(RoleHierarchyInterface::COLUMN_ORDER_ID);
 
         if($searchCriteria->count() == 0) {
             return [];
