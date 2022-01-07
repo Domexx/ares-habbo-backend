@@ -10,6 +10,7 @@ namespace Ares\Role\Repository;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
+use Ares\Role\Entity\Contract\RoleInterface;
 use Ares\Role\Entity\Role;
 
 /**
@@ -66,7 +67,7 @@ class RoleRepository extends BaseRepository
      */
     public function getRootRole() : Role
     {
-        $searchCriteria = $this->getDataObjectManager()->where(['isRoot' => '1']);
+        $searchCriteria = $this->getDataObjectManager()->where([RoleInterface::COLUMN_IS_ROOT => '1']);
         return $this->getOneBy($searchCriteria);
     }
 }

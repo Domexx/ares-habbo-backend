@@ -10,14 +10,9 @@ namespace Ares\Role\Service;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
-use Ares\Framework\Interfaces\HttpResponseCodeInterface;
-use Ares\Role\Entity\Contract\RoleHierarchyInterface;
 use Ares\Role\Entity\Contract\RoleRankInterface;
-use Ares\Role\Entity\Role;
-use Ares\Role\Entity\RoleHierarchy;
 use Ares\Role\Entity\RoleRank;
 use Ares\Role\Exception\RoleException;
-use Ares\Role\Interfaces\Response\RoleResponseCodeInterface;
 use Ares\Role\Repository\RoleRankRepository;
 use Ares\Role\Repository\RoleRepository;
 

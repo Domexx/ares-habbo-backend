@@ -17,7 +17,6 @@ use Ares\Role\Entity\Contract\RoleHierarchyInterface;
 use Ares\Role\Entity\Contract\RoleInterface;
 use Ares\Role\Entity\Contract\RoleRankInterface;
 use Ares\Role\Exception\RoleException;
-use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RoleRepository;
 use Ares\Role\Service\AssignRankToRoleService;
 use Ares\Role\Service\CreateChildRoleService;
@@ -26,7 +25,7 @@ use Ares\Role\Service\DeleteChildRoleService;
 use Ares\Role\Service\DeleteRoleRankService;
 use Ares\Role\Service\DeleteRoleService;
 use Ares\Role\Service\EditRoleService;
-use Ares\Role\Service\RoleTreeService;
+use Ares\Role\Service\FetchRoleTreeService;
 use Ares\Role\Service\UpdateChildRoleOrderService;
 use Ares\Role\Service\UpdateChildRoleParentService;
 use Ares\Role\Service\UpdateRoleRankService;
@@ -43,34 +42,34 @@ class RoleController extends BaseController
     /**
      * RoleController constructor.
      *
-     * @param CreateRoleService       $createRoleService
-     * @param CreateChildRoleService  $createChildRoleService
-     * @param AssignRankToRoleService $assignRankToRoleService
-     * @param ValidationService       $validationService
-     * @param DeleteRoleService       $deleteRoleService
-     * @param DeleteChildRoleService $deleteChildRoleService
-     * @param DeleteRoleRankService $deleteRoleRankService
-     * @param RoleTreeService $roleTreeService
-     * @param RoleRepository          $roleRepository
-     * @param RoleHierarchyRepository $roleHierarchyRepository
-     * @param UpdateChildRoleOrderService $updateChildRoleOrderService
-     * @param UpdateRoleRankService $updateRoleRankService
+     * @param AssignRankToRoleService       $assignRankToRoleService
+     * @param CreateChildRoleService        $createChildRoleService
+     * @param CreateRoleService             $createRoleService
+     * @param DeleteRoleService             $deleteRoleService
+     * @param DeleteChildRoleService        $deleteChildRoleService
+     * @param DeleteRoleRankService         $deleteRoleRankService
+     * @param EditRoleService               $editRoleService
+     * @param FetchRoleTreeService          $fetchRoleTreeService
+     * @param UpdateChildRoleOrderService   $updateChildRoleOrderService
+     * @param UpdateChildRoleParentService  $updateChildRoleParentService
+     * @param UpdateRoleRankService         $updateRoleRankService
+     * @param ValidationService             $validationService
+     * @param RoleRepository                $roleRepository
      */
     public function __construct(
-        private CreateRoleService $createRoleService,
-        private EditRoleService $editRoleService,
-        private CreateChildRoleService $createChildRoleService,
         private AssignRankToRoleService $assignRankToRoleService,
-        private ValidationService $validationService,
+        private CreateChildRoleService $createChildRoleService,
+        private CreateRoleService $createRoleService,
         private DeleteRoleService $deleteRoleService,
         private DeleteChildRoleService $deleteChildRoleService,
         private DeleteRoleRankService $deleteRoleRankService,
-        private RoleTreeService $roleTreeService,
-        private RoleRepository $roleRepository,
-        private RoleHierarchyRepository $roleHierarchyRepository,
-        private UpdateChildRoleParentService $updateChildRoleParentService,
+        private EditRoleService $editRoleService,
+        private FetchRoleTreeService $fetchRoleTreeService,
         private UpdateChildRoleOrderService $updateChildRoleOrderService,
-        private UpdateRoleRankService $updateRoleRankService
+        private UpdateChildRoleParentService $updateChildRoleParentService,
+        private UpdateRoleRankService $updateRoleRankService,
+        private ValidationService $validationService,
+        private RoleRepository $roleRepository
     ) {}
 
     /**
@@ -103,7 +102,6 @@ class RoleController extends BaseController
     }
     
     /**
-     * TODO Implement this is RoleTreeService
      * 
      * Retrieves all Role Hierarchy Tree by setting a root Role on Database.
      * Role Tree is made up of 3 levels: Root > Categories > Normal Roles (These are attached to a Rank)
@@ -117,38 +115,15 @@ class RoleController extends BaseController
      */
     public function treeView(Request $request, Response $response): Response
     {
+        /** @var Role $rootRole */
         $rootRole = $this->roleRepository->getRootRole();
 
-        $rootChildren = $this->roleHierarchyRepository->getChildIds([$rootRole->getId()]);
+        $customResponse = $this->fetchRoleTreeService->execute($rootRole);
 
-        $rootRole->children = [];
-
-        if(count($rootChildren) > 0) {
-            foreach($rootChildren as $category) {
-                /** @var Role $groupRole */
-                $groupRole = $this->roleRepository->get($category);
-
-                $groupChildren = $this->roleHierarchyRepository->getChildIds([$category]);
-
-                $groupRole->children = [];
-
-                if(count($groupChildren) > 0) {
-                    foreach($groupChildren as $groupChild) {
-
-                        /** @var Role $roleRank */
-                        $roleRank = $this->roleRepository->get($groupChild);
-                        
-                        $roleRank->getPermissionWithUsers();
-
-                        array_push($groupRole->children, $roleRank);
-                    }
-                }
-
-                array_push($rootRole->children, $groupRole);
-            }
-        }
-
-        return $this->respond($response, response()->setData($rootRole));
+        return $this->respond(
+            $response,
+            $customResponse
+        );
     }
 
     /**
@@ -157,6 +132,7 @@ class RoleController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
     */
     public function roleById(Request $request, Response $response, array $args): Response
     {
