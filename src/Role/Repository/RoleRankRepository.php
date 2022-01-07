@@ -53,20 +53,8 @@ class RoleRankRepository extends BaseRepository {
     }
 
     /**
-     * @param int $roleId
-     *
-     * @return array|null
-     * @throws QueryException
-     */
-    public function getRoleRankIds(int $roleId) : ?array {
-        $searchCriteria = $this->getDataObjectManager()
-        ->select('rank_id')
-        ->where('role_id', $roleId);
-        //TODO this must be only for one
-        return $this->getList($searchCriteria)->get('rank_id');
-    }
-
-    /**
+     * //TODO Don't depend on database, move to cache
+     * 
      * @param int $roleId
      * @param int $rankId
      *
@@ -77,7 +65,7 @@ class RoleRankRepository extends BaseRepository {
         $searchCriteria = $this->getDataObjectManager()
         ->where(RoleRankInterface::COLUMN_ROLE_ID, '=', $roleId)
         ->orWhere(RoleRankInterface::COLUMN_RANK_ID, '=', $rankId);
-        //TODO I dont like this...
+        
         return $this->getOneBy($searchCriteria, true, false);
     }
 }

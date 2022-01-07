@@ -62,8 +62,13 @@ class PermissionRepository extends BaseRepository
         return $this->getOneBy($searchCriteria, true, false);
     }
 
+    /**
+     * //TODO Edit Ares Core - DataObjectManagerFactory make Manager be able to access to SchemaBuilder
+     *  to retrieve list of columns safely.
+     * 
+     * @return array
+     */
     public function getListOfColumns() : array {
-        //TODO Edit Ares Core - DataObjectManagerFactory make Manager be able to access to SchemaBuilder to retrieve list of columns safely.
         $searchCriteria = $this->getDataObjectManager()
             ->getConnection()
             ->select('SHOW COLUMNS FROM `permissions`');

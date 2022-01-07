@@ -37,6 +37,8 @@ class EditArticleService
     ) {}
 
     /**
+     * //TODO Resolve cache saving 'comments' count when retrieving from other functions
+     * 
      * @param array $data
      *
      * @return CustomResponseInterface
@@ -49,7 +51,6 @@ class EditArticleService
         $articleId = $data['id'];
 
         /** @var Article $article */
-        //TODO This doesnt depend on cache, because of 'comments count'
         $article = $this->articleRepository->get($articleId, ArticleInterface::COLUMN_ID, false, false);
         
         /** @var Article $existingArticle */

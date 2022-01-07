@@ -31,7 +31,7 @@ class FetchRoleTreeService {
     ) {}
 
     /**
-     * TODO Maybe a re-work on getChildIds
+     * //TODO Maybe a re-work on getChildIds
      * 
      * @param Role $rootRole
      *
