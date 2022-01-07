@@ -167,10 +167,11 @@ return function (App $app) {
                 $group->group('/update', function($group) {
                     $group->put('/child-parent', \Ares\Role\Controller\RoleController::class . ':updateChildRoleParent');
                     $group->put('/child-order', \Ares\Role\Controller\RoleController::class . ':updateChildRoleOrder');
+                    $group->put('/role-rank', \Ares\Role\Controller\RoleController::class . ':updateRoleRank');
                 });
                 
                 $group->group('/assign', function ($group) {
-                    $group->post('/rank', \Ares\Role\Controller\RoleController::class . ':createRankRole')->setName('assign-role');
+                    $group->post('/rank', \Ares\Role\Controller\RoleController::class . ':assignRank')->setName('assign-role');
                     $group->post('/child', \Ares\Role\Controller\RoleController::class . ':createChildRole')->setName('create-child-role');
                     $group->post('/permission', \Ares\Role\Controller\RolePermissionController::class . ':createRolePermission')->setName('create-role-permission');
                 });
@@ -179,6 +180,7 @@ return function (App $app) {
                     $group->delete('/role/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':deleteRole')->setName('delete-role');
                     $group->delete('/child/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':deleteRoleChild');
                     $group->delete('/role-permissions/{id:[0-9]+}', \Ares\Role\Controller\RolePermissionController::class . ':deleteAllRolePermissions');
+                    $group->delete('/role-rank/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':deleteRoleRank');
                 });
 
                 $group->group('/toggle', function($group) {

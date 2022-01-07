@@ -44,6 +44,9 @@ interface RoleResponseCodeInterface extends CustomResponseCodeInterface
     public const RESPONSE_ROLE_PERMISSION_NOT_DELETED = 10452;
 
     /** @var int */
+    public const RESPONSE_ROLE_RANK_NOT_DELETED = 10574;
+
+    /** @var int */
     public const RESPONSE_ROLE_PERMISSION_ALREADY_EXIST = 10560;
 
     /** @var int */

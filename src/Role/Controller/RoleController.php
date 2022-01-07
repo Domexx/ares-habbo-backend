@@ -23,11 +23,13 @@ use Ares\Role\Service\AssignRankToRoleService;
 use Ares\Role\Service\CreateChildRoleService;
 use Ares\Role\Service\CreateRoleService;
 use Ares\Role\Service\DeleteChildRoleService;
+use Ares\Role\Service\DeleteRoleRankService;
 use Ares\Role\Service\DeleteRoleService;
 use Ares\Role\Service\EditRoleService;
 use Ares\Role\Service\RoleTreeService;
 use Ares\Role\Service\UpdateChildRoleOrderService;
 use Ares\Role\Service\UpdateChildRoleParentService;
+use Ares\Role\Service\UpdateRoleRankService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -47,10 +49,12 @@ class RoleController extends BaseController
      * @param ValidationService       $validationService
      * @param DeleteRoleService       $deleteRoleService
      * @param DeleteChildRoleService $deleteChildRoleService
+     * @param DeleteRoleRankService $deleteRoleRankService
      * @param RoleTreeService $roleTreeService
      * @param RoleRepository          $roleRepository
      * @param RoleHierarchyRepository $roleHierarchyRepository
      * @param UpdateChildRoleOrderService $updateChildRoleOrderService
+     * @param UpdateRoleRankService $updateRoleRankService
      */
     public function __construct(
         private CreateRoleService $createRoleService,
@@ -60,11 +64,13 @@ class RoleController extends BaseController
         private ValidationService $validationService,
         private DeleteRoleService $deleteRoleService,
         private DeleteChildRoleService $deleteChildRoleService,
+        private DeleteRoleRankService $deleteRoleRankService,
         private RoleTreeService $roleTreeService,
         private RoleRepository $roleRepository,
         private RoleHierarchyRepository $roleHierarchyRepository,
         private UpdateChildRoleParentService $updateChildRoleParentService,
-        private UpdateChildRoleOrderService $updateChildRoleOrderService
+        private UpdateChildRoleOrderService $updateChildRoleOrderService,
+        private UpdateRoleRankService $updateRoleRankService
     ) {}
 
     /**
@@ -230,8 +236,8 @@ class RoleController extends BaseController
      * @throws NoSuchEntityException
      * @throws RoleException
      * @throws ValidationException
-     */
-    public function createRankRole(Request $request, Response $response): Response
+    */
+    public function assignRank(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -242,6 +248,34 @@ class RoleController extends BaseController
         ]);
 
         $customResponse = $this->assignRankToRoleService->execute($parsedData);
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+     * @throws RoleException
+     * @throws ValidationException
+    */
+    public function updateRoleRank(Request $request, Response $response): Response
+    {
+        /** @var array $parsedData */
+        $parsedData = $request->getParsedBody();
+
+        $this->validationService->validate($parsedData, [
+            RoleRankInterface::COLUMN_RANK_ID => 'numeric|required',
+            RoleRankInterface::COLUMN_ROLE_ID => 'numeric|required'
+        ]);
+
+        $customResponse = $this->updateRoleRankService->execute($parsedData);
 
         return $this->respond(
             $response,
@@ -370,6 +404,28 @@ class RoleController extends BaseController
         $id = $args['id'];
 
         $customResponse = $this->deleteChildRoleService->execute($id);
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * @param Request     $request
+     * @param Response    $response
+     * @param             $args
+     *
+     * @return Response
+     * @throws RoleException
+     * @throws DataObjectManagerException
+     */
+    public function deleteRoleRank(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $id */
+        $id = $args['id'];
+
+        $customResponse = $this->deleteRoleRankService->execute($id);
 
         return $this->respond(
             $response,

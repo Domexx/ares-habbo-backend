@@ -75,12 +75,13 @@ class AssignRankToRoleService {
 
         $roleRank = $this->getNewRoleRank($role->getId(), $rank->getId());
 
-        $this->roleRankRepository->save($roleRank);
+        /** @var RoleRank $roleRank */
+        $roleRank = $this->roleRankRepository->save($roleRank);
 
-        return response()->setData(true);
+        return response()->setData($roleRank);
     }
 
-        /**
+    /**
      * @param int $roleId
      * @param int $rankId
      *

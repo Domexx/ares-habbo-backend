@@ -80,7 +80,7 @@ class UpdateChildRoleParentService
         
         if($existingRoleHierarchy->getParentRoleId() == $parentRoleId) {
             /** @var RoleHierarchy $roleHierarchy */
-            $roleHierarchy = $this->roleHierarchyRepository->save($existingRoleHierarchy);
+            $roleHierarchy = $this->roleHierarchyRepository->save($existingRoleHierarchy); //redundant?
 
             return response()->setData($roleHierarchy);
         }
