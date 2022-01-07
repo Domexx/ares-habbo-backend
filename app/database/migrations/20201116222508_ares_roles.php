@@ -18,7 +18,7 @@ final class AresRoles extends AbstractMigration
                 'name' => 'Root', 
                 'description' => 'Root', 
                 'status' => 1,
-                'isRoot' => 1, 
+                'is_root' => 1, 
                 'created_at' => date('Y-m-d H:i:s')
             ],
         ];
@@ -26,7 +26,7 @@ final class AresRoles extends AbstractMigration
         $table->addColumn('name', 'string', ['limit' => 100])
             ->addColumn('description', 'string', ['limit' => 100, 'null' => true])
             ->addColumn('status', 'integer', ['limit' => 11])
-            ->addColumn('isRoot', 'integer', ['limit' => 11])
+            ->addColumn('is_root', 'integer', ['limit' => 11])
             ->addColumn('created_at', 'datetime')
             ->addColumn('updated_at', 'datetime', ['null' => true])
             ->insert($data)
