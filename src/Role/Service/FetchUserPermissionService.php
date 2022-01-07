@@ -36,10 +36,10 @@ class FetchUserPermissionService
      *
      * @return CustomResponseInterface
      */
-    public function execute(int $rank_id): CustomResponseInterface
+    public function execute(int $rankId): CustomResponseInterface
     {
         /** @var int $roleId */
-        $roleId = $this->roleRankRepository->getRoleId($rank_id);
+        $roleId = $this->roleRankRepository->getRoleId($rankId);
         
         if (!$roleId) {
             return response()->setData([]);
