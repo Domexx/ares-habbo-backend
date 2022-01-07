@@ -20,8 +20,6 @@ class RoleHierarchy extends DataObject implements RoleHierarchyInterface
     /** @var string */
     public const TABLE = 'ares_roles_hierarchy';
 
-    // TODO ADD ORDER ID 
-
     /**
      * @return int
      */
