@@ -116,7 +116,16 @@ class UpdateChildRoleParentService
                         ->orderBy(RoleHierarchyInterface::COLUMN_ORDER_ID, 'DESC')
                         ->first();
 
-        $lastOrderId = ($lastChild) ? (($lastChild->getChildRoleId() === $childRoleId) ? $lastChild->getOrderId() : $lastChild->getOrderId() + 1) : 1;
+        /** @var int $lastOrderId */
+        $lastOrderId = 1;
+
+        if($lastChild) {
+            if($lastChild->getChildRoleId() === $childRoleId) {
+                $lastOrderId = $lastChild->getOrderId();
+            } else {
+                $lastOrderId = $lastChild->getOrderId() + 1;
+            }
+        }
 
         /** @var RoleHierarchy $editedRoleHierarchy */
         $editedRoleHierarchy = $this->getEditedChildRole($existingRoleHierarchy, $data, $lastOrderId);
