@@ -65,9 +65,9 @@ class UserCurrencyRepository extends BaseRepository
      * @param int $userId
      * @param int $type
      *
-     * @return Collection|null
+     * @return UserCurrency|null
      */
-    public function getUserCurrency(int $userId, int $type): ?Collection
+    public function getUserCurrency(int $userId, int $type): ?UserCurrency
     {
         $searchCriteria = $this->getDataObjectManager()
             ->where([
@@ -75,6 +75,6 @@ class UserCurrencyRepository extends BaseRepository
                 'type' => $type
             ]);
 
-        return $this->getList($searchCriteria);
+        return $this->getOneBy($searchCriteria);
     }
 }

@@ -8,11 +8,13 @@
 namespace Ares\User\Service\Currency;
 
 use Ares\Framework\Interfaces\HttpResponseCodeInterface;
+use Ares\User\Entity\Contract\UserCurrencyInterface;
 use Ares\User\Exception\UserCurrencyException;
 use Ares\User\Interfaces\Response\UserResponseCodeInterface;
 use Ares\User\Repository\UserCurrencyRepository;
 use Ares\User\Repository\UserRepository;
 use Ares\User\Entity\User;
+use Ares\User\Exception\UserException;
 use Exception;
 
 /**
@@ -39,67 +41,86 @@ class UpdateCurrencyService
      * @param int $type
      * @param int $amount
      *
-     * @return void
+     * @return
      * @throws UserCurrencyException
      */
-    public function execute(int $userId, int $type, int $amount): void
+    public function execute(int $userId, int $type, int $amount) : void
     {
+        /** @var User $user */
+        $user = $this->userRepository->get($userId, 'id', false, false);
+
+        if(!$user) {
+            throw new UserException(
+                __('No user found with that ID'),
+                UserResponseCodeInterface::RESPONSE_USER_NOT_FOUND,
+                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+            );
+        }
+
         if($type === -1) {
-            /** @var User $user */
-            $user = $this->userRepository->get($userId, 'id', false, false);
-
-            if(!$user) {
-                throw new UserCurrencyException(
-                    __('No Currencies were found'),
-                    UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_FOUND,
-                    HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
-                );
-            }
-
-            $user->setCredits($amount);
-            
-            try {
-                $this->userRepository->save($user);
-            } catch (Exception) {
-                throw new UserCurrencyException(
-                    __('Currency could not be updated.'),
-                    UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_UPDATED,
-                    HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
-                );
-            }
+            $this->updateCredits($user, $amount);
         } else {
-            $currencies = $this->userCurrencyRepository->getUserCurrency($userId, $type);
+            $this->updateCurrency($user, $amount, $type);
+        }
+    }
 
-            if (!$currencies) {
-                throw new UserCurrencyException(
-                    __('No Currencies were found'),
-                    UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_FOUND,
-                    HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
-                );
-            }
+    /**
+     * Updates User Credits Amount
+     * 
+     * @param User $user
+     * @param int $amount
+     * 
+     * @return
+     */
+    private function updateCredits(User $user, int $amount) : void {
+        $user->setCredits($amount);
 
-            foreach ($currencies as $currency) {
-                $currency->setAmount($amount);
-                try {
-                    //TODO Improve this line...
-                    $this->userCurrencyRepository
-                            ->getDataObjectManager()
-                            ->where([
-                                'user_id' => $userId,
-                                'type' => $type
-                            ])
-                            ->update([
-                                'amount' => $amount
-                            ]);
+        try {
+            $this->userRepository->save($user);
+        } catch (Exception) {
+            throw new UserCurrencyException(
+                __('Currency could not be updated.'),
+                UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_UPDATED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
+        }
+    }
 
-                } catch (Exception) {
-                    throw new UserCurrencyException(
-                        __('Currency could not be updated.'),
-                        UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_UPDATED,
-                        HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
-                    );
-                }
-            }
+    /**
+     * Updates User Currency Amount based on Type
+     * 
+     * @param User $user
+     * @param int $amount
+     * @param int $type
+     * 
+     * @return
+     */
+    private function updateCurrency(User $user, int $amount, int $type) : void {
+        /** @var UserCurrency $currency */
+        $currency = $this->userCurrencyRepository->getUserCurrency($user->getId(), $type);
+
+        if (!$currency) {
+            throw new UserCurrencyException(
+                __('No Currencies were found'),
+                UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_FOUND,
+                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
+            );
+        }
+
+        try {
+            $this->userCurrencyRepository
+            ->getDataObjectManager()
+            ->where([
+                UserCurrencyInterface::COLUMN_USER_ID => $user->getId(),
+                UserCurrencyInterface::COLUMN_TYPE => $type
+            ])
+            ->update([UserCurrencyInterface::COLUMN_AMOUNT => $amount]);
+        } catch (Exception) {
+            throw new UserCurrencyException(
+                __('Currency could not be updated.'),
+                UserResponseCodeInterface::RESPONSE_CURRENCY_NOT_UPDATED,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
     }
 }

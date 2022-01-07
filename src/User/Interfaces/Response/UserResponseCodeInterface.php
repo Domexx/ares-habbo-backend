@@ -35,6 +35,9 @@ interface UserResponseCodeInterface extends CustomResponseCodeInterface
     public const RESPONSE_AUTH_REGISTER_NO_VIABLE_LOOKS = 10398;
 
     /** @var int */
+    public const RESPONSE_USER_NOT_FOUND = 10153;
+
+    /** @var int */
     public const RESPONSE_CURRENCY_NOT_FOUND = 10155;
 
     /** @var int */
