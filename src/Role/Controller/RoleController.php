@@ -192,7 +192,8 @@ class RoleController extends BaseController
 
         $this->validationService->validate($parsedData, [
             RoleHierarchyInterface::COLUMN_PARENT_ROLE_ID => 'numeric|required',
-            RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID => 'numeric|required'
+            RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID => 'numeric|required',
+            RoleHierarchyInterface::COLUMN_ORDER_ID => 'numeric'
         ]);
 
         $customResponse = $this->createChildRoleService->execute($parsedData);
@@ -304,7 +305,8 @@ class RoleController extends BaseController
 
         $this->validationService->validate($parsedData, [
             RoleHierarchyInterface::COLUMN_PARENT_ROLE_ID => 'numeric|required',
-            RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID => 'numeric|required'
+            RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID => 'numeric|required',
+            RoleHierarchyInterface::COLUMN_ORDER_ID => 'numeric'
         ]);
 
         $customResponse = $this->updateChildRoleParentService->execute($parsedData);

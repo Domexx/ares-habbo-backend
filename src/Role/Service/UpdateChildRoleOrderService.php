@@ -53,7 +53,7 @@ class UpdateChildRoleOrderService
         $orderId = $data['order_id'];
 
         /** @var RoleHierarchy $existingRoleHierarchy */
-        $existingRoleHierarchy = $this->roleHierarchyRepository->get($childRoleId, RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID);
+        $existingRoleHierarchy = $this->roleHierarchyRepository->get($childRoleId, RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID, true, false);
 
         $existingRoleHierarchy->setOrderId($orderId);
 

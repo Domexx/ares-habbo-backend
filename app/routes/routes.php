@@ -36,6 +36,7 @@ return function (App $app) {
 
             //Users
             $group->group('/users', function($group) {
+                $group->put('/change_rank', \Ares\User\Controller\UserController::class . ':changeRank');
                 $group->get('/view/{id:[0-9]+}', \Ares\User\Controller\UserController::class . ':viewUser');
                 $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\User\Controller\UserController::class . ':allList');
             });

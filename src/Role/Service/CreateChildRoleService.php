@@ -11,6 +11,7 @@ use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Framework\Interfaces\HttpResponseCodeInterface;
+use Ares\Role\Entity\Contract\RoleHierarchyInterface;
 use Ares\Role\Entity\Role;
 use Ares\Role\Entity\RoleHierarchy;
 use Ares\Role\Exception\RoleException;
@@ -62,10 +63,24 @@ class CreateChildRoleService
             );
         }
 
-        /** @var int $parentChildrenCount */
-        $parentChildrenCount = count($this->roleHierarchyRepository->getChildIds([$parentRoleId]));
+        /** @var RoleHierarchy $lastChild */
+        $lastChild = $this->roleHierarchyRepository->getDataObjectManager()
+                        ->where(RoleHierarchyInterface::COLUMN_PARENT_ROLE_ID, $parentRoleId)
+                        ->orderBy(RoleHierarchyInterface::COLUMN_ORDER_ID, 'DESC')
+                        ->first();
 
-        $newChildRole = $this->getNewChildRole($data, $parentChildrenCount);
+        /** @var int $lastOrderId */
+        $lastOrderId = 1;
+
+        if($lastChild) {
+            if($lastChild->getChildRoleId() === $childRoleId) {
+                $lastOrderId = $lastChild->getOrderId();
+            } else {
+                $lastOrderId = $lastChild->getOrderId() + 1;
+            }
+        }
+
+        $newChildRole = $this->getNewChildRole($data, $lastOrderId);
 
         /** @var RoleHierarchy $newChildRole */
         $newChildRole = $this->roleHierarchyRepository->save($newChildRole);

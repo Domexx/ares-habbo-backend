@@ -10,9 +10,11 @@ namespace Ares\Role\Service;
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
+use Ares\Framework\Interfaces\HttpResponseCodeInterface;
 use Ares\Role\Entity\Contract\RoleRankInterface;
 use Ares\Role\Entity\RoleRank;
 use Ares\Role\Exception\RoleException;
+use Ares\Role\Interfaces\Response\RoleResponseCodeInterface;
 use Ares\Role\Repository\RoleRankRepository;
 use Ares\Role\Repository\RoleRepository;
 
@@ -35,6 +37,8 @@ class UpdateRoleRankService
     ) {}
 
     /**
+     *
+     * 
      * @param array $data
      *
      * @return CustomResponseInterface
@@ -49,18 +53,50 @@ class UpdateRoleRankService
 
         /** @var int $roleId */
         $roleId = $data['role_id'];
+        
+        $searchCriteria = $this->roleRankRepository
+                            ->getDataObjectManager()
+                            ->select([
+                                RoleRankInterface::COLUMN_ID,
+                                RoleRankInterface::COLUMN_RANK_ID,
+                                RoleRankInterface::COLUMN_ROLE_ID,
+                                RoleRankInterface::COLUMN_CREATED_AT
+                            ])
+                            ->where(RoleRankInterface::COLUMN_ROLE_ID, $roleId);
 
-        /** @var RoleRank $roleRank */
-        $roleRank = $this->roleRankRepository->get($roleId, RoleRankInterface::COLUMN_ROLE_ID);
+        /** @var RoleRank $existingRoleRank */
+        $existingRoleRank = $this->roleRankRepository->getOneBy($searchCriteria);
 
-        if($roleRank->getRankId() === $rankId) {
-            return response()->setData($roleRank);
+        $searchCriteria = $this->roleRankRepository
+                            ->getDataObjectManager()
+                            ->select([
+                                RoleRankInterface::COLUMN_ID,
+                                RoleRankInterface::COLUMN_RANK_ID,
+                                RoleRankInterface::COLUMN_ROLE_ID,
+                                RoleRankInterface::COLUMN_CREATED_AT
+                            ])
+                            ->where(RoleRankInterface::COLUMN_RANK_ID, $rankId);
+
+        /** @var RoleRank $existingRankRole */
+        $existingRankRole = $this->roleRankRepository->getOneBy($searchCriteria, true);
+        
+        if($existingRankRole) {
+            throw new RoleException(
+                __('There is already a Role assigned to that Rank'),
+                RoleResponseCodeInterface::RESPONSE_ROLE_ALREADY_ASSIGNED_TO_RANK,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
-        $roleRank = $this->getEditedRoleRank($roleRank, $data);
+        $roleRank = $this->getEditedRoleRank($existingRoleRank, $data);
 
         /** @var RoleRank $roleRank */
         $roleRank = $this->roleRankRepository->save($roleRank);
+
+        /** @var Role $role */
+        $role = $this->roleRepository->get($roleId);
+
+        $role->setData('permissions', null);
 
         return response()->setData($roleRank);
     }

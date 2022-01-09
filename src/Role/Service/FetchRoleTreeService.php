@@ -44,29 +44,29 @@ class FetchRoleTreeService {
 
         $rootRole->children = [];
 
-        if(count($rootChildren) > 0) {
-            foreach($rootChildren as $category) {
+        if($rootChildren && count($rootChildren) > 0) {
+            foreach($rootChildren as $categoryId) {
 
-                /** @var Role $groupRole */
-                $groupRole = $this->roleRepository->get($category);
+                /** @var Role $categoryRole */
+                $categoryRole = $this->roleRepository->get($categoryId);
 
-                $groupChildren = $this->roleHierarchyRepository->getChildIds([$category]);
+                $categoryChildren = $this->roleHierarchyRepository->getChildIds([$categoryId]);
 
-                $groupRole->children = [];
+                $categoryRole->children = [];
+                
+                if($categoryChildren && count($categoryChildren) > 0) {
 
-                if(count($groupChildren) > 0) {
-                    foreach($groupChildren as $groupChild) {
+                    foreach($categoryChildren as $roleId) {
+                        /** @var Role $role */
+                        $role = $this->roleRepository->get($roleId);
 
-                        /** @var Role $roleRank */
-                        $roleRank = $this->roleRepository->get($groupChild);
-                        
-                        $roleRank->getPermissionWithUsers();
+                        $role->getPermissionWithUsers();
 
-                        array_push($groupRole->children, $roleRank);
+                        array_push($categoryRole->children, $role);
                     }
                 }
 
-                array_push($rootRole->children, $groupRole);
+                array_push($rootRole->children, $categoryRole);
             }
         }
 

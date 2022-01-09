@@ -8,6 +8,7 @@
 namespace Ares\Role\Service;
 
 use Ares\Framework\Exception\NoSuchEntityException;
+use Ares\Role\Entity\Contract\PermissionInterface;
 use Ares\Role\Entity\Permission;
 use Ares\Role\Repository\PermissionRepository;
 use Ares\Role\Repository\RoleHierarchyRepository;
@@ -49,7 +50,7 @@ class CheckAccessService
     public function execute(int $userRank, ?string $permissionName): bool
     {
         /** @var Permission $permission */
-        $permission = $this->permissionRepository->get($permissionName, 'name', true);
+        $permission = $this->permissionRepository->get($permissionName, PermissionInterface::COLUMN_NAME, true);
         
         // When there's no permission set, set anonymous(logged in) access
         if (!$permission) {

@@ -7,6 +7,7 @@
 
 namespace Ares\Role\Repository;
 
+use Ares\Framework\Model\Query\Collection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Role\Entity\Contract\RoleHierarchyInterface;
 use Ares\Role\Entity\RoleHierarchy;
@@ -29,6 +30,8 @@ class RoleHierarchyRepository extends BaseRepository
     protected string $entity = RoleHierarchy::class;
 
     /**
+     * //BUG getList doesn't work with cache correctly
+     * 
      * @param array $parentIds
      *
      * @return array|null
@@ -36,14 +39,10 @@ class RoleHierarchyRepository extends BaseRepository
     public function getChildIds(array $parentIds): ?array
     {
         $searchCriteria = $this->getDataObjectManager()
-            ->whereIn('parent_role_id', $parentIds)
-            ->orderBy(RoleHierarchyInterface::COLUMN_ORDER_ID);
+                            ->whereIn('parent_role_id', $parentIds)
+                            ->orderBy(RoleHierarchyInterface::COLUMN_ORDER_ID);
 
-        if($searchCriteria->count() == 0) {
-            return [];
-        }
-
-        return $this->getList($searchCriteria, true)->get('child_role_id');
+        return $this->getList($searchCriteria)->get('child_role_id');
     }
 
     /**
@@ -95,16 +94,16 @@ class RoleHierarchyRepository extends BaseRepository
      */
     public function hasChildRoleId(int $parentRoleId, int $findingChildId): bool
     {
-        $childIds = $this->getChildIds([$parentRoleId]);
+        $parentChildren = $this->getChildIds([$parentRoleId]);
 
-        if (count($childIds) > 0) {
+        if ($parentChildren && count($parentChildren) > 0) {
 
-            if (in_array($findingChildId, $childIds, true)) {
+            if (in_array($findingChildId, $parentChildren, true)) {
                 return true;
             }
 
-            foreach ($childIds as $childId) {
-                if ($this->hasChildRoleId($childId, $findingChildId)) {
+            foreach ($parentChildren as $child) {
+                if ($this->hasChildRoleId($child, $findingChildId)) {
                     return true;
                 }
             }
@@ -124,7 +123,7 @@ class RoleHierarchyRepository extends BaseRepository
     {
         $childIds = $this->getChildIds([$roleId]);
 
-        return count($childIds) > 0;
+        return $childIds && count($childIds) > 0;
     }
 
      /**

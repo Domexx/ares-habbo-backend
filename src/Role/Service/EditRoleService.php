@@ -49,7 +49,7 @@ class EditRoleService
         $role = $this->roleRepository->get($roleId, RoleInterface::COLUMN_ID, false, false);
 
         /** @var Role $existingRole */
-        $existingRole = $this->roleRepository->get($data['name'], 'name', true);
+        $existingRole = $this->roleRepository->get($data['name'], RoleInterface::COLUMN_NAME, true);
 
         if ($existingRole && $existingRole->getId() !== $role->getId()) {
             throw new RoleException(

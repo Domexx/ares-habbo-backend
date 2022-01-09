@@ -76,7 +76,7 @@ class UpdateChildRoleParentService
         }
 
         /** @var RoleHierarchy $existingRoleHierarchy */
-        $existingRoleHierarchy = $this->roleHierarchyRepository->get($childRoleId, RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID);
+        $existingRoleHierarchy = $this->roleHierarchyRepository->get($childRoleId, RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID, true, false);
         
         if($existingRoleHierarchy->getParentRoleId() == $parentRoleId) {
             /** @var RoleHierarchy $roleHierarchy */
@@ -106,9 +106,6 @@ class UpdateChildRoleParentService
                 );
             }
         }
-
-        /** @var int $parentChildrenCount */
-        $parentChildrenCount = count($this->roleHierarchyRepository->getChildIds([$parentRoleId]));
 
         /** @var RoleHierarchy $lastChild */
         $lastChild = $this->roleHierarchyRepository->getDataObjectManager()

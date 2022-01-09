@@ -18,6 +18,7 @@ use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Entity\User;
 use Ares\User\Repository\UserRepository;
 use Ares\User\Service\Currency\UpdateCurrencyService;
+use Ares\User\Service\Settings\ChangeRankService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -34,11 +35,13 @@ class UserController extends BaseController
      * @param UserRepository    $userRepository
      * @param ValidationService $validationService
      * @param updateCurrencyService $updateCurrencyService
+     * @param ChangeRankService $changeRankService
      */
     public function __construct(
         private UserRepository $userRepository,
         private ValidationService $validationService,
-        private UpdateCurrencyService $updateCurrencyService
+        private UpdateCurrencyService $updateCurrencyService,
+        private ChangeRankService $changeRankService
     ) {}
 
     /**
@@ -141,6 +144,38 @@ class UserController extends BaseController
             $response,
             response()
                 ->setData($users)
+        );
+    }
+
+    /**
+     * Updates user currency by given data.
+     *
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws UserException
+     * @throws ValidationException
+     */
+    public function changeRank(Request $request, Response $response): Response
+    {
+        /** @var array $parsedData */
+        $parsedData = $request->getParsedBody();
+
+        $this->validationService->validate($parsedData, [
+            UserInterface::COLUMN_ID => 'required',
+            UserInterface::COLUMN_RANK => 'required'
+        ]);
+
+        /** @var User $user */
+        $user = user($request);
+
+        $this->changeRankService->execute($user, $parsedData);
+
+        return $this->respond(
+            $response,
+            response()
+                ->setData(true)
         );
     }
 

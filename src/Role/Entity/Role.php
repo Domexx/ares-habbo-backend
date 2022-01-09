@@ -11,6 +11,7 @@ use Ares\Framework\Model\DataObject;
 use Ares\Permission\Entity\Permission as Rank;
 use Ares\Permission\Repository\PermissionRepository;
 use Ares\Role\Entity\Contract\RoleInterface;
+use Ares\Role\Entity\Contract\RoleRankInterface;
 use Ares\Role\Repository\RolePermissionRepository;
 use Ares\Role\Repository\RoleRepository;
 
@@ -194,6 +195,8 @@ class Role extends DataObject implements RoleInterface
     }
 
     /**
+     * //TODO Add $isCached flag in Ares-core
+     * 
      * @return Rank|null
      *
      * @throws DataObjectManagerException
@@ -222,8 +225,9 @@ class Role extends DataObject implements RoleInterface
             $permissionRepository, 
             $this->getId(), 
             'ares_roles_rank', 
-            'role_id',
-            'rank_id'
+            RoleRankInterface::COLUMN_ROLE_ID,
+            RoleRankInterface::COLUMN_RANK_ID,
+            false
         )->first();
 
         if(!$rank) {
