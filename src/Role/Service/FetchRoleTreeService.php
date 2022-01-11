@@ -60,7 +60,7 @@ class FetchRoleTreeService {
                         /** @var Role $role */
                         $role = $this->roleRepository->get($roleId);
 
-                        $role->getPermissionWithUsers();
+                        $role->getPermission(true, false);
 
                         array_push($categoryRole->children, $role);
                     }

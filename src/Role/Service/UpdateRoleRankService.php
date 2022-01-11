@@ -61,24 +61,17 @@ class UpdateRoleRankService
                                 RoleRankInterface::COLUMN_RANK_ID,
                                 RoleRankInterface::COLUMN_ROLE_ID,
                                 RoleRankInterface::COLUMN_CREATED_AT
-                            ])
-                            ->where(RoleRankInterface::COLUMN_ROLE_ID, $roleId);
+                            ]);
+                            
+        $searchRoleCriteria = $searchCriteria->where(RoleRankInterface::COLUMN_ROLE_ID, $roleId);
 
         /** @var RoleRank $existingRoleRank */
-        $existingRoleRank = $this->roleRankRepository->getOneBy($searchCriteria);
+        $existingRoleRank = $this->roleRankRepository->getOneBy($searchRoleCriteria);
 
-        $searchCriteria = $this->roleRankRepository
-                            ->getDataObjectManager()
-                            ->select([
-                                RoleRankInterface::COLUMN_ID,
-                                RoleRankInterface::COLUMN_RANK_ID,
-                                RoleRankInterface::COLUMN_ROLE_ID,
-                                RoleRankInterface::COLUMN_CREATED_AT
-                            ])
-                            ->where(RoleRankInterface::COLUMN_RANK_ID, $rankId);
+        $searchRankCriteria = $searchCriteria->where(RoleRankInterface::COLUMN_RANK_ID, $rankId);
 
         /** @var RoleRank $existingRankRole */
-        $existingRankRole = $this->roleRankRepository->getOneBy($searchCriteria, true);
+        $existingRankRole = $this->roleRankRepository->getOneBy($searchRankCriteria, true);
         
         if($existingRankRole) {
             throw new RoleException(

@@ -145,16 +145,16 @@ class Permission extends DataObject implements PermissionInterface
      *
      * @throws DataObjectManagerException
      */
-    public function getUsers(): ?Collection
+    public function getUsers($isCached = true): ?Collection
     {
-        $users = $this->getData('users');
-
-        if ($users) {
-            return $users;
-        }
-
         if (!isset($this)) {
             return null;
+        }
+
+        $users = $this->getData('users');
+
+        if ($users && $isCached) {
+            return $users;
         }
 
         /** @var PermissionRepository $permissionRepository */
@@ -166,7 +166,8 @@ class Permission extends DataObject implements PermissionInterface
         $users = $permissionRepository->getOneToMany(
             $userRepository,
             $this->getId(),
-            'rank'
+            'rank',
+            $isCached
         );
 
         if (!$users->toArray()) {

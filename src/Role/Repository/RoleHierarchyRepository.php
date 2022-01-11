@@ -42,7 +42,7 @@ class RoleHierarchyRepository extends BaseRepository
                             ->whereIn('parent_role_id', $parentIds)
                             ->orderBy(RoleHierarchyInterface::COLUMN_ORDER_ID);
 
-        return $this->getList($searchCriteria)->get('child_role_id');
+        return $this->getList($searchCriteria, false)->get('child_role_id');
     }
 
     /**

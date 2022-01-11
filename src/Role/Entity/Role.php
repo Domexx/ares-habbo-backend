@@ -201,17 +201,21 @@ class Role extends DataObject implements RoleInterface
      *
      * @throws DataObjectManagerException
      */
-    public function getPermission(bool $appendUsers = false): ?Rank
+    public function getPermission(bool $appendUsers = false, $isCached = true): ?Rank
     {
+        if(!isset($this)) {
+            return null;
+        }
+
         /** @var Rank $rank */
         $rank = $this->getData('permission');
 
-        if ($rank) {
-            return $rank;
-        }
+        if ($rank && $isCached) {
+            if($appendUsers) {
+                $rank->getUsers($isCached);
+            }
 
-        if(!isset($this)) {
-            return null;
+            return $rank;
         }
 
         /** @var RoleRepository $roleRepository */
@@ -227,7 +231,7 @@ class Role extends DataObject implements RoleInterface
             'ares_roles_rank', 
             RoleRankInterface::COLUMN_ROLE_ID,
             RoleRankInterface::COLUMN_RANK_ID,
-            false
+            $isCached
         )->first();
 
         if(!$rank) {
@@ -235,7 +239,7 @@ class Role extends DataObject implements RoleInterface
         }
 
         if($appendUsers) {
-            $rank->getUsers();
+            $rank->getUsers($isCached);
         }
 
         $this->setPermission($rank);
@@ -248,10 +252,10 @@ class Role extends DataObject implements RoleInterface
      *
      * @throws DataObjectManagerException
      */
-    public function getPermissionWithUsers(): ?Rank
+    public function getPermissionWithUsers($isCached = true): ?Rank
     {
         /** @var Rank $rank */
-        $rank = $this->getPermission(true);
+        $rank = $this->getPermission(true, $isCached);
 
         return $rank;
     }
