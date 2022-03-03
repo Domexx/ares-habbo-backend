@@ -94,10 +94,13 @@ class RoomController extends BaseController
      * @return Response
      * @throws NoSuchEntityException
      */
-    public function mostVisited(Request $request, Response $response): Response
+    public function mostVisited(Request $request, Response $response, array $args): Response
     {
+        /** @var int $page */
+        $count = $args['count'];
+
         /** @var Room $room */
-        $room = $this->roomRepository->getMostVisitedRoom();
+        $room = $this->roomRepository->getMostVisitedRooms($count);
 
         return $this->respond(
             $response,

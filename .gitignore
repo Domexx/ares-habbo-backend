@@ -13,6 +13,8 @@
 /tmp/Logs
 /tmp/Cache
 /.env
-/public/swf/
-/public/nitro/
+public/*
+/public/web.config
+!public/index.php
+!public/.htaccess
 .vscode/*

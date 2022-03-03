@@ -89,7 +89,7 @@ return function (App $app) {
                 $group->get('/{id:[0-9]+}', \Ares\Guild\Controller\GuildController::class . ':guild');
                 $group->get('/members/{guild_id:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}',
                     \Ares\Guild\Controller\GuildController::class . ':members');
-                $group->get('/most/members', \Ares\Guild\Controller\GuildController::class . ':mostMembers');
+                $group->get('/most/members/{count:[0-9]+}', \Ares\Guild\Controller\GuildController::class . ':mostMembers');
             });
 
             // Guestbook Entries
@@ -113,7 +113,7 @@ return function (App $app) {
             $group->group('/rooms', function ($group) {
                 $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':list');
                 $group->get('/{id:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':room');
-                $group->get('/most/visited', \Ares\Room\Controller\RoomController::class . ':mostVisited');
+                $group->get('/most/visited/{count:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':mostVisited');
             });
 
             // Hall-Of-Fame
@@ -202,6 +202,7 @@ return function (App $app) {
             // Payments
             $group->group('/payments', function ($group) {
                 $group->post('/create', \Ares\Payment\Controller\PaymentController::class . ':create');
+                $group->put('/update', \Ares\Payment\Controller\PaymentController::class . ':update');
                 $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Payment\Controller\PaymentController::class . ':list');
                 $group->get('/{id:[0-9]+}', \Ares\Payment\Controller\PaymentController::class . ':payment');
                 $group->delete('/{id:[0-9]+}', \Ares\Payment\Controller\PaymentController::class . ':delete')

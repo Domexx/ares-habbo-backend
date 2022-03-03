@@ -22,7 +22,7 @@ use Ares\User\Repository\UserRepository;
 class Payment extends DataObject implements PaymentInterface
 {
     /** @var string */
-    public const TABLE = 'ares_payments';
+    public const TABLE = 'ares_shop_payments';
 
     /** @var array **/
     public const RELATIONS = [
@@ -68,57 +68,129 @@ class Payment extends DataObject implements PaymentInterface
     /**
      * @return string
      */
-    public function getCode(): string
+    public function getOfferId(): string
     {
-        return $this->getData(PaymentInterface::COLUMN_CODE);
+        return $this->getData(PaymentInterface::COLUMN_OFFER_ID);
     }
 
     /**
-     * @param string $code
+     * @param string $offer
      *
      * @return Payment
      */
-    public function setCode(string $code): Payment
+    public function setOfferId(string $offer): Payment
     {
-        return $this->setData(PaymentInterface::COLUMN_CODE, $code);
+        return $this->setData(PaymentInterface::COLUMN_OFFER_ID, $offer);
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getProcessed(): int
+    public function getOrderId(): string
     {
-        return $this->getData(PaymentInterface::COLUMN_PROCESSED);
+        return $this->getData(PaymentInterface::COLUMN_ORDER_ID);
     }
 
     /**
-     * @param int $processed
+     * @param string $orderId
      *
      * @return Payment
      */
-    public function setProcessed(int $processed): Payment
+    public function setOrderId(string $orderId): Payment
     {
-        return $this->setData(PaymentInterface::COLUMN_PROCESSED, $processed);
+        return $this->setData(PaymentInterface::COLUMN_ORDER_ID, $orderId);
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getType(): int
+    public function getPayerId(): string
     {
-        return $this->getData(PaymentInterface::COLUMN_TYPE);
+        return $this->getData(PaymentInterface::COLUMN_PAYER_ID);
     }
 
     /**
-     * @param int $type
+     * @param string $payerId
      *
      * @return Payment
      */
-    public function setType(int $type): Payment
+    public function setPayerId(string $payerId): Payment
     {
-        return $this->setData(PaymentInterface::COLUMN_TYPE, $type);
+        return $this->setData(PaymentInterface::COLUMN_PAYER_ID, $payerId);
     }
 
+    /**
+     * @return string
+     */
+    public function getStatus(): string
+    {
+        return $this->getData(PaymentInterface::COLUMN_STATUS);
+    }
+
+    /**
+     * @param string $status
+     *
+     * @return Payment
+     */
+    public function setStatus(string $status): Payment
+    {
+        return $this->setData(PaymentInterface::COLUMN_STATUS, $status);
+    }
+
+    /**
+     * @return string
+     */
+    public function getDelivered(): string
+    {
+        return $this->getData(PaymentInterface::COLUMN_DELIVERED);
+    }
+
+    /**
+     * @param string $delivered
+     *
+     * @return Payment
+     */
+    public function setDelivered(string $delivered): Payment
+    {
+        return $this->setData(PaymentInterface::COLUMN_DELIVERED, $delivered);
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCreatedAt(): \DateTime
+    {
+        return $this->getData(PaymentInterface::COLUMN_CREATED_AT);
+    }
+
+    /**
+     * @param \DateTime $createdAt
+     *
+     * @return Payment
+     */
+    public function setCreatedAt(\DateTime $createdAt): Payment
+    {
+        return $this->setData(PaymentInterface::COLUMN_CREATED_AT, $createdAt);
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getUpdatedAt(): \DateTime
+    {
+        return $this->getData(PaymentInterface::COLUMN_UPDATED_AT);
+    }
+
+    /**
+     * @param \DateTime $updatedAt
+     *
+     * @return Payment
+     */
+    public function setUpdatedAt(\DateTime $updatedAt): Payment
+    {
+        return $this->setData(PaymentInterface::COLUMN_UPDATED_AT, $updatedAt);
+    }
+    
     /**
      * @return User|null
      *

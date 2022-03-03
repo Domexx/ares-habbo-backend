@@ -9,6 +9,7 @@ namespace Ares\Guild\Repository;
 
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
+use Ares\Framework\Model\Query\Collection;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Repository\BaseRepository;
 use Ares\Guild\Entity\Guild;
@@ -57,10 +58,11 @@ class GuildRepository extends BaseRepository
     }
 
     /**
+     * @param int $count
      * @return Guild|null
      * @throws NoSuchEntityException
      */
-    public function getMostMemberGuild(): ?Guild
+    public function getMostMemberGuild(int $count = 1): ?Collection
     {
         $searchCriteria = $this->getDataObjectManager()
             ->select([
@@ -74,9 +76,9 @@ class GuildRepository extends BaseRepository
                 'guilds_members.guild_id'
             )->groupBy('guilds.id')
             ->orderBy('member_count', 'DESC')
-            ->limit(1);
+            ->limit($count);
 
-        return $this->getOneBy($searchCriteria);
+        return $this->getList($searchCriteria);
     }
 
     /**

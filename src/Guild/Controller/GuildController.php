@@ -129,10 +129,14 @@ class GuildController extends BaseController
      * @return Response
      * @throws NoSuchEntityException
      */
-    public function mostMembers(Request $request, Response $response): Response
+    public function mostMembers(Request $request, Response $response, array $args): Response
     {
+
+        /** @var int $count */
+        $count = $args['count'];
+
         /** @var Guild $guild */
-        $guild = $this->guildRepository->getMostMemberGuild();
+        $guild = $this->guildRepository->getMostMemberGuild($count);
 
         return $this->respond(
             $response,

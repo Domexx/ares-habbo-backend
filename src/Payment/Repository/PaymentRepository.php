@@ -51,12 +51,12 @@ class PaymentRepository extends BaseRepository
      * @return Payment|null
      * @throws NoSuchEntityException
      */
-    public function getExistingPayment(?int $userId): ?Payment
+    public function getExistingPayment(?string $orderId): ?Payment
     {
         $searchCriteria = $this->getDataObjectManager()
             ->where([
-                'user_id' => $userId,
-                'processed' => 0
+                'order_id' => $orderId,
+                'status' => 'COMPLETED'
             ]);
 
         return $this->getOneBy($searchCriteria, true);

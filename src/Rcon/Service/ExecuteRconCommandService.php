@@ -82,8 +82,9 @@ class ExecuteRconCommandService
                 );
         } catch(\Exception $e) {
             throw new RconException(
-              $e->getMessage(),
-              $e->getCode()
+                __('Could not establish a connection to the rcon server'),
+                RconResponseCodeInterface::RESPONSE_RCON_NO_CONNECTION,
+                HttpResponseCodeInterface::HTTP_RESPONSE_NOT_FOUND
             );
         }
 

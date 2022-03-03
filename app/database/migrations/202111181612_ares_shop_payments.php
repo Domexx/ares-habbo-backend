@@ -12,7 +12,7 @@ final class AresShopPayments extends AbstractMigration
     {
         $table = $this->table('ares_shop_payments');
         $table->addColumn('user_id', 'integer', ['limit' => 11])
-            ->addColumn('offer_id', 'integer', ['limit' => 11])
+            ->addColumn('offer_id', 'string', ['limit' => 11])
             ->addColumn('order_id', 'string', ['limit' => 255])
             ->addColumn('payer_id', 'string', ['limit' => 255])
             ->addColumn('status', 'string', ['limit' => 20])

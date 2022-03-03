@@ -46,11 +46,11 @@ class CreatePaymentService
         $payment = $this->getNewPayment($userId, $data);
 
         /** @var Payment $existingPayment */
-        $existingPayment = $this->paymentRepository->getExistingPayment($payment->getUserId());
+        $existingPayment = $this->paymentRepository->getExistingPayment($payment->getOrderId());
 
         if ($existingPayment) {
             throw new PaymentException(
-                __('You already have an ongoing payment'),
+                __('This payment has already been processed'),
                 PaymentResponseCodeInterface::RESPONSE_PAYMENT_ALREADY_ONGOING,
                 HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
             );
@@ -74,9 +74,11 @@ class CreatePaymentService
         $payment = new Payment();
 
         return $payment
-            ->setCode($data['code'])
+            ->setOfferId($data['offer_id'])
             ->setUserId($userId)
-            ->setProcessed(0)
-            ->setType(0);
+            ->setOrderId($data['order_id'])
+            ->setPayerId($data['payer_id'])
+            ->setStatus($data['status'])
+            ->setCreatedAt(new \DateTime());
     }
 }
