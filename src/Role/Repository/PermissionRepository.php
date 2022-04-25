@@ -73,4 +73,22 @@ class PermissionRepository extends BaseRepository
 
         return $this->getOneBy($searchCriteria);
     }
+
+    /**
+    * @param string $permissionName
+    *
+    * @return Permission
+    * @throws DataObjectManagerException
+    */
+    public function getPermissionByName(string $permissionName) {
+        $searchCriteria = $this->getDataObjectManager()
+            ->select([
+                PermissionInterface::COLUMN_ID, 
+                PermissionInterface::COLUMN_NAME, 
+                PermissionInterface::COLUMN_DESCRIPTION
+            ])
+            ->where(PermissionInterface::COLUMN_NAME, $permissionName);
+
+        return $this->getOneBy($searchCriteria);
+    }
 }

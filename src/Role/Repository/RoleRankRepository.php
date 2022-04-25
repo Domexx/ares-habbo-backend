@@ -35,21 +35,25 @@ class RoleRankRepository extends BaseRepository {
     /**
      * @param int $rankId
      *
-     * @return int|null
+     * @return RoleRank|null
      */
-    public function getRoleId(int $rankId) : ?int {
-
+    public function getRoleRankByRankId(int $rankId) : ?RoleRank {
         $searchCriteria = $this->getDataObjectManager()
-        ->where('rank_id', $rankId);
+        ->where(RoleRankInterface::COLUMN_RANK_ID, $rankId);
 
-        /** @var RoleRank $roleRank */
-        $roleRank = $this->getOneBy($searchCriteria, true);
+        return $this->getOneBy($searchCriteria, true);
+    }
 
-        if(!$roleRank) {
-            return null;
-        }
+    /**
+     * @param int $roleId
+     *
+     * @return RoleRank|null
+     */
+    public function getRoleRankByRoleId(int $roleId) : ?RoleRank {
+        $searchCriteria = $this->getDataObjectManager()
+        ->where(RoleRankInterface::COLUMN_ROLE_ID, $roleId);
 
-        return $roleRank->getRoleId();
+        return $this->getOneBy($searchCriteria, true);
     }
 
     /**

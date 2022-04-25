@@ -30,32 +30,30 @@ class UserCurrencyRepository extends BaseRepository
     protected string $entity = UserCurrency::class;
 
     /**
+     * @param int $type
+     * @param array $exceptRanks
+     * 
      * @return Collection
      *
      * @throws DataObjectManagerException
-     */
-    public function getTopDiamonds(): Collection
+    */
+    public function getTops(int $type, array $exceptRanks = []) : Collection 
     {
         $searchCriteria = $this->getDataObjectManager()
-            ->addRelation('user')
-            ->orderBy('amount', 'DESC')
-            ->where('type', UserCurrencyTypeInterface::CURRENCY_TYPE_POINTS)
-            ->limit(10);
-
-        return $this->getList($searchCriteria);
-    }
-
-    /**
-     * @return Collection
-     *
-     * @throws DataObjectManagerException
-     */
-    public function getTopDuckets(): Collection
-    {
-        $searchCriteria = $this->getDataObjectManager()
-            ->addRelation('user')
-            ->orderBy('amount', 'DESC')
-            ->where('type', UserCurrencyTypeInterface::CURRENCY_TYPE_PIXELS)
+            ->select([
+                'users.id','users.username','users.mail','users.mail','users.account_created','users.last_login',
+                'users.last_online','users.motto','users.look','users.gender','users.rank','users.credits','users.online',
+                'users.home_room','users.created_at','users.updated_at','users_currency.type','users_currency.amount'
+            ])
+            ->join(
+                'users',
+                'users_currency.user_id',
+                '=',
+                'users.id'
+            )
+            ->where('users_currency.type', '=', $type)
+            ->whereNotIn('users.rank', $exceptRanks)
+            ->orderBy('users_currency.amount', 'DESC')
             ->limit(10);
 
         return $this->getList($searchCriteria);

@@ -55,6 +55,10 @@ final class AresPermissions extends AbstractMigration
             ['name' => 'create-offer', "description" => 'Access to create an offer', 'status' => 1, 'created_at' => date('Y-m-d H:i:s')],
             ['name' => 'edit-offer', "description" => 'Access to edit an offer', 'status' => 1, 'created_at' => date('Y-m-d H:i:s')],
             ['name' => 'delete-offer', "description" => 'Access to delete an offer', 'status' => 1, 'created_at' => date('Y-m-d H:i:s')],
+            
+            ['name' => 'override-ads', "description" => 'Override advertisements', 'status' => 1, 'created_at' => date('Y-m-d H:i:s')],
+            ['name' => 'hide-leaderboard', "description" => 'Hide from leaderboards', 'status' => 1, 'created_at' => date('Y-m-d H:i:s')]
+        
         ];
 
         $table->addColumn('name', 'string', ['limit' => 100])

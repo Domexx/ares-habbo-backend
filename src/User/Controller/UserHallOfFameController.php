@@ -12,6 +12,7 @@ use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\User\Repository\UserCurrencyRepository;
 use Ares\User\Repository\UserRepository;
 use Ares\User\Repository\UserSettingRepository;
+use Ares\User\Service\UserHallOfFame\FetchTopsService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -32,7 +33,8 @@ class UserHallOfFameController extends BaseController
     public function __construct(
         private UserRepository $userRepository,
         private UserSettingRepository $userSettingRepository,
-        private UserCurrencyRepository $userCurrencyRepository
+        private UserCurrencyRepository $userCurrencyRepository,
+        private FetchTopsService $fetchTopsService
     ) {}
 
     /**
@@ -41,51 +43,14 @@ class UserHallOfFameController extends BaseController
      *
      * @return Response
      */
-    public function topCredits(Request $request, Response $response): Response
+    public function tops(Request $request, Response $response, array $args): Response
     {
-        $users = $this->userRepository->getTopCredits();
+        /** @var int $page */
+        $type = $args['type'];
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($users)
-        );
-    }
+        $customResponse = $this->fetchTopsService->execute($type);
 
-    /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     */
-    public function topDiamonds(Request $request, Response $response): Response
-    {
-        $users = $this->userCurrencyRepository->getTopDiamonds();
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($users)
-        );
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     */
-    public function topDuckets(Request $request, Response $response): Response
-    {
-        $users = $this->userCurrencyRepository->getTopDuckets();
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($users)
-        );
+        return $this->respond($response, $customResponse);
     }
 
     /**

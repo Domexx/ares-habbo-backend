@@ -118,7 +118,32 @@ class RoleController extends BaseController
         /** @var Role $rootRole */
         $rootRole = $this->roleRepository->getRootRole();
 
-        $customResponse = $this->fetchRoleTreeService->execute($rootRole);
+        $customResponse = $this->fetchRoleTreeService->execute($rootRole, false, true);
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+        /**
+     * 
+     * Retrieves all Role Hierarchy Tree by setting a root Role on Database.
+     * Role Tree is made up of 3 levels: Root > Categories > Normal Roles (These are attached to a Rank)
+     * Normal Roles are retrieved with their corresponding Rank and Users.
+     * 
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     */
+    public function hiddenTreeView(Request $request, Response $response): Response
+    {
+        /** @var Role $rootRole */
+        $rootRole = $this->roleRepository->getRootRole();
+
+        $customResponse = $this->fetchRoleTreeService->execute($rootRole, true, false);
 
         return $this->respond(
             $response,
@@ -277,7 +302,8 @@ class RoleController extends BaseController
         $this->validationService->validate($parsedData, [
             RoleInterface::COLUMN_ID => 'required',
             RoleInterface::COLUMN_NAME => 'required',
-            RoleInterface::COLUMN_DESCRIPTION => 'required'
+            RoleInterface::COLUMN_DESCRIPTION => 'required',
+            RoleInterface::COLUMN_STATUS => 'required'
         ]);
 
         $customResponse = $this->editRoleService->execute($parsedData);

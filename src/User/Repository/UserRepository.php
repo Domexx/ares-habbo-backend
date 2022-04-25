@@ -42,11 +42,14 @@ class UserRepository extends BaseRepository
     }
 
     /**
+     * @param array $exceptRanks
+     * 
      * @return Collection
      */
-    public function getTopCredits(): Collection
+    public function getTopCredits(array $exceptRanks = []): Collection
     {
         $searchCriteria = $this->getDataObjectManager()
+            ->whereNotIn('rank', $exceptRanks)
             ->orderBy('credits', 'DESC')
             ->limit(10);
 

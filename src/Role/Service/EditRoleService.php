@@ -72,12 +72,13 @@ class EditRoleService
      * @param array $data
      *
      * @return Role
-     */
+    */
     private function getEditedRole(Role $role, array $data): Role
     {
         return $role
             ->setName($data['name'] ?: $role->getName())
             ->setDescription($data['description'] ?: $role->getDescription())
+            ->setStatus($data['status'])
             ->setUpdatedAt(new \DateTime());
     }
 }

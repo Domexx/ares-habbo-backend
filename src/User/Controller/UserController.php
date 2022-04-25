@@ -170,12 +170,11 @@ class UserController extends BaseController
         /** @var User $user */
         $user = user($request);
 
-        $this->changeRankService->execute($user, $parsedData);
+        $customResponse = $this->changeRankService->execute($user, $parsedData);
 
         return $this->respond(
             $response,
-            response()
-                ->setData(true)
+            $customResponse
         );
     }
 

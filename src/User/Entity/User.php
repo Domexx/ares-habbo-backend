@@ -14,6 +14,7 @@ use Ares\Role\Repository\RoleRepository;
 use Ares\Role\Repository\RoleRankRepository;
 use Ares\Role\Repository\RolePermissionRepository;
 use Ares\Role\Entity\Role;
+use Ares\Role\Entity\RoleRank;
 use Ares\Permission\Repository\PermissionRepository;
 use Ares\Permission\Entity\Permission;
 use Ares\User\Entity\Contract\UserInterface;
@@ -455,15 +456,15 @@ class User extends DataObject implements UserInterface
         /** @var RolePermissionRepository $rolePermissionRepository */
         $rolePermissionRepository = repository(RolePermissionRepository::class);
 
-        /** @var int $roleId */
-        $roleId = $roleRankRepository->getRoleId($this->getRank());
+        /** @var RoleRank $roleRank */
+        $roleRank = $roleRankRepository->getRoleRankByRankId($this->getRank());
 
-        if (!isset($this) || !$roleId) {
+        if (!isset($this) || !$roleRank) {
             return null;
         }
 
         /** @var Collection $permissions */
-        $permissions = $rolePermissionRepository->getRolePermissions($roleId);
+        $permissions = $rolePermissionRepository->getRolePermissions($roleRank->getRankId());
 
         if (!$permissions) {
             return null;

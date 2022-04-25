@@ -11,6 +11,7 @@ use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RolePermissionRepository;
 use Ares\Role\Repository\RoleRankRepository;
+use Ares\Role\Entity\RoleRank;
 
 /**
  * Class FetchUserPermissionService
@@ -38,15 +39,15 @@ class FetchUserPermissionService
      */
     public function execute(int $rankId): CustomResponseInterface
     {
-        /** @var int $roleId */
-        $roleId = $this->roleRankRepository->getRoleId($rankId);
+        /** @var RoleRank $roleRank */
+        $roleRank = $this->roleRankRepository->getRoleRankByRankId($rankId);
         
-        if (!$roleId) {
+        if (!$roleRank) {
             return response()->setData([]);
         }
 
         /** @var array $permissions */
-        $permissions = $this->rolePermissionRepository->getRolePermissions($roleId);
+        $permissions = $this->rolePermissionRepository->getRolePermissions($roleRank->getRankId());
 
         return response()->setData($permissions);
     }

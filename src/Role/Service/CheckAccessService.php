@@ -10,6 +10,7 @@ namespace Ares\Role\Service;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Role\Entity\Contract\PermissionInterface;
 use Ares\Role\Entity\Permission;
+use Ares\Role\Entity\RoleRank;
 use Ares\Role\Repository\PermissionRepository;
 use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RolePermissionRepository;
@@ -57,10 +58,11 @@ class CheckAccessService
             return true;
         }
 
-        $roleId = $this->roleRankRepository->getRoleId($userRank);
+        /** @var RoleRank $roleRank */
+        $roleRank = $this->roleRankRepository->getRoleRankByRankId($userRank);
 
-        if ($roleId) {
-            $allRoleIds = $this->roleHierarchyRepository->getAllRoleIdsHierarchy([$roleId]);
+        if ($roleRank) {
+            $allRoleIds = $this->roleHierarchyRepository->getAllRoleIdsHierarchy([$$roleRank->getRankId()]);
 
             return $this->rolePermissionRepository->isPermissionAssigned($permission->getId(), $allRoleIds);
         }

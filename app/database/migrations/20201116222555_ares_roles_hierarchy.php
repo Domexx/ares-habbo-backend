@@ -13,6 +13,7 @@ final class AresRolesHierarchy extends AbstractMigration
         $table = $this->table('ares_roles_hierarchy');
         $table->addColumn('parent_role_id', 'integer', ['limit' => 10])
             ->addColumn('child_role_id', 'integer', ['limit' => 10])
+            ->addColumn('order_id', 'integer', ['limit' => 11])
             ->addColumn('created_at', 'datetime')
             ->addForeignKey('parent_role_id', 'ares_roles', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])
             ->addForeignKey('child_role_id', 'ares_roles', 'id', ['delete'=> 'CASCADE', 'update'=> 'RESTRICT'])

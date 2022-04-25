@@ -118,9 +118,7 @@ return function (App $app) {
 
             // Hall-Of-Fame
             $group->group('/hall-of-fame', function ($group) {
-                $group->get('/top-credits', \Ares\User\Controller\UserHallOfFameController::class . ':topCredits');
-                $group->get('/top-diamonds', \Ares\User\Controller\UserHallOfFameController::class . ':topDiamonds');
-                $group->get('/top-duckets', \Ares\User\Controller\UserHallOfFameController::class . ':topDuckets');
+                $group->get('/tops/{type}', \Ares\User\Controller\UserHallOfFameController::class . ':tops');
                 $group->get('/top-online-time', \Ares\User\Controller\UserHallOfFameController::class . ':topOnlineTime');
                 $group->get('/top-achievement', \Ares\User\Controller\UserHallOfFameController::class . ':topAchievement');
             });
@@ -195,6 +193,7 @@ return function (App $app) {
                 $group->group('/view', function($group) {
                     $group->get('/my-permissions', \Ares\Role\Controller\RolePermissionController::class . ':userPermissions');
                     $group->get('/role-tree', \Ares\Role\Controller\RoleController::class . ':treeView');
+                    $group->get('/role-hidden-tree', \Ares\Role\Controller\RoleController::class . ':hiddenTreeView');
                     $group->get('/role/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':roleById');
                 });
             });
