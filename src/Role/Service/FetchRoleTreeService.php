@@ -38,7 +38,7 @@ class FetchRoleTreeService {
      * @return CustomResponseInterface
      * @throws NoSuchEntityException
     */
-    public function execute(Role $rootRole, bool $showHidden = true, bool $showRank = true) : CustomResponseInterface {
+    public function execute(Role $rootRole, bool $showHidden = true) : CustomResponseInterface {
 
         $rootChildren = $this->roleHierarchyRepository->getChildIds([$rootRole->getId()]);
 
@@ -72,9 +72,7 @@ class FetchRoleTreeService {
                             continue;
                         }
 
-                        if($showRank) {
-                            $role->getPermission(true, false);
-                        }
+                        $role->getPermission(true, false);
 
                         array_push($categoryRole->children, $role);
                     }

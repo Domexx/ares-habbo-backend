@@ -62,7 +62,7 @@ class CheckAccessService
         $roleRank = $this->roleRankRepository->getRoleRankByRankId($userRank);
 
         if ($roleRank) {
-            $allRoleIds = $this->roleHierarchyRepository->getAllRoleIdsHierarchy([$$roleRank->getRankId()]);
+            $allRoleIds = $this->roleHierarchyRepository->getAllRoleIdsHierarchy([$roleRank->getRoleId()]);
 
             return $this->rolePermissionRepository->isPermissionAssigned($permission->getId(), $allRoleIds);
         }

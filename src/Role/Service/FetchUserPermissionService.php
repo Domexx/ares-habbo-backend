@@ -41,13 +41,13 @@ class FetchUserPermissionService
     {
         /** @var RoleRank $roleRank */
         $roleRank = $this->roleRankRepository->getRoleRankByRankId($rankId);
-        
+
         if (!$roleRank) {
             return response()->setData([]);
         }
 
         /** @var array $permissions */
-        $permissions = $this->rolePermissionRepository->getRolePermissions($roleRank->getRankId());
+        $permissions = $this->rolePermissionRepository->getRolePermissions($roleRank->getRoleId());
 
         return response()->setData($permissions);
     }

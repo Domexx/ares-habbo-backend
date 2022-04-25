@@ -118,7 +118,7 @@ class RoleController extends BaseController
         /** @var Role $rootRole */
         $rootRole = $this->roleRepository->getRootRole();
 
-        $customResponse = $this->fetchRoleTreeService->execute($rootRole, false, true);
+        $customResponse = $this->fetchRoleTreeService->execute($rootRole, false);
 
         return $this->respond(
             $response,
@@ -126,7 +126,7 @@ class RoleController extends BaseController
         );
     }
 
-        /**
+    /**
      * 
      * Retrieves all Role Hierarchy Tree by setting a root Role on Database.
      * Role Tree is made up of 3 levels: Root > Categories > Normal Roles (These are attached to a Rank)
@@ -143,7 +143,7 @@ class RoleController extends BaseController
         /** @var Role $rootRole */
         $rootRole = $this->roleRepository->getRootRole();
 
-        $customResponse = $this->fetchRoleTreeService->execute($rootRole, true, false);
+        $customResponse = $this->fetchRoleTreeService->execute($rootRole, true);
 
         return $this->respond(
             $response,

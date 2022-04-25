@@ -217,4 +217,17 @@ class RoleHierarchyRepository extends BaseRepository
 
         return (count($childRoleIds) > 0) ? array_merge($rootRoleIds, $childRoleIds) : $rootRoleIds;
     }
+
+    /**
+     * @param int $parenRoleId
+     * 
+     */
+    public function getLastChild($parentRoleId) 
+    {
+        $searchCriteria = $this->getDataObjectManager()
+                            ->where(RoleHierarchyInterface::COLUMN_PARENT_ROLE_ID, $parentRoleId)
+                            ->orderBy(RoleHierarchyInterface::COLUMN_ORDER_ID, 'DESC');
+
+        return $this->getOneBy($searchCriteria);
+    }
 }

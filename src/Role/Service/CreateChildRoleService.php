@@ -64,10 +64,7 @@ class CreateChildRoleService
         }
 
         /** @var RoleHierarchy $lastChild */
-        $lastChild = $this->roleHierarchyRepository->getDataObjectManager()
-                        ->where(RoleHierarchyInterface::COLUMN_PARENT_ROLE_ID, $parentRoleId)
-                        ->orderBy(RoleHierarchyInterface::COLUMN_ORDER_ID, 'DESC')
-                        ->first();
+        $lastChild = $this->roleHierarchyRepository->getLastChild($parentRoleId);
 
         /** @var int $lastOrderId */
         $lastOrderId = 1;
