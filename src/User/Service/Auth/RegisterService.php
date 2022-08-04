@@ -61,7 +61,7 @@ class RegisterService
     {
         /** @var User $isAlreadyRegistered */
         $isAlreadyRegistered = $this->userRepository
-            ->getRegisteredUser(
+            ->getUser(
                 $data['username'],
                 $data['mail']
             );
@@ -97,7 +97,7 @@ class RegisterService
                 UserCurrencyTypeInterface::CURRENCY_TYPE_PIXELS,
                 $this->config->get('hotel_settings.start_pixels')
             );
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             throw new RegisterException($exception->getMessage(), $exception->getCode());
         }
 
@@ -134,6 +134,7 @@ class RegisterService
             ->setLastLogin(time())
             ->setRank(1)
             ->setAuthTicket($this->ticketService->hash($user))
+            ->setAdRegister($data['ad_register'])
             ->setCreatedAt(new \DateTime());
     }
 

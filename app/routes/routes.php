@@ -14,276 +14,308 @@ return function (App $app) {
         return $response;
     });
 
-    $app->group('/{locale}', function (RouteCollectorProxy $group) {
+    $app->group('', function (RouteCollectorProxy $group) {
 
         // Only Accessible if LoggedIn
         $group->group('', function ($group) {
-            // User
-            $group->group('/user', function ($group) {
-                $group->get('', \Ares\User\Controller\UserController::class . ':user');
-                $group->put('/ticket', \Ares\User\Controller\AuthController::class . ':ticket');
-                $group->put('/locale', \Ares\User\Controller\UserController::class . ':updateLocale');
-                $group->get('/gift', \Ares\User\Controller\Gift\DailyGiftController::class . ':pick');
-                $group->post('/currency', \Ares\User\Controller\UserCurrencyController::class . ':update')->setName('update-currency');
-                $group->group('/settings', function ($group) {
-                    $group->put('/change_general_settings', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeGeneralSettings');
-                    $group->put('/change_password', \Ares\User\Controller\Settings\UserSettingsController::class . ':changePassword');
-                    $group->put('/change_email', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeEmail');
-                    $group->put('/change_username', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeUsername');
-                });
-                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\User\Controller\UserController::class . ':allList');
-            });
-
-            //Users
-            $group->group('/users', function($group) {
-                $group->put('/change_rank', \Ares\User\Controller\UserController::class . ':changeRank');
-                $group->get('/view/{id:[0-9]+}', \Ares\User\Controller\UserController::class . ':viewUser');
-                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\User\Controller\UserController::class . ':allList');
-            });
 
             // Articles
             $group->group('/articles', function ($group) {
-                $group->post('/create', \Ares\Article\Controller\ArticleController::class . ':create')
-                    ->setName('create-article');
-                $group->put('/edit', \Ares\Article\Controller\ArticleController::class . ':editArticle')
-                    ->setName('edit-article');
-                $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':list');
-                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':allList')->setName('view-all-articles');
-                $group->get('/pinned/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':pinned');
-                $group->get('/{slug}', \Ares\Article\Controller\ArticleController::class . ':article');
-                $group->delete('/{id:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':delete')->setName('delete-article');
-            });
+                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':getAllArticles')->setName('view-all-articles');
+                $group->get('/search/any/{term}/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':searchAnyArticles')->setName('view-all-articles');
+                $group->get('/view/{id:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':getAnyArticleById')->setName('view-all-articles');
+                $group->post('', \Ares\Article\Controller\ArticleController::class . ':createArticle')->setName('create-articles');
 
-            // Comments
-            $group->group('/comments', function ($group) {
-                $group->post('/create', \Ares\Article\Controller\CommentController::class . ':create');
-                $group->put('/edit', \Ares\Article\Controller\CommentController::class . ':edit')
-                    ->setName('edit-article-comment');
-                $group->get('/{article_id:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}',
-                    \Ares\Article\Controller\CommentController::class . ':list');
-                $group->delete('/{id:[0-9]+}', \Ares\Article\Controller\CommentController::class . ':delete')
-                    ->setName('delete-article-comment');
-            });
+                $group->group('/{id:[0-9]+}', function ($group) {
+                    // Comments
+                    $group->group('/comments', function ($group) {
+                        $group->post('', \Ares\Article\Controller\CommentController::class . ':createComment');
+                        $group->put('', \Ares\Article\Controller\CommentController::class . ':editComment');
+                        $group->delete('', \Ares\Article\Controller\CommentController::class . ':deleteComment');
+                    });
 
-            // Votes
-            $group->group('/votes', function ($group) {
-                $group->post('/create', \Ares\Vote\Controller\VoteController::class . ':create');
-                $group->get('/total', \Ares\Vote\Controller\VoteController::class . ':getTotalVotes');
-                $group->post('/delete', \Ares\Vote\Controller\VoteController::class . ':delete');
-            });
-
-            // Community
-            $group->group('/community', function ($group) {
-                $group->get('/search/rooms/{term}/{page:[0-9]+}/{rpp:[0-9]+}',
-                    \Ares\Community\Controller\CommunityController::class . ':searchRooms');
-                $group->get('/search/guilds/{term}/{page:[0-9]+}/{rpp:[0-9]+}',
-                    \Ares\Community\Controller\CommunityController::class . ':searchGuilds');
-                $group->get('/search/articles/{term}/{page:[0-9]+}/{rpp:[0-9]+}',
-                    \Ares\Community\Controller\CommunityController::class . ':searchArticles');
-            });
-
-            // Guilds
-            $group->group('/guilds', function ($group) {
-                $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}',
-                    \Ares\Guild\Controller\GuildController::class . ':list');
-                $group->get('/{id:[0-9]+}', \Ares\Guild\Controller\GuildController::class . ':guild');
-                $group->get('/members/{guild_id:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}',
-                    \Ares\Guild\Controller\GuildController::class . ':members');
-                $group->get('/most/members/{count:[0-9]+}', \Ares\Guild\Controller\GuildController::class . ':mostMembers');
+                    $group->put('', \Ares\Article\Controller\ArticleController::class . ':editArticle')->setName('edit-articles');
+                    $group->delete('', \Ares\Article\Controller\ArticleController::class . ':deleteArticle')->setName('delete-articles');
+                });
             });
 
             // Guestbook Entries
             $group->group('/guestbook', function ($group) {
-                $group->post('/create', \Ares\Guestbook\Controller\GuestbookController::class . ':create');
-                $group->get('/profile/{profile_id:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}',
-                    \Ares\Guestbook\Controller\GuestbookController::class . ':profileList');
-                $group->get('/guild/{guild_id:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}',
-                    \Ares\Guestbook\Controller\GuestbookController::class . ':guildList');
-                $group->delete('/{id:[0-9]+}', \Ares\Guestbook\Controller\GuestbookController::class . ':delete')
-                    ->setName('delete-guestbook-entry');
-            });
-
-            // Friends
-            $group->group('/friends', function ($group) {
-                $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}',
-                    \Ares\Messenger\Controller\MessengerController::class . ':friends');
-            });
-
-            // Rooms
-            $group->group('/rooms', function ($group) {
-                $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':list');
-                $group->get('/{id:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':room');
-                $group->get('/most/visited/{count:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':mostVisited');
-            });
-
-            // Hall-Of-Fame
-            $group->group('/hall-of-fame', function ($group) {
-                $group->get('/tops/{type}', \Ares\User\Controller\UserHallOfFameController::class . ':tops');
-                $group->get('/top-online-time', \Ares\User\Controller\UserHallOfFameController::class . ':topOnlineTime');
-                $group->get('/top-achievement', \Ares\User\Controller\UserHallOfFameController::class . ':topAchievement');
-            });
-
-            // Photos
-            $group->group('/photos', function ($group) {
-                $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Photo\Controller\PhotoController::class . ':list');
-                $group->get('/{id:[0-9]+}', \Ares\Photo\Controller\PhotoController::class . ':photo');
-                $group->post('/search', \Ares\Photo\Controller\PhotoController::class . ':search');
-                $group->delete('/{id:[0-9]+}', \Ares\Photo\Controller\PhotoController::class . ':delete')->setName('delete-photo');
-            });
-
-            // Profiles
-            $group->group('/profiles', function ($group) {
-                $group->get('/{profile_id:[0-9]+}/badges/slot', \Ares\Profile\Controller\ProfileController::class . ':slotBadges');
-                $group->get('/{profile_id:[0-9]+}/badges/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':badgeList');
-                $group->get('/{profile_id:[0-9]+}/friends/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':friendList');
-                $group->get('/{profile_id:[0-9]+}/guilds/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':guildList');
-                $group->get('/{profile_id:[0-9]+}/rooms/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':roomList');
-                $group->get('/{profile_id:[0-9]+}/photos/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':photoList');
-            });
-
-            // Habbo Permissions
-            $group->group('/permissions', function ($group) {
-                $group->get('/list', \Ares\Permission\Controller\PermissionController::class . ':listRanks');
-                $group->get('/{id:[0-9]+}', \Ares\Permission\Controller\PermissionController::class . ':rankById');
-                $group->get('/list-columns', \Ares\Permission\Controller\PermissionController::class . ':listColumns');
-                $group->post('/create', \Ares\Permission\Controller\PermissionController::class . ':createRank');
-                $group->put('/edit', \Ares\Permission\Controller\PermissionController::class . ':editRank');
-            });
-
-            // Roles, Permissions
-            $group->group('/roles', function ($group) {
-                $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':list')->setName('list-all-roles');
-
-                $group->group('/create', function ($group) {
-                    $group->post('/role', \Ares\Role\Controller\RoleController::class . ':createRole')->setName('create-role');
-                    $group->post('/permission', \Ares\Role\Controller\RolePermissionController::class . ':createPermission')->setName('create-permission');
-                });
-
-                $group->group('/edit', function($group) {
-                    $group->put('/role', \Ares\Role\Controller\RoleController::class . ':editRole');
-                });
-
-                $group->group('/update', function($group) {
-                    $group->put('/child-parent', \Ares\Role\Controller\RoleController::class . ':updateChildRoleParent');
-                    $group->put('/child-order', \Ares\Role\Controller\RoleController::class . ':updateChildRoleOrder');
-                    $group->put('/role-rank', \Ares\Role\Controller\RoleController::class . ':updateRoleRank');
-                });
-                
-                $group->group('/assign', function ($group) {
-                    $group->post('/rank', \Ares\Role\Controller\RoleController::class . ':assignRank')->setName('assign-role');
-                    $group->post('/child', \Ares\Role\Controller\RoleController::class . ':createChildRole')->setName('create-child-role');
-                    $group->post('/permission', \Ares\Role\Controller\RolePermissionController::class . ':createRolePermission')->setName('create-role-permission');
-                });
-                
-                $group->group('/delete', function ($group) {
-                    $group->delete('/role/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':deleteRole')->setName('delete-role');
-                    $group->delete('/child/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':deleteRoleChild');
-                    $group->delete('/role-permissions/{id:[0-9]+}', \Ares\Role\Controller\RolePermissionController::class . ':deleteAllRolePermissions');
-                    $group->delete('/role-rank/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':deleteRoleRank');
-                });
-
-                $group->group('/toggle', function($group) {
-                    $group->post('/permission', \Ares\Role\Controller\RolePermissionController::class . ':toggleRolePermission');
-                });
-
-                $group->group('/permissions', function ($group) {
-                    $group->get('/list', \Ares\Role\Controller\RolePermissionController::class . ':list')->setName('list-all-permissions');
-                });
-
-                $group->group('/view', function($group) {
-                    $group->get('/my-permissions', \Ares\Role\Controller\RolePermissionController::class . ':userPermissions');
-                    $group->get('/role-tree', \Ares\Role\Controller\RoleController::class . ':treeView');
-                    $group->get('/role-hidden-tree', \Ares\Role\Controller\RoleController::class . ':hiddenTreeView');
-                    $group->get('/role/{id:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':roleById');
-                });
+                $group->post('', \Ares\Guestbook\Controller\GuestbookController::class . ':createEntry');
+                $group->put('', \Ares\Guestbook\Controller\GuestbookController::class . ':editEntry');
+                $group->delete('', \Ares\Guestbook\Controller\GuestbookController::class . ':deleteEntry');
             });
 
             // Payments
             $group->group('/payments', function ($group) {
-                $group->post('/create', \Ares\Payment\Controller\PaymentController::class . ':create');
-                $group->put('/update', \Ares\Payment\Controller\PaymentController::class . ':update');
-                $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Payment\Controller\PaymentController::class . ':list');
-                $group->get('/{id:[0-9]+}', \Ares\Payment\Controller\PaymentController::class . ':payment');
-                $group->delete('/{id:[0-9]+}', \Ares\Payment\Controller\PaymentController::class . ':delete')
-                    ->setName('delete-payment');
+                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Payment\Controller\PaymentController::class . ':getAllPayments')->setName('view-all-payments');
+                $group->post('/create', \Ares\Payment\Controller\PaymentController::class . ':createPayment');
+
+                $group->group('/{id:[0-9]+}', function ($group) {
+                    $group->get('', \Ares\Payment\Controller\PaymentController::class . ':getPaymentById');
+                    $group->put('', \Ares\Payment\Controller\PaymentController::class . ':updatePayment');
+                });
+            });
+
+            // Photos
+            $group->group('/photos/{photo_id:[0-9]+}', function ($group) {
+                $group->put('', \Ares\Photo\Controller\PhotoController::class . ':hidePhoto')->setName('hide-photos');
+                $group->delete('', \Ares\Photo\Controller\PhotoController::class . ':deletePhoto')->setName('delete-photos');
+            });
+
+            // Ranks
+            $group->group('/ranks', function ($group) {
+                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Rank\Controller\RankController::class . ':getAllRanks')->setName('view-all-ranks');
+                $group->get('', \Ares\Rank\Controller\RankController::class . ':getRanksList')->setName('view-all-ranks');
+                $group->get('/columns', \Ares\Rank\Controller\RankController::class . ':getRankColumns')->setName('view-all-ranks');
+                $group->post('', \Ares\Rank\Controller\RankController::class . ':createRank')->setName('create-ranks');
+
+                $group->group('/{id:[0-9]+}', function ($group) {
+                    $group->get('', \Ares\Rank\Controller\RankController::class . ':getRankById')->setName('view-all-ranks');
+                    $group->put('', \Ares\Rank\Controller\RankController::class . ':editRank')->setName('edit-ranks');
+                });
+            });
+
+            // Roles
+            $group->group('/roles', function ($group) {
+                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':getAllRoles')->setName('view-all-roles');
+                $group->get('/available/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Role\Controller\RoleController::class . ':availableRoles');
+                $group->post('', \Ares\Role\Controller\RoleController::class . ':createRole')->setName('create-roles');
+
+                $group->group('/{id:[0-9]+}', function ($group) {
+                    $group->get('', \Ares\Role\Controller\RoleController::class . ':getRoleById')->setName('view-all-roles');
+                    $group->put('', \Ares\Role\Controller\RoleController::class . ':editRole')->setName('edit-roles');
+                    $group->put('/toggle-permission/{role_permission_id:[0-9]+}', \Ares\Role\Controller\RolePermissionController::class . ':toggleRolePermission')->setName('edit-roles');
+                    $group->put('/clear-permissions', \Ares\Role\Controller\RolePermissionController::class . ':clearRolePermissions');
+    
+                    $group->group('/role-rank', function ($group) {
+                        $group->post('', \Ares\Role\Controller\RoleController::class . ':createRoleRank')->setName('create-roles');
+                        $group->put('', \Ares\Role\Controller\RoleController::class . ':editRoleRank')->setName('edit-roles');
+                        $group->delete('', \Ares\Role\Controller\RoleController::class . ':deleteRoleRank')->setName('delete-roles');
+                    });
+                });
+
+                $group->group('/role-hierarchy', function ($group) {
+                    $group->get('/role-tree', \Ares\Role\Controller\RoleController::class . ':getRoleTree');
+                    $group->get('/available-role-tree', \Ares\Role\Controller\RoleController::class . ':getAvailableRoleTree');
+                    $group->post('', \Ares\Role\Controller\RoleController::class . ':createRoleHierarchy')->setName('create-roles');
+                    $group->put('', \Ares\Role\Controller\RoleController::class . ':editRoleHierarchy')->setName('edit-roles');
+                    $group->delete('', \Ares\Role\Controller\RoleController::class . ':deleteRoleHierarchy')->setName('delete-roles');
+                });
+
+                $group->group('/role-permissions', function ($group) {
+                    $group->get('/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Role\Controller\RolePermissionController::class . ':getAllRolePermissions')->setName('view-all-role-permissions');
+                    $group->get('', \Ares\Role\Controller\RolePermissionController::class . ':getRolePermissionsList')->setName('view-all-roles');
+                    $group->post('', \Ares\Role\Controller\RolePermissionController::class . ':createRolePermission')->setName('create-role-permissions');
+
+                    $group->group('/{role_permission_id:[0-9]+}', function ($group) {
+                        $group->put('', \Ares\Role\Controller\RolePermissionController::class . ':editRolePermission')->setName('edit-role-permissions');
+                        $group->delete('', \Ares\Role\Controller\RolePermissionController::class . ':deleteRolePermission')->setName('delete-role-permissions');
+                    });
+                });
             });
 
             // Shop
             $group->group('/shop', function ($group) {
-                $group->post('/create', \Ares\Shop\Controller\ShopController::class . ':create');
-                $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Shop\Controller\ShopController::class . ':list');
-                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Shop\Controller\ShopController::class . ':listAll');
-                $group->get('/{id:[0-9]+}', \Ares\Shop\Controller\ShopController::class . ':get');
-                $group->put('/edit', \Ares\Shop\Controller\ShopController::class . ':edit');
-                $group->delete('/{id:[0-9]+}', \Ares\Shop\Controller\ShopController::class . ':delete')->setName('delete-offers');
-            });
+                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Shop\Controller\ShopController::class . ':getAllOffers')->setName('view-all-offers');
+                $group->get('/available/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Shop\Controller\ShopController::class . ':availableOffers');
+                $group->post('', \Ares\Shop\Controller\ShopController::class . ':createOffer')->setName('create-offers');
 
-            // Forum
-            $group->group('/forum', function ($group) {
-                $group->group('/comments', function ($group) {
-                    $group->post('/{thread:[0-9]+}/create', \Ares\Forum\Controller\CommentController::class . ':create');
-                    $group->get('/{thread:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Forum\Controller\CommentController::class . ':list');
-                    $group->put('/{thread:[0-9]+}/{id:[0-9]+}', \Ares\Forum\Controller\CommentController::class . ':edit');
-                    $group->delete('/{thread:[0-9]+}/{id:[0-9]+}', \Ares\Forum\Controller\CommentController::class . ':delete')
-                        ->setName('delete-forum-comment');
-                });
-                $group->group('/topics', function ($group) {
-                    $group->post('/create', \Ares\Forum\Controller\TopicController::class . ':create')
-                        ->setName('create-forum-topic');
-                    $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Forum\Controller\TopicController::class . ':list');
-                    $group->put('{id:[0-9]+}', \Ares\Forum\Controller\TopicController::class . ':edit')
-                        ->setName('edit-forum-topic');
-                    $group->delete('{id:[0-9]+}', \Ares\Forum\Controller\TopicController::class . ':delete')
-                        ->setName('delete-forum-topic');
-                });
-                $group->group('/threads', function ($group) {
-                    $group->post('/create', \Ares\Forum\Controller\ThreadController::class . ':create');
-                    $group->get('/{topic_id:[0-9]+}/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Forum\Controller\ThreadController::class . ':list');
-                    $group->get('/{topic_id:[0-9]+}/{slug}', \Ares\Forum\Controller\ThreadController::class . ':thread');
-                    $group->put('/{id:[0-9]+}', \Ares\Forum\Controller\ThreadController::class . ':edit');
-                    $group->delete('/{topic:[0-9]+}/{id:[0-9]+}', \Ares\Forum\Controller\ThreadController::class . ':delete')
-                        ->setName('delete-forum-thread');
+                $group->group('/{id:[0-9]+}', function ($group) {
+                    $group->get('', \Ares\Shop\Controller\ShopController::class . ':getOfferById');
+                    $group->get('/payments', \Ares\Payment\Controller\PaymentController::class . ':getOfferPayments');
+                    $group->put('', \Ares\Shop\Controller\ShopController::class . ':editOffer')->setName('edit-offers');
+                    $group->delete('', \Ares\Shop\Controller\ShopController::class . ':deleteOffer')->setName('delete-offers');
                 });
             });
 
+            // Authenticated User
+            $group->group('/user', function ($group) {
+                $group->get('', \Ares\User\Controller\UserController::class . ':getLoggedUser');
+                $group->get('/ticket', \Ares\User\Controller\AuthController::class . ':getLoggedTicket');
+                
+                $group->group('/change', function ($group) {
+                    $group->put('/general-settings', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeGeneralSettings');
+                    $group->put('/password', \Ares\User\Controller\Settings\UserSettingsController::class . ':changePassword');
+                    $group->put('/email', \Ares\User\Controller\Settings\UserSettingsController::class . ':changeEmail');
+                });
+
+                // Role Permissions
+                $group->get('/permissions', \Ares\User\Controller\UserController::class. ':getLoggedPermissions');
+
+                //Badge Slots
+                $group->get('/badges/slots', \Ares\User\Controller\UserController::class . ':getLoggedBadgeSlots');
+
+                //Votes History
+                $group->get('/votes-history', \Ares\User\Controller\UserController::class . ':getLoggedVotesHistory');
+
+                // Friends
+                $group->get('/friends/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Messenger\Controller\MessengerController::class . ':getLoggedFriends');
+            });
+
+            //Users
+            $group->group('/users', function($group) {
+                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\User\Controller\UserController::class . ':getAllUsers')->setName('view-all-users');
+            
+                $group->group('/{id:[0-9]+}', function($group) {
+                    $group->get('', \Ares\User\Controller\UserController::class . ':getUserById')->setName('view-all-users');
+                    $group->get('/payments', \Ares\Payment\Controller\PaymentController::class . ':getUserPayments')->setName('view-all-users');
+                    $group->get('/votes-history', \Ares\User\Controller\UserController::class . ':getUserVotesHistory')->setName('view-all-users');
+
+                    $group->group('/update', function ($group) {
+                        $group->put('/rank', \Ares\User\Controller\UserController::class . ':updateUserRank')->setName('edit-users');
+                        $group->put('/username', \Ares\User\Controller\UserController::class . ':updateUserName')->setName('edit-users');
+                        $group->put('/reset-password', \Ares\User\Controller\UserController::class . ':resetUserPassword')->setName('edit-users');
+                    });
+
+                    $group->group('/currency', function($group) {
+                    });
+                });
+
+
+                $group->group('/registers', function($group) {
+                    $group->get('/total', \Ares\User\Controller\UserController::class . ':getTotalRegistersCount');
+                    $group->get('/ad-total', \Ares\User\Controller\UserController::class . ':getAdTotalRegistersCount');
+                    $group->get('/weekly', \Ares\User\Controller\UserController::class . ':getWeeklyRegistersCount');
+                    $group->get('/monthly', \Ares\User\Controller\UserController::class . ':getMonthlyRegistersCount');
+                    $group->get('/yearly', \Ares\User\Controller\UserController::class . ':getYearlyRegistersCount');
+                });
+            });
+
+            // Votes
+            $group->group('/votes', function ($group) {
+                $group->post('', \Ares\Vote\Controller\VoteController::class . ':createVote');
+                $group->delete('', \Ares\Vote\Controller\VoteController::class . ':deleteVote');
+            });
+
+            // RCON
             $group->group('/rcon', function ($group) {
-                $group->post('/execute', \Ares\Rcon\Controller\RconController::class . ':executeCommand')
-                    ->setName('execute-rcon-command');
+                $group->post('/execute', \Ares\Rcon\Controller\RconController::class . ':executeCommand');
             });
 
-            // Gets updated UserOfTheHotel
-            $group->get('/user-of-the-hotel',
-                \Ares\User\Controller\UserOfTheHotelController::class . ':getUserOfTheHotel'
-            );
+            // Server
+            $group->group('/server', function ($group) {
+                $group->group('/nitro-texts', function ($group) {
+                    $group->get('', \Ares\Server\Controller\ServerController::class . ':getNitroTexts')->setName('manage-nitro-texts');
+                    $group->put('', \Ares\Server\Controller\ServerController::class . ':editNitroTexts')->setName('manage-nitro-texts');
+                });
+
+                $group->group('/badges', function ($group) {
+                    $group->get('/exists/{code}', \Ares\Server\Controller\ServerController::class . ':verifyBadgeCode');
+                    $group->post('/upload', \Ares\Server\Controller\ServerController::class . ':uploadBadge')->setName('upload-badges');
+                });
+            });
+
+            // Web Settings
+            $group->group('/settings', function ($group) {
+                $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Setting\Controller\SettingController::class . ':getAllSettings')->setName('view-all-settings');
+                $group->put('', \Ares\Setting\Controller\SettingController::class . ':editSetting')->setName('edit-settings');
+            });
+
+            //Polaris
+            $group->group('/polaris', function ($group) {
+                $group->group('/peaks', function ($group) {
+                    $group->get('/weekly', \Ares\Polaris\Controller\PolarisController::class . ':getWeekly');
+                    $group->get('/monthly', \Ares\Polaris\Controller\PolarisController::class . ':getMonthly');
+                    $group->get('/yearly', \Ares\Polaris\Controller\PolarisController::class . ':getYearly');
+                });
+            });
 
             // De-Authentication
             $group->post('/logout', \Ares\User\Controller\AuthController::class . ':logout');
+
         })->add(\Ares\Role\Middleware\RolePermissionMiddleware::class)
             ->add(\Ares\Framework\Middleware\AuthMiddleware::class);
 
         // Authentication
         $group->group('/login', function ($group) {
             $group->post('', \Ares\User\Controller\AuthController::class . ':login');
-            $group->post('/look', \Ares\User\Controller\UserController::class . ':getLook');
         });
 
+        // Articles
+        $group->group('/articles', function ($group) {
+            $group->get('/available/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':getAvailableArticles');
+            $group->get('/pinned/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':getPinnedArticles');
+            $group->get('/search/{term}/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Article\Controller\ArticleController::class . ':searchArticles');
+
+            $group->group('/{id:[0-9]+}', function ($group) {
+                $group->get('', \Ares\Article\Controller\ArticleController::class . ':getArticleById');
+
+                // Comments
+                $group->get('/comments/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Article\Controller\CommentController::class . ':getArticleComments');
+            });
+        });
+
+        // Guilds
+        $group->group('/guilds', function ($group) {
+            $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Guild\Controller\GuildController::class . ':getAllGuilds');
+            $group->get('/search/{term}/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Guild\Controller\GuildController::class . ':searchGuilds');
+
+            $group->group('/{id:[0-9]+}', function ($group) {
+                $group->get('', \Ares\Guild\Controller\GuildController::class . ':getGuildById');
+                $group->get('/members/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Guild\Controller\GuildController::class . ':getGuildMembers');
+                $group->get('/guestbook/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Guestbook\Controller\GuestbookController::class . ':getGuildGuestbookEntries');
+            });
+
+            $group->get('/top/members/{top:[0-9]+}', \Ares\Guild\Controller\GuildController::class . ':getMostMembersTop');
+        });
+
+        // Photos
+        $group->group('/photos', function ($group) {
+            $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Photo\Controller\PhotoController::class . ':getAllPhotos');
+        });
+
+        // Profiles
+        $group->group('/profile', function ($group) {
+            $group->group('/{username}', function ($group) {
+                $group->get('', \Ares\Profile\Controller\ProfileController::class . ':getProfile');
+                $group->get('/badges/slots', \Ares\Profile\Controller\ProfileController::class . ':getBadgeSlots');
+                $group->get('/badges/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':getBadges');
+                $group->get('/friends/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':getProfileFriends');
+                $group->get('/guilds/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':getGuilds');
+                $group->get('/rooms/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':getRooms');
+                $group->get('/photos/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Profile\Controller\ProfileController::class . ':getPhotos');
+                $group->get('/guestbook/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Guestbook\Controller\GuestbookController::class . ':getProfileGuestbookEntries');
+            });
+        });
+
+        // Registration
         $group->group('/register', function ($group) {
             $group->post('', \Ares\User\Controller\AuthController::class . ':register');
-            $group->get('/looks', \Ares\User\Controller\AuthController::class . ':viableLooks');
+            $group->get('/looks', \Ares\User\Controller\AuthController::class . ':registerLooks');
         });
 
-        // Global Settings
+        // Rooms
+        $group->group('/rooms', function ($group) {
+            $group->get('/all/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':getAllRooms');
+            $group->get('/search/{term}/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':searchRooms');
+            $group->get('/{id:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':getRoomById');
+            $group->get('/top/visited/{top:[0-9]+}', \Ares\Room\Controller\RoomController::class . ':getMostVisitedTop');
+        });
+
+        // Web Settings
         $group->group('/settings', function ($group) {
-            $group->get('/list/{page:[0-9]+}/{rpp:[0-9]+}', \Ares\Setting\Controller\SettingController::class . ':list');
-            $group->post('/get', \Ares\Setting\Controller\SettingController::class . ':get');
-            $group->post('/get-multiple', \Ares\Setting\Controller\SettingController::class . ':getMultiple');
-            $group->put('/set', \Ares\Setting\Controller\SettingController::class . ':set')->setName('set-global-setting');
+            $group->get('/{key}', \Ares\Setting\Controller\SettingController::class . ':getSettingByKey');
+            $group->get('/multiple/{keys}', \Ares\Setting\Controller\SettingController::class . ':getMultipleSettings');
         });
 
-        // Global Routes
-        $group->get('/user/online', \Ares\User\Controller\UserController::class . ':onlineUser');
-    })->add(\Ares\Framework\Middleware\LocaleMiddleware::class)
-        ->add(\Ares\Framework\Middleware\ThrottleMiddleware::class);
+        // Users
+        $group->group('/users', function($group) {
+            $group->get('/random/{count:[0-9]+}', \Ares\User\Controller\UserController::class . ':getRandomUsers');
+            $group->get('/look/{username}', \Ares\User\Controller\UserController::class . ':getLookByUsername');
+            $group->get('/online-count', \Ares\User\Controller\UserController::class . ':getOnlineCount');
+
+            $group->group('/top', function($group) {
+                $group->get('/currency/{type}', \Ares\User\Controller\UserHallOfFameController::class . ':getTopCurrency');
+                $group->get('/online-time', \Ares\User\Controller\UserHallOfFameController::class . ':getTopOnlineTime');
+                $group->get('/achievements', \Ares\User\Controller\UserHallOfFameController::class . ':getTopAchievements');
+                $group->get('/user-of-the-hotel', \Ares\User\Controller\UserOfTheHotelController::class . ':getUserOfTheHotel');
+            });
+        });
+
+        $group->get('/test', \Ares\User\Controller\UserController::class . ':test');
+
+    })->add(\Ares\Framework\Middleware\ThrottleMiddleware::class);
 
     // Catches every route that is not found
     $app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function ($request, $response) {

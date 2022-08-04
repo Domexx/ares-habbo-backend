@@ -34,39 +34,13 @@ class RoomController extends BaseController
     /**
      * @param Request  $request
      * @param Response $response
-     * @param array    $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     * @throws NoSuchEntityException
-     */
-    public function room(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $id */
-        $id = $args['id'];
-
-        /** @var Room $room */
-        $room = $this->roomRepository->get($id);
-        $room->getGuild();
-        $room->getUser();
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($room)
-        );
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
      *
      * @param          $args
      *
      * @return Response
      * @throws DataObjectManagerException
-     */
-    public function list(Request $request, Response $response, array $args): Response
+    */
+    public function getAllRooms(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -74,17 +48,55 @@ class RoomController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $rooms = $this->roomRepository
-            ->getPaginatedRoomList(
-                $page,
-                $resultPerPage
-            );
+        $rooms = $this->roomRepository->getPaginatedRoomList($page, $resultPerPage);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($rooms)
-        );
+        return $this->respond($response, response()->setData($rooms));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+    */
+    public function getRoomById(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $roomId */
+        $roomId = $args['id'];
+
+        /** @var Room $room */
+        $room = $this->roomRepository->getRoomById($roomId);
+
+        return $this->respond($response, response()->setData($room));
+    }
+
+    /**
+     * Searches with term in groups, rooms and news.
+     *
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function searchRooms(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $term */
+        $term = $args['term'];
+
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $rooms = $this->roomRepository->searchRooms($term, $page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($rooms));
     }
 
     /**
@@ -94,18 +106,14 @@ class RoomController extends BaseController
      * @return Response
      * @throws NoSuchEntityException
      */
-    public function mostVisited(Request $request, Response $response, array $args): Response
+    public function getMostVisitedTop(Request $request, Response $response, array $args): Response
     {
-        /** @var int $page */
-        $count = $args['count'];
+        /** @var int $top */
+        $top = $args['top'];
 
         /** @var Room $room */
-        $room = $this->roomRepository->getMostVisitedRooms($count);
+        $room = $this->roomRepository->getMostVisitedRooms($top);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($room)
-        );
+        return $this->respond($response, response()->setData($room));
     }
 }

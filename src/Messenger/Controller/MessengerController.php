@@ -43,7 +43,7 @@ class MessengerController extends BaseController
      * @throws DataObjectManagerException
      * @throws NoSuchEntityException
      */
-    public function friends(Request $request, Response $response, array $args): Response
+    public function getLoggedFriends(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -54,17 +54,8 @@ class MessengerController extends BaseController
         /** @var User $user */
         $user = user($request);
 
-        $friends = $this->messengerRepository
-            ->getPaginatedMessengerFriends(
-                $user->getId(),
-                $page,
-                $resultPerPage
-            );
+        $friends = $this->messengerRepository->getPaginatedMessengerFriends($user->getId(), $page,$resultPerPage);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($friends)
-        );
+        return $this->respond($response, response()->setData($friends));
     }
 }

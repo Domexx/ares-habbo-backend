@@ -24,7 +24,13 @@ final class AresSettings extends AbstractMigration
             ['key' => 'paypal_client_id', "value" => 'YOUR_PAYPAL_CLIENT_ID'],
             ['key' => 'paypal_currency', "value" => 'USD'],
             ['key' => 'paypal_sandbox_enabled', "value" => '1'],
-            ['key' => 'adsense_client_id', "value" => 'YOUR_ADSENSE_CLIENT_ID']
+            ['key' => 'adsense_client_id', "value" => 'YOUR_ADSENSE_CLIENT_ID'],
+            ['key' => 'group_badges_url', "value" => 'GROUP_BADGE_URL'],
+            ['key' => 'badges_folder_location', "value" => 'BADGES_FOLDER'],
+            ['key' => 'external_texts_json_location', "value" => 'EXTERNAL_TEXTS_FILEPATH'],
+            ['key' => 'counter_enabled', "value" => '1'],
+            ['key' => 'radio_link', "value" => 'RADIO_LINK'],
+            ['key' => 'radio_enabled', "value" => '0'],
         ];
 
         $table->addColumn('key', 'string', ['limit' => 50])

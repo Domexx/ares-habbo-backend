@@ -6,7 +6,7 @@
     "start_motto": "Ares is cool!",
     "start_home_room": 0,
     "register": {
-      "max_accounts_per_ip": 3,
+      "max_accounts_per_ip": 300,
       "looks": {
         "fallback_look": "hd-180-1.ch-255-66.lg-280-110.sh-305-62.ha-1012-110.hr-828-61",
         "boy": {
@@ -32,7 +32,7 @@
       "rcon_port": 3001
     },
     "news": {
-      "comment_max": 3
+      "comment_max": 5
     },
     "guestbook": {
       "comment_max": 3

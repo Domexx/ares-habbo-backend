@@ -31,6 +31,7 @@ interface UserInterface
     public const COLUMN_IP_REGISTER = 'ip_register';
     public const COLUMN_IP_CURRENT = 'ip_current';
     public const COLUMN_HOME_ROOM = 'home_room';
+    public const COLUMN_AD_REGISTER = 'ad_register';
     public const COLUMN_CREATED_AT = 'created_at';
     public const COLUMN_UPDATED_AT = 'updated_at';
 }

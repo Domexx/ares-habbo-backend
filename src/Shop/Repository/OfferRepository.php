@@ -29,16 +29,18 @@ class OfferRepository extends BaseRepository
     protected string $entity = Offer::class;
 
     /**
+     * TODO: Add order_id
+     * TODO: Add status
+     * 
      * @param int $page
      * @param int $resultPerPage
      *
      * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function getPaginatedOfferList(int $page, int $resultPerPage): PaginatedCollection
+    public function getPaginatedOfferList(int $page, int $resultPerPage, bool $showHidden = false, bool $orderById = true): PaginatedCollection
     {
-        $searchCriteria = $this->getDataObjectManager()
-            ->orderBy('id');
+        $searchCriteria = $this->getDataObjectManager();
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }

@@ -47,7 +47,8 @@ class MessengerRepository extends BaseRepository
                 'users.username',
                 'users.motto',
                 'users.look',
-                'users.online'
+                'users.online',
+                'users.last_online'
             ])->leftJoin(
                 'users',
                 'messenger_friendships.user_two_id',

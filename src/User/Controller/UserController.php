@@ -18,6 +18,9 @@ use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Entity\User;
 use Ares\User\Repository\UserRepository;
 use Ares\User\Service\Currency\UpdateCurrencyService;
+use Ares\User\Service\Register\MonthRegisterCountService;
+use Ares\User\Service\Register\WeekRegisterCountService;
+use Ares\User\Service\Register\YearRegisterCountService;
 use Ares\User\Service\Settings\ChangeRankService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -41,7 +44,10 @@ class UserController extends BaseController
         private UserRepository $userRepository,
         private ValidationService $validationService,
         private UpdateCurrencyService $updateCurrencyService,
-        private ChangeRankService $changeRankService
+        private ChangeRankService $changeRankService,
+        private WeekRegisterCountService $weekRegisterCountService,
+        private MonthRegisterCountService $monthRegisterCountService,
+        private YearRegisterCountService $yearRegisterCountService
     ) {}
 
     /**
@@ -55,7 +61,7 @@ class UserController extends BaseController
      * @throws DataObjectManagerException
      * @throws NoSuchEntityException
      */
-    public function user(Request $request, Response $response): Response
+    public function getLoggedUser(Request $request, Response $response): Response
     {
         /** @var User $user */
         $user = user($request);
@@ -72,7 +78,7 @@ class UserController extends BaseController
      * @return Response
      * @throws NoSuchEntityException
      */
-    public function viewUser(Request $request, Response $response, array $args): Response
+    public function getUserById(Request $request, Response $response, array $args): Response
     {
         $userId = $args['id'];
 
@@ -89,6 +95,27 @@ class UserController extends BaseController
     }
 
     /**
+     * @param int $userId
+     *
+     * @return Response
+     * @throws NoSuchEntityException
+    */
+    public function searchUser(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $username */
+        $username = $args['username'];
+
+        /** @var User $user */
+        $user = $this->userRepository->getUser($username);
+
+        return $this->respond(
+            $response,
+            response()
+                ->setData($user)
+        );
+    }
+
+    /**
      * @param Request  $request
      * @param Response $response
      *
@@ -96,16 +123,12 @@ class UserController extends BaseController
      * @throws NoSuchEntityException
      * @throws ValidationException
      */
-    public function getLook(Request $request, Response $response): Response
+    public function getLookByUsername(Request $request, Response $response, array $args): Response
     {
-        /** @var array $parsedData */
-        $parsedData = $request->getParsedBody();
+        /** @var string $username */
+        $username = $args['username'];
 
-        $this->validationService->validate($parsedData, [
-            UserInterface::COLUMN_USERNAME => 'required',
-        ]);
-
-        $userLook = $this->userRepository->getUserLook($parsedData['username']);
+        $userLook = $this->userRepository->getUserLook($username);
 
         return $this->respond(
             $response,
@@ -123,7 +146,7 @@ class UserController extends BaseController
      * @return Response
      * @throws DataObjectManagerException
      */
-    public function allList(Request $request, Response $response, array $args): Response
+    public function getAllUsers(Request $request, Response $response, array $args): Response
     {
         //BUG for some reason these variables aren't being treated as their corresponding variable type.
 
@@ -157,7 +180,7 @@ class UserController extends BaseController
      * @throws UserException
      * @throws ValidationException
      */
-    public function changeRank(Request $request, Response $response): Response
+    public function updateUserRank(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -179,6 +202,116 @@ class UserController extends BaseController
     }
 
     /**
+     * Retrieve weekly registers count.
+     *
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws PolarisException
+     * @throws DataObjectManagerException
+     * @throws ValidationException
+     * @throws NoSuchEntityException
+     */
+    public function getTotalRegistersCount(Request $request, Response $response): Response
+    {
+        $count = $this->userRepository->getTotalRegistersCount();
+
+        return $this->respond(
+            $response,
+            response()->setData($count)
+        );
+    }
+
+    /**
+     * Retrieve weekly registers count.
+     *
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws PolarisException
+     * @throws DataObjectManagerException
+     * @throws ValidationException
+     * @throws NoSuchEntityException
+     */
+    public function getAdTotalRegistersCount(Request $request, Response $response): Response
+    {
+        $count = $this->userRepository->getTotalRegistersCount(true);
+
+        return $this->respond(
+            $response,
+            response()->setData($count)
+        );
+    }
+
+    /**
+     * Retrieve weekly registers count.
+     *
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws PolarisException
+     * @throws DataObjectManagerException
+     * @throws ValidationException
+     * @throws NoSuchEntityException
+     */
+    public function getWeeklyRegistersCount(Request $request, Response $response): Response
+    {
+        $customResponse = $this->weekRegisterCountService->execute();
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * Retrieve monthly online peak.
+     *
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws PolarisException
+     * @throws DataObjectManagerException
+     * @throws ValidationException
+     * @throws NoSuchEntityException
+     */
+    public function getMonthlyRegistersCount(Request $request, Response $response): Response
+    {
+        $customResponse = $this->monthRegisterCountService->execute();
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
+     * Retrieve yearly online peak.
+     *
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws PolarisException
+     * @throws DataObjectManagerException
+     * @throws ValidationException
+     * @throws NoSuchEntityException
+     */
+    public function getYearlyRegistersCount(Request $request, Response $response): Response
+    {
+        $customResponse = $this->yearRegisterCountService->execute();
+
+        return $this->respond(
+            $response,
+            $customResponse
+        );
+    }
+
+    /**
      * Gets all current Online User and counts them
      *
      * @param Request  $request
@@ -186,16 +319,19 @@ class UserController extends BaseController
      *
      * @return Response
      */
-    public function onlineUser(Request $request, Response $response): Response
+    public function getOnlineCount(Request $request, Response $response): Response
     {
         $onlineUser = $this->userRepository->getUserOnlineCount();
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData([
-                    'count' => $onlineUser
-                ])
-        );
+        return $this->respond($response, response()->setData([
+            'count' => $onlineUser
+        ]));
+    }
+
+    public function test(Request $request, Response $response) : Response
+    {
+        return $this->respond($response, response()->setData([
+            'count' => 2
+        ]));
     }
 }

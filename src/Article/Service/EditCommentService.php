@@ -36,8 +36,11 @@ class EditCommentService
      * @throws DataObjectManagerException
      * @throws NoSuchEntityException
      */
-    public function execute(array $data): CustomResponseInterface
+    public function execute(array $data, int $userId): CustomResponseInterface
     {
+        /** @var User $user */
+        $user = $this->userRepository->get($userId);
+
         /** @var int $commentId */
         $commentId = $data['comment_id'];
 
@@ -47,13 +50,15 @@ class EditCommentService
         /** @var Comment $comment */
         $comment = $this->commentRepository->get($commentId);
 
-        $comment
+        if($comment->getUserId() == $userId || $user->hasPermission('manage-comments')) {
+            $comment
             ->setContent($content)
             ->setIsEdited(1)
             ->setUpdatedAt(new \DateTime());
 
-        /** @var Comment $comment */
-        $comment = $this->commentRepository->save($comment);
+            /** @var Comment $comment */
+            $comment = $this->commentRepository->save($comment);
+        }
 
         return response()
             ->setData($comment);

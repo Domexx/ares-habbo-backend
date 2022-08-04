@@ -9,14 +9,13 @@ namespace Ares\User\Entity;
 
 use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Model\DataObject;
-use Ares\Role\Repository\RoleHierarchyRepository;
 use Ares\Role\Repository\RoleRepository;
 use Ares\Role\Repository\RoleRankRepository;
 use Ares\Role\Repository\RolePermissionRepository;
 use Ares\Role\Entity\Role;
 use Ares\Role\Entity\RoleRank;
-use Ares\Permission\Repository\PermissionRepository;
-use Ares\Permission\Entity\Permission;
+use Ares\Role\Entity\RolePermission;
+use Ares\Rank\Repository\RankRepository;
 use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Repository\UserCurrencyRepository;
 use Ares\User\Repository\UserRepository;
@@ -37,7 +36,10 @@ class User extends DataObject implements UserInterface
         UserInterface::COLUMN_PASSWORD,
         UserInterface::COLUMN_AUTH_TICKET,
         UserInterface::COLUMN_IP_CURRENT,
-        UserInterface::COLUMN_IP_REGISTER
+        UserInterface::COLUMN_IP_REGISTER,
+        UserInterface::COLUMN_MAIL,
+        UserInterface::COLUMN_AD_REGISTER,
+        UserInterface::COLUMN_HOME_ROOM
     ];
 
     /** @var array */
@@ -352,6 +354,23 @@ class User extends DataObject implements UserInterface
         return $this->setData(UserInterface::COLUMN_LAST_ONLINE, $lastOnline);
     }
 
+    /**
+     * @return int|null
+     */
+    public function getAdRegister() : ?int
+    {
+        return $this->getData(UserInterface::COLUMN_AD_REGISTER);
+    }
+
+    /**
+     * @param int|null $adRegister
+     * 
+     * @return User 
+     */
+    public function setAdRegister(?int $adRegister) : User
+    {
+        return $this->setData(UserInterface::COLUMN_AD_REGISTER, $adRegister);
+    }
 
     /**
      * @return \DateTime
@@ -404,14 +423,14 @@ class User extends DataObject implements UserInterface
             return null;
         }
 
-        /** @var PermissionRepository $permissionRepository */
-        $permissionRepository = repository(PermissionRepository::class);
+        /** @var RankRepository $rankRepository */
+        $rankRepository = repository(RankRepository::class);
 
         /** @var RoleRepository $roleRepository */
         $roleRepository = repository(RoleRepository::class);
 
         /** @var Role $role */
-        $role = $permissionRepository->getManyToMany(
+        $role = $rankRepository->getManyToMany(
             $roleRepository,
             $this->getRank(),
             'ares_roles_rank',
@@ -464,7 +483,7 @@ class User extends DataObject implements UserInterface
         }
 
         /** @var Collection $permissions */
-        $permissions = $rolePermissionRepository->getRolePermissions($roleRank->getRankId());
+        $permissions = $rolePermissionRepository->getRolePermissions($roleRank->getRoleId());
 
         if (!$permissions) {
             return null;
@@ -483,6 +502,17 @@ class User extends DataObject implements UserInterface
     public function setPermissions(Collection $permissions): User
     {
         return $this->setData('permissions', $permissions);
+    }
+
+    /**
+     * 
+     * 
+     */
+    public function hasPermission(string $permission) : bool {
+        /** @var RolePermission[] $permissions */
+        $permissions = $this->getPermissions();
+
+        return in_array($permission, $permissions);
     }
 
     public function getHidden()

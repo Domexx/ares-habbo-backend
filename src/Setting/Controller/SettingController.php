@@ -15,6 +15,7 @@ use Ares\Framework\Service\ValidationService;
 use Ares\Setting\Entity\Contract\SettingInterface;
 use Ares\Setting\Entity\Setting;
 use Ares\Setting\Repository\SettingRepository;
+use Ares\Setting\Service\GetMultipleSettingsService;
 use Ares\Setting\Service\UpdateSettingService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -29,14 +30,16 @@ class SettingController extends BaseController
     /**
      * SettingsController constructor.
      *
-     * @param   ValidationService    $validationService
-     * @param   SettingRepository    $settingsRepository
-     * @param   UpdateSettingService $updateSettingsService
+     * @param   ValidationService           $validationService
+     * @param   SettingRepository           $settingsRepository
+     * @param   UpdateSettingService        $updateSettingsService
+     * @param   GetMultipleSettingsService  $getMultipleSettingsService
      */
     public function __construct(
         private ValidationService $validationService,
         private SettingRepository $settingsRepository,
-        private UpdateSettingService $updateSettingsService
+        private UpdateSettingService $updateSettingsService,
+        private GetMultipleSettingsService $getMultipleSettingsService
     ) {}
 
     /**
@@ -47,26 +50,15 @@ class SettingController extends BaseController
      * @throws ValidationException
      * @throws NoSuchEntityException
      */
-    public function get(Request $request, Response $response): Response
+    public function getSettingByKey(Request $request, Response $response, array $args): Response
     {
-        /** @var array $parsedData */
-        $parsedData = $request->getParsedBody();
-
-        $this->validationService->validate($parsedData, [
-            SettingInterface::COLUMN_KEY => 'required'
-        ]);
-
-        /** @var string $key */
-        $key = $parsedData['key'];
+        /** @var string $settingKey */
+        $settingKey = $args['key'];
 
         /** @var Setting $configData */
-        $configData = $this->settingsRepository->get($key, 'key', false, false);
+        $configData = $this->settingsRepository->get($settingKey, 'key', false, false);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($configData)
-        );
+        return $this->respond($response,response()->setData($configData));
     }
 
         /**
@@ -77,33 +69,14 @@ class SettingController extends BaseController
      * @throws ValidationException
      * @throws NoSuchEntityException
      */
-    public function getMultiple(Request $request, Response $response): Response
+    public function getMultipleSettings(Request $request, Response $response, array $args): Response
     {
-        /** @var array $parsedData */
-        $parsedData = $request->getParsedBody();
+        /** @var string $settingKey */
+        $settingKeys = $args['keys'];
 
-        $this->validationService->validate($parsedData, [
-            'keys' => 'required'
-        ]);
+        $customResponse = $this->getMultipleSettingsService->execute($settingKeys);
 
-        /** @var string[] $key */
-        $keys = explode(',', $parsedData['keys']);
-
-        /** @var Setting[] $configData */
-        $configData = [];
-
-        foreach($keys as $key) {
-            /** @var Setting $settingData */
-            $settingData = $this->settingsRepository->get($key, 'key', false, false);
-
-            array_push($configData, $settingData);
-        }
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($configData)
-        );
+        return $this->respond($response, $customResponse);
     }
 
     /**
@@ -115,7 +88,7 @@ class SettingController extends BaseController
      * @return Response
      * @throws DataObjectManagerException
      */
-    public function list(Request $request, Response $response, array $args): Response
+    public function getAllSettings(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -123,18 +96,9 @@ class SettingController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $settings = $this->settingsRepository
-            ->getPaginatedList(
-                $this->settingsRepository->getDataObjectManager(),
-                $page,
-                $resultPerPage
-            );
+        $settings = $this->settingsRepository->getPaginatedList($this->settingsRepository->getDataObjectManager(), $page, $resultPerPage);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($settings)
-        );
+        return $this->respond($response, response()->setData($settings));
     }
 
     /**
@@ -146,7 +110,7 @@ class SettingController extends BaseController
      * @throws NoSuchEntityException
      * @throws ValidationException
      */
-    public function set(Request $request, Response $response): Response
+    public function editSetting(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -158,9 +122,6 @@ class SettingController extends BaseController
 
         $customResponse = $this->updateSettingsService->update($parsedData);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 }

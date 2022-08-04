@@ -49,6 +49,31 @@ class CommentController extends BaseController
     ) {}
 
     /**
+     * @param Request     $request
+     * @param Response    $response
+     * @param             $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function getArticleComments(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $articleId */
+        $articleId = $args['id'];
+
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        /** @var PaginatedCollection $comments */
+        $comments = $this->commentRepository->getPaginatedCommentList($articleId, $page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($comments));
+    }
+
+    /**
      * @param Request  $request
      * @param Response $response
      *
@@ -57,8 +82,8 @@ class CommentController extends BaseController
      * @throws DataObjectManagerException
      * @throws ValidationException
      * @throws NoSuchEntityException|CommentException
-     */
-    public function create(Request $request, Response $response): Response
+    */
+    public function createComment(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -73,10 +98,7 @@ class CommentController extends BaseController
 
         $customResponse = $this->createCommentService->execute($userId, $parsedData);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 
     /**
@@ -88,7 +110,7 @@ class CommentController extends BaseController
      * @throws NoSuchEntityException
      * @throws ValidationException
      */
-    public function edit(Request $request, Response $response): Response
+    public function editComment(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -98,46 +120,12 @@ class CommentController extends BaseController
             CommentInterface::COLUMN_CONTENT => 'required'
         ]);
 
-        $customResponse = $this->editCommentService->execute($parsedData);
+        /** @var int $userId */
+        $userId = user($request)->getId();
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
-    }
+        $customResponse = $this->editCommentService->execute($parsedData, $userId);
 
-    /**
-     * @param Request     $request
-     * @param Response    $response
-     * @param             $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     */
-    public function list(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $articleId */
-        $articleId = $args['article_id'];
-
-        /** @var int $page */
-        $page = $args['page'];
-
-        /** @var int $resultPerPage */
-        $resultPerPage = $args['rpp'];
-
-        /** @var PaginatedCollection $comments */
-        $comments = $this->commentRepository
-            ->getPaginatedCommentList(
-                $articleId,
-                $page,
-                $resultPerPage
-            );
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($comments)
-        );
+        return $this->respond($response, $customResponse);
     }
 
     /**
@@ -149,16 +137,20 @@ class CommentController extends BaseController
      * @throws CommentException
      * @throws DataObjectManagerException
      */
-    public function delete(Request $request, Response $response, array $args): Response
+    public function deleteComment(Request $request, Response $response, array $args): Response
     {
-        /** @var int $id */
-        $id = $args['id'];
+        /** @var array $parsedData */
+        $parsedData = $request->getParsedBody();
 
-        $customResponse = $this->deleteCommentService->execute($id);
+        $this->validationService->validate($parsedData, [
+            CommentInterface::COLUMN_ID => 'required|numeric'
+        ]);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        /** @var int $userId */
+        $userId = user($request)->getId();
+
+        $customResponse = $this->deleteCommentService->execute($parsedData[CommentInterface::COLUMN_ID], $userId);
+
+        return $this->respond($response, $customResponse);
     }
 }

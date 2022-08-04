@@ -50,6 +50,194 @@ class ArticleController extends BaseController
     ) {}
 
     /**
+     * @param Request     $request
+     * @param Response    $response
+     *
+     * @param             $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function getAllArticles(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        /** @var PaginatedCollection $articles */
+        $articles = $this->articleRepository->getPaginatedArticleList($page, $resultPerPage, true, true);
+
+        return $this->respond($response, response()->setData($articles));
+    }
+
+    /**
+     * @param Request     $request
+     * @param Response    $response
+     *
+     * @param             $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function getAvailableArticles(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        /** @var PaginatedCollection $articles */
+        $articles = $this->articleRepository->getPaginatedArticleList($page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($articles));
+    }
+
+    /**
+     * Gets all Pinned Articles
+     *
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function getPinnedArticles(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        /** @var PaginatedCollection $pinnedArticles */
+        $pinnedArticles = $this->articleRepository->getPaginatedPinnedArticles($page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($pinnedArticles));
+    }
+
+    /**
+     * Searches with term in news.
+     *
+     * @param Request     $request
+     * @param Response    $response
+     * @param             $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function searchAnyArticles(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $term */
+        $term = $args['term'];
+
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $articles = $this->articleRepository->searchArticles($term, $page, $resultPerPage, true);
+
+        return $this->respond($response, response()->setData($articles));
+    }
+
+    /**
+     * Searches with term in news.
+     *
+     * @param Request     $request
+     * @param Response    $response
+     * @param             $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function searchArticles(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $term */
+        $term = $args['term'];
+
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $articles = $this->articleRepository->searchArticles($term, $page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($articles));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+    */
+    public function getArticleBySlug(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $slug */
+        $slug = $args['slug'];
+
+        /** @var Article $article */
+        $article = $this->articleRepository->getArticleBySlugWithCommentCount($slug);
+
+        return $this->respond(
+            $response,
+            response()
+                ->setData($article)
+        );
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+    */
+    public function getArticleById(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $id */
+        $id = $args['id'];
+
+        /** @var Article $article */
+        $article = $this->articleRepository->getArticleByIdWithCommentCount($id);
+
+        return $this->respond($response, response()->setData($article));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     *
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+    */
+    public function getAnyArticleById(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $id */
+        $id = $args['id'];
+
+        /** @var Article $article */
+        $article = $this->articleRepository->getArticleByIdWithCommentCount($id, true);
+
+        return $this->respond($response, response()->setData($article));
+    }
+
+    /**
      * Creates new article.
      *
      * @param Request  $request
@@ -62,7 +250,7 @@ class ArticleController extends BaseController
      * @throws AuthenticationException
      * @throws NoSuchEntityException
      */
-    public function create(Request $request, Response $response): Response
+    public function createArticle(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -85,31 +273,6 @@ class ArticleController extends BaseController
         return $this->respond(
             $response,
             $customResponse
-        );
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @param array    $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     * @throws NoSuchEntityException
-     */
-    public function article(Request $request, Response $response, array $args): Response
-    {
-        /** @var string $slug */
-        $slug = $args['slug'];
-
-        /** @var Article $article */
-        $article = $this->articleRepository->getArticleWithCommentCount($slug);
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($article)
         );
     }
 
@@ -140,95 +303,7 @@ class ArticleController extends BaseController
 
         $customResponse = $this->editArticleService->execute($parsedData);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
-    }
-
-    /**
-     * Gets all Pinned Articles
-     *
-     * @param Request  $request
-     * @param Response $response
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     */
-    public function pinned(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $page */
-        $page = $args['page'];
-
-        /** @var int $resultPerPage */
-        $resultPerPage = $args['rpp'];
-
-        /** @var PaginatedCollection $pinnedArticles */
-        $pinnedArticles = $this->articleRepository
-            ->getPaginatedPinnedArticles(
-                $page,
-                $resultPerPage
-            );
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($pinnedArticles)
-        );
-    }
-
-    /**
-     * @param Request     $request
-     * @param Response    $response
-     *
-     * @param             $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     */
-    public function list(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $page */
-        $page = $args['page'];
-
-        /** @var int $resultPerPage */
-        $resultPerPage = $args['rpp'];
-
-        /** @var PaginatedCollection $articles */
-        $articles = $this->articleRepository
-            ->getPaginatedArticleList(
-                $page,
-                $resultPerPage
-            );
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($articles)
-        );
-    }
-
-    /**
-     * @param Request     $request
-     * @param Response    $response
-     *
-     * @param             $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     */
-    public function allList(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $page */
-        $page = $args['page'];
-
-        /** @var int $resultPerPage */
-        $resultPerPage = $args['rpp'];
-
-        /** @var PaginatedCollection $articles */
-        $articles = $this->articleRepository->getPaginatedArticleList($page, $resultPerPage, true, true);
-
-        return $this->respond($response, response()->setData($articles));
+        return $this->respond($response, $customResponse);
     }
 
     /**
@@ -242,16 +317,13 @@ class ArticleController extends BaseController
      * @throws ArticleException
      * @throws DataObjectManagerException
      */
-    public function delete(Request $request, Response $response, array $args): Response
+    public function deleteArticle(Request $request, Response $response, array $args): Response
     {
         /** @var int $id */
         $id = $args['id'];
 
         $customResponse = $this->deleteArticleService->execute($id);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 }

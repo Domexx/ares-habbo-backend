@@ -51,15 +51,23 @@ class ChangeRankService
         $editUser = $this->userRepository->get($parsedData[UserInterface::COLUMN_ID]);
 
         if($editUser->getId() == $user->getId()) {
-            //TODO throw Error 'Can't edit your own rank'
+            throw new UserSettingsException(
+                __('You cannot use the same Username or a User with this username already exists'),
+                UserResponseCodeInterface::RESPONSE_SETTINGS_USER_USERNAME_EXISTS,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         if($editUser->getRank() >= $user->getRank()) {
-            //TODO Throw Error 'Can't edit someone who's rank is greater than yours'
+            throw new UserSettingsException(
+                __('You cannot use the same Username or a User with this username already exists'),
+                UserResponseCodeInterface::RESPONSE_SETTINGS_USER_USERNAME_EXISTS,
+                HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
+            );
         }
 
         $this->userRepository->save($editUser->setRank($parsedData[UserInterface::COLUMN_RANK]));
 
-        return response()->setData($user);
+        return response()->setData($editUser);
     }
 }

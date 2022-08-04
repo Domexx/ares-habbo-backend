@@ -17,8 +17,8 @@ use Ares\Role\Exception\RoleException;
 use Ares\Role\Interfaces\Response\RoleResponseCodeInterface;
 use Ares\Role\Repository\RoleRepository;
 use Ares\Role\Repository\RoleRankRepository;
-use Ares\Permission\Entity\Permission;
-use Ares\Permission\Repository\PermissionRepository;
+use Ares\Rank\Entity\Rank;
+use Ares\Rank\Repository\RankRepository;
 use DateTime;
 
 /**
@@ -32,12 +32,12 @@ class AssignRankToRoleService {
      *
      * @param RoleRankRepository    $roleRankRepository
      * @param RoleRepository        $roleRepository
-     * @param PermissionRepository  $permissionRepository
+     * @param RankRepository        $rankRepository
      */
     public function __construct(
         private RoleRankRepository $roleRankRepository,
         private RoleRepository $roleRepository,
-        private PermissionRepository $permissionRepository
+        private RankRepository $rankRepository
     ) {}
 
     /**
@@ -59,8 +59,8 @@ class AssignRankToRoleService {
         /** @var Role $role */
         $role = $this->roleRepository->get($roleId);
 
-        /** @var Permission $rank */
-        $rank = $this->permissionRepository->get($rankId);
+        /** @var Rank $rank */
+        $rank = $this->rankRepository->get($rankId);
 
         /** @var RoleRank $isRoleAlreadyAssigned */
         $isRoleAlreadyAssigned = $this->roleRankRepository->getRankAssignedRole($role->getId(), $rank->getId());

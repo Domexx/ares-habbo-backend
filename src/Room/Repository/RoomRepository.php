@@ -37,6 +37,26 @@ class RoomRepository extends BaseRepository
      * @param int    $page
      * @param int    $resultPerPage
      *
+     * @return Room|null
+     * @throws DataObjectManagerException|NoSuchEntityException
+     */
+    public function getRoomById(int $roomId): ?Room
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->where('id', $roomId)
+            ->addRelation('guild')
+            ->addRelation('user');
+
+        return $this->getOneBy($searchCriteria);
+    }
+
+    /**
+     * Searches rooms by search term.
+     *
+     * @param string $term
+     * @param int    $page
+     * @param int    $resultPerPage
+     *
      * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
@@ -59,7 +79,6 @@ class RoomRepository extends BaseRepository
     public function getPaginatedRoomList(int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
-            ->orderBy('id', 'DESC')
             ->addRelation('guild')
             ->addRelation('user');
 
@@ -77,8 +96,7 @@ class RoomRepository extends BaseRepository
     public function getUserRoomsPaginatedList(int $ownerId, int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
-            ->where('owner_id', $ownerId)
-            ->orderBy('id', 'DESC');
+            ->where('owner_id', $ownerId);
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
@@ -87,7 +105,7 @@ class RoomRepository extends BaseRepository
      * @param int $count
      * @return Collection|null
      * @throws NoSuchEntityException
-     */
+    */
     public function getMostVisitedRooms(int $count = 1): ?Collection
     {
         $searchCriteria = $this->getDataObjectManager()

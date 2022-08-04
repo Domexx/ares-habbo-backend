@@ -8,6 +8,7 @@
 namespace Ares\User\Repository;
 
 use Ares\Framework\Exception\NoSuchEntityException;
+use Ares\Framework\Model\DataObject;
 use Ares\Framework\Model\Query\Collection;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\User\Entity\User;
@@ -63,7 +64,7 @@ class UserRepository extends BaseRepository
      * @return User|null
      * @throws NoSuchEntityException
      */
-    public function getRegisteredUser(?string $username, ?string $mail): ?User
+    public function getUser(?string $username, ?string $mail = null): ?User
     {
         $searchCriteria = $this->getDataObjectManager()
             ->where('username', $username)
@@ -99,24 +100,82 @@ class UserRepository extends BaseRepository
     }
 
     /**
+     *
+     * @return Collection
+     * @throws DataObjectManagerException
+    */
+    public function getWeekRegistersCount(): Collection
+    {
+        $weekAgoTimeStamp = strtotime("-1 week");
+        $today = date("Y-m-d");
+        $weekAgo = date("Y-m-d", $weekAgoTimeStamp);
+
+        $searchCriteria = $this->getDataObjectManager()
+        ->selectRaw("DATE(created_at) as date, COUNT(id) as count")
+        ->whereBetween("created_at", [$weekAgo, $today])
+        ->groupByRaw("DATE(created_at)");
+
+        return $this->getList($searchCriteria);
+    }
+
+    /**
+     *
+     * @return Collection
+     * @throws DataObjectManagerException
+    */
+    public function getMonthRegistersCount(): Collection
+    {
+        $searchCriteria = $this->getDataObjectManager()
+        ->selectRaw("MONTHNAME(created_at) as month, COUNT(id) as count")
+        ->whereRaw("YEAR(created_at) = YEAR(CURRENT_DATE)")
+        ->groupByRaw("MONTH(created_at)");
+
+        return $this->getList($searchCriteria);
+    }
+
+    /**
+     *
+     * @return Collection
+     * @throws DataObjectManagerException
+    */
+    public function getYearRegistersCount(): Collection
+    {
+        $searchCriteria = $this->getDataObjectManager()
+        ->selectRaw("YEAR(created_at) as year, COUNT(id) as count")
+        ->groupByRaw("YEAR(created_at)");
+
+        return $this->getList($searchCriteria);
+    }
+
+    /**
+     *
+     * @return DataObject|null
+     * @throws DataObjectManagerException
+    */
+    public function getTotalRegistersCount(bool $adRegister = false): DataObject|null
+    {
+        $searchCriteria = $this->getDataObjectManager()
+        ->selectRaw("COUNT(id) as count");
+
+        if($adRegister) {
+            $searchCriteria->where([
+                UserInterface::COLUMN_AD_REGISTER => 1
+            ]);
+        }
+
+        return $this->getOneBy($searchCriteria);
+    }
+
+    /**
      * @param int $page
      * @param int $resultPerPage
      *
      * @return PaginatedCollection
      * @throws DataObjectManagerException
-     */
+    */
     public function getPaginatedUsersList(int $page, int $resultPerPage): PaginatedCollection
     {
-        $searchCriteria = $this->getDataObjectManager()
-            ->select([
-                UserInterface::COLUMN_ID,
-                UserInterface::COLUMN_USERNAME,
-                UserInterface::COLUMN_LAST_LOGIN,
-                UserInterface::COLUMN_LAST_ONLINE,
-                UserInterface::COLUMN_LOOK,
-                UserInterface::COLUMN_RANK,
-                UserInterface::COLUMN_CREATED_AT
-            ]);
+        $searchCriteria = $this->getDataObjectManager();
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }

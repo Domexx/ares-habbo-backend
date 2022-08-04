@@ -7,9 +7,10 @@
 
 namespace Ares\Shop\Entity;
 
-use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Model\DataObject;
+use Ares\Framework\Model\Query\Collection;
 use Ares\Shop\Entity\Contract\OfferInterface;
+use Ares\Payment\Repository\PaymentRepository;
 
 /**
  * Class Offer
@@ -20,6 +21,11 @@ class Offer extends DataObject implements OfferInterface
 {
     /** @var string */
     public const TABLE = 'ares_shop_offers';
+
+    /** @var array **/
+    public const RELATIONS = [
+        'payments' => 'getPayments'
+    ];
 
     /**
      * @return int
@@ -127,5 +133,41 @@ class Offer extends DataObject implements OfferInterface
     public function setPrice(float $price): Offer
     {
         return $this->setData(OfferInterface::COLUMN_PRICE, $price);
+    }
+
+    /**
+     * @return Collection|null
+    */
+    public function getPayments(): Collection|null
+    {
+        $payments = $this->getData('payments');
+
+        if($payments) {
+            return $payments;
+        }
+
+        if(!isset($this)) {
+            return null;
+        }
+
+        /** @var PaymentRepository $paymentRepository */
+        $paymentRepository = repository(PaymentRepository::class);
+
+        /** @var Collection $payments */
+        $payments = $paymentRepository->getOfferPayments($this->getId());
+
+        $this->setPayments($payments);
+
+        return $payments;
+    }
+
+    /**
+     * @param Collection $payments
+     *
+     * @return Offer
+    */
+    public function setPayments(mixed $payments): Offer
+    {
+        return $this->setData('payments', $payments);
     }
 }

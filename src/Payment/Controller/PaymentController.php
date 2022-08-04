@@ -49,6 +49,27 @@ class PaymentController extends BaseController
     ) {}
 
     /**
+     * @param Request     $request
+     * @param Response    $response
+     * @param             $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function getAllPayments(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $payments = $this->paymentRepository->getPaginatedPayments($page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($payments));
+    }
+
+    /**
      * @param Request  $request
      * @param Response $response
      *
@@ -59,7 +80,7 @@ class PaymentController extends BaseController
      * @throws PaymentException
      * @throws ValidationException
      */
-    public function create(Request $request, Response $response): Response
+    public function createPayment(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -75,16 +96,9 @@ class PaymentController extends BaseController
         /** @var User $user */
         $user = user($request);
 
-        $customResponse = $this->createPaymentService
-            ->execute(
-                $user->getId(),
-                $parsedData
-            );
+        $customResponse = $this->createPaymentService->execute($user->getId(), $parsedData);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 
     
@@ -99,7 +113,7 @@ class PaymentController extends BaseController
      * @throws PaymentException
      * @throws ValidationException
      */
-    public function update(Request $request, Response $response): Response
+    public function updatePayment(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -112,10 +126,7 @@ class PaymentController extends BaseController
 
         $customResponse = $this->updatePaymentService->execute($parsedData);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 
     /**
@@ -126,7 +137,7 @@ class PaymentController extends BaseController
      * @return Response
      * @throws NoSuchEntityException
      */
-    public function payment(Request $request, Response $response, array $args): Response
+    public function getPaymentById(Request $request, Response $response, array $args): Response
     {
         /** @var int $id */
         $id = $args['id'];
@@ -134,11 +145,7 @@ class PaymentController extends BaseController
         /** @var Payment $payment */
         $payment = $this->paymentRepository->get($id);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($payment)
-        );
+        return $this->respond($response, response()->setData($payment));
     }
 
     /**
@@ -148,26 +155,21 @@ class PaymentController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
-     */
-    public function list(Request $request, Response $response, array $args): Response
+    */
+    public function getUserPayments(Request $request, Response $response, array $args): Response
     {
+        /** @var int $userId */
+        $userId = $args['id'];
+
         /** @var int $page */
         $page = $args['page'];
 
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $payments = $this->paymentRepository
-            ->getPaginatedPayments(
-                $page,
-                $resultPerPage
-            );
+        $payments = $this->paymentRepository->getUserPaginatedPayments($page, $resultPerPage, $userId);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($payments)
-        );
+        return $this->respond($response, response()->setData($payments));
     }
 
     /**
@@ -177,18 +179,20 @@ class PaymentController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
-     * @throws PaymentException
-     */
-    public function delete(Request $request, Response $response, array $args): Response
+    */
+    public function getOfferPayments(Request $request, Response $response, array $args): Response
     {
-        /** @var int $id */
-        $id = $args['id'];
+        /** @var int $userId */
+        $offerId = $args['id'];
 
-        $customResponse = $this->deletePaymentService->execute($id);
+        /** @var int $page */
+        $page = $args['page'];
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $payments = $this->paymentRepository->getOfferPaginatedPayments($page, $resultPerPage, $offerId);
+
+        return $this->respond($response, response()->setData($payments));
     }
 }

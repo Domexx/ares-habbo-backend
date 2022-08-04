@@ -89,6 +89,6 @@ class PermissionRepository extends BaseRepository
             ])
             ->where(PermissionInterface::COLUMN_NAME, $permissionName);
 
-        return $this->getOneBy($searchCriteria);
+        return $this->getOneBy($searchCriteria, true, false);
     }
 }

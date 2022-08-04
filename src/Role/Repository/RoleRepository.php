@@ -36,10 +36,13 @@ class RoleRepository extends BaseRepository
      * @return PaginatedCollection
      * @throws DataObjectManagerException
      */
-    public function getPaginatedRoles(int $page, int $resultPerPage): PaginatedCollection
+    public function getPaginatedRoles(int $page, int $resultPerPage, bool $showHidden = false): PaginatedCollection
     {
-        $searchCriteria = $this->getDataObjectManager()
-            ->orderBy('id', 'DESC');
+        $searchCriteria = $this->getDataObjectManager();
+
+        if(!$showHidden) {
+            $searchCriteria = $searchCriteria->where('status.hidden', 1);
+        }
 
         return $this->getPaginatedList($searchCriteria, $page, $resultPerPage);
     }
@@ -51,12 +54,12 @@ class RoleRepository extends BaseRepository
      */
     public function getRoleById(int $roleId, bool $appendUsers = true) : Role {
         $searchCriteria = $this->getDataObjectManager()
-            ->addRelation('rolePermissions')
-            ->where('id', $roleId);
+            ->where('id', $roleId)
+            ->addRelation('rolePermissions');
 
-        $appendUsers ? $searchCriteria->addRelation('permissionWithUsers') : $searchCriteria->addRelation('permission');
+        $appendUsers ? $searchCriteria->addRelation('rankWithUsers') : $searchCriteria->addRelation('rank');
 
-        $role = $this->getOneBy($searchCriteria);
+        $role = $this->getOneBy($searchCriteria, false, false);
 
         return $role;
     }

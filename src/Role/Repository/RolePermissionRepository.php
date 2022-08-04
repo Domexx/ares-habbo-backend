@@ -79,7 +79,7 @@ class RolePermissionRepository extends BaseRepository
                 'role_id' => $roleId
             ]);
 
-        return $this->getList($searchCriteria);
+        return $this->getList($searchCriteria, false);
     }
 
     /**
@@ -87,11 +87,11 @@ class RolePermissionRepository extends BaseRepository
      * 
      *@return Collection|null
      */
-    public function getRolesWithPermissionId(int $permissionId) : Collection 
+    public function getRolesWithPermissionId(int $permissionId, bool $isCached = true) : Collection 
     {
         $searchCriteria = $this->getDataObjectManager()
             ->where(RolePermissionInterface::COLUMN_PERMISSION_ID, $permissionId);
 
-        return $this->getList($searchCriteria);
+        return $this->getList($searchCriteria, $isCached);
     }
 }

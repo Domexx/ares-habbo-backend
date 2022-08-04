@@ -11,6 +11,7 @@ use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Model\Query\PaginatedCollection;
 use Ares\Framework\Model\Query\Collection;
 use Ares\Framework\Repository\BaseRepository;
+use Ares\Setting\Entity\Contract\SettingInterface;
 use Ares\Setting\Entity\Setting;
 
 /**
@@ -43,6 +44,20 @@ class SettingRepository extends BaseRepository
             $page,
             $resultPerPage
         );
+    }
+
+    /**
+     * @param string $key
+     * 
+     * @return Setting|null
+     * @throws DataObjectManagerException
+     */
+    public function getSettingByKey(string $key): Setting|null
+    {
+        $searchCriteria = $this->getDataObjectManager()
+            ->where(SettingInterface::COLUMN_KEY, $key);
+
+        return $this->getOneBy($searchCriteria, true, false);
     }
 
     /**

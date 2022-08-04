@@ -11,6 +11,7 @@ use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Interfaces\CustomResponseInterface;
 use Ares\Framework\Interfaces\HttpResponseCodeInterface;
+use Ares\User\Entity\Contract\UserInterface;
 use Ares\User\Entity\User;
 use Ares\User\Exception\UserSettingsException;
 use Ares\User\Interfaces\Response\UserResponseCodeInterface;
@@ -50,7 +51,7 @@ class ChangeEmailService
 
         if (!password_verify($password, $user->getPassword())) {
             throw new UserSettingsException(
-                __('Given old password does not match the current password'),
+                __('Given password does not match the current password'),
                 UserResponseCodeInterface::RESPONSE_SETTINGS_OLD_NOT_EQUALS_NEW,
                 HttpResponseCodeInterface::HTTP_RESPONSE_UNPROCESSABLE_ENTITY
             );
@@ -65,7 +66,7 @@ class ChangeEmailService
         }
 
         /** @var User $emailExists */
-        $emailExists = $this->userRepository->get($email, 'mail', true);
+        $emailExists = $this->userRepository->getUser(null, $email);
 
         if ($emailExists) {
             throw new UserSettingsException(

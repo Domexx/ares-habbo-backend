@@ -19,6 +19,4 @@ interface PhotoInterface
     public const COLUMN_ROOM_ID = 'room_id';
     public const COLUMN_TIMESTAMP = 'timestamp';
     public const COLUMN_URL = 'url';
-    public const COLUMN_LIKES = 'likes';
-    public const COLUMN_DISLIKES = 'dislikes';
 }

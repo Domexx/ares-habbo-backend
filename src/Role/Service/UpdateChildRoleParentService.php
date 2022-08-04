@@ -53,6 +53,9 @@ class UpdateChildRoleParentService
         /** @var int $childRoleId */
         $childRoleId = $data['child_role_id'];
 
+        /** @var int $orderId */
+        $orderId = $data['order_id'];
+
         if($parentRoleId == $childRoleId) {
             throw new RoleException(
                 __('Cant be same ID'),
@@ -78,9 +81,11 @@ class UpdateChildRoleParentService
         /** @var RoleHierarchy $existingRoleHierarchy */
         $existingRoleHierarchy = $this->roleHierarchyRepository->get($childRoleId, RoleHierarchyInterface::COLUMN_CHILD_ROLE_ID, true, false);
         
+        $existingRoleHierarchy->setOrderId($orderId);
+
         if($existingRoleHierarchy->getParentRoleId() == $parentRoleId) {
             /** @var RoleHierarchy $roleHierarchy */
-            $roleHierarchy = $this->roleHierarchyRepository->save($existingRoleHierarchy); //redundant?
+            $roleHierarchy = $this->roleHierarchyRepository->save($existingRoleHierarchy);
 
             return response()->setData($roleHierarchy);
         }

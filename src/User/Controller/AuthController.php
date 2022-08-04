@@ -137,7 +137,7 @@ class AuthController extends BaseController
      * @return Response
      * @throws RegisterException
      */
-    public function viableLooks(Request $request, Response $response): Response
+    public function registerLooks(Request $request, Response $response): Response
     {
         /** @var array $boyLooks */
         $boyLooks = $this->config->get('hotel_settings.register.looks.boy');
@@ -182,7 +182,7 @@ class AuthController extends BaseController
      * @throws DataObjectManagerException
      * @throws NoSuchEntityException
      */
-    public function ticket(Request $request, Response $response): Response
+    public function getLoggedTicket(Request $request, Response $response): Response
     {
         /** @var User $user */
         $user = user($request);

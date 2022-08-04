@@ -43,7 +43,7 @@ class UserHallOfFameController extends BaseController
      *
      * @return Response
      */
-    public function tops(Request $request, Response $response, array $args): Response
+    public function getTopCurrency(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $type = $args['type'];
@@ -60,15 +60,11 @@ class UserHallOfFameController extends BaseController
      * @return Response
      * @throws DataObjectManagerException
      */
-    public function topAchievement(Request $request, Response $response): Response
+    public function getTopAchievement(Request $request, Response $response): Response
     {
         $users = $this->userSettingRepository->getTopAchievements();
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($users)
-        );
+        return $this->respond($response, response()->setData($users));
     }
 
     /**
@@ -77,15 +73,11 @@ class UserHallOfFameController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
-     */
-    public function topOnlineTime(Request $request, Response $response): Response
+    */
+    public function getTopOnlineTime(Request $request, Response $response): Response
     {
         $users = $this->userSettingRepository->getTopOnlineTime();
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($users)
-        );
+        return $this->respond($response, response()->setData($users));
     }
 }

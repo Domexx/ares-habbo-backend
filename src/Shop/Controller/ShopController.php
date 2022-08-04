@@ -44,6 +44,67 @@ class ShopController extends BaseController
     /**
      * @param Request  $request
      * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function getAllOffers(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $payments = $this->offerRepository->getPaginatedOfferList($page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($payments));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function getAvailableOffers(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $payments = $this->offerRepository->getPaginatedOfferList($page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($payments));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws NoSuchEntityException
+    */
+    public function getOfferById(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $id */
+        $id = $args['id'];
+
+        /** @var Payment $payment */
+        $offer = $this->offerRepository->get($id);
+
+        return $this->respond($response, response()->setData($offer));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
      *
      * @return Response
      * @throws AuthenticationException
@@ -52,7 +113,7 @@ class ShopController extends BaseController
      * @throws OfferException
      * @throws ValidationException
      */
-    public function create(Request $request, Response $response): Response
+    public function createOffer(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -71,60 +132,12 @@ class ShopController extends BaseController
     }
 
     /**
-     * @param Request  $request
-     * @param Response $response
-     * @param array    $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     */
-    public function list(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $page */
-        $page = $args['page'];
-
-        /** @var int $resultPerPage */
-        $resultPerPage = $args['rpp'];
-
-        $payments = $this->offerRepository->getPaginatedOfferList($page, $resultPerPage);
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($payments)
-        );
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
-     * @param array    $args
-     *
-     * @return Response
-     * @throws NoSuchEntityException
-     */
-    public function get(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $id */
-        $id = $args['id'];
-
-        /** @var Payment $payment */
-        $offer = $this->offerRepository->get($id);
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($offer)
-        );
-    }
-
-    /**
      * @param Request $request
      * @param Response $response
      * 
      * @return Response
     */
-    public function edit(Request $request, Response $response) : Response
+    public function editOffer(Request $request, Response $response) : Response
     {
 
         /** @var array $parsedData */
@@ -152,7 +165,7 @@ class ShopController extends BaseController
      * @throws OfferException
      * @throws DataObjectManagerException
      */
-    public function delete(Request $request, Response $response, array $args): Response
+    public function deleteOffer(Request $request, Response $response, array $args): Response
     {
         /** @var int $id */
         $id = $args['id'];

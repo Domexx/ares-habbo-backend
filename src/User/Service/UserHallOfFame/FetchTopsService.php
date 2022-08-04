@@ -51,8 +51,12 @@ class FetchTopsService
         /** @var Permission $permission */
         $permission = $this->permissionRepository->getPermissionByName('hide-leaderboard');
 
+        if($permission == null) {
+            //TODO THROW ERROR
+        }
+
         /** @var RolePermission[] $rolePermissions */
-        $rolePermissions = $this->rolePermissionRepository->getRolesWithPermissionId($permission->getId());
+        $rolePermissions = $this->rolePermissionRepository->getRolesWithPermissionId($permission->getId(), false);
 
         /** @var array $rankIds */
         $rankIds = [];

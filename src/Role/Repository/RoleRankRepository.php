@@ -10,7 +10,7 @@ namespace Ares\Role\Repository;
 
 use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Repository\BaseRepository;
-use Ares\Permission\Entity\Permission as Rank;
+use Ares\Rank\Entity\Rank;
 use Ares\Role\Entity\Role;
 use Ares\Role\Entity\RoleRank;
 use Ares\Role\Entity\Contract\RoleRankInterface;

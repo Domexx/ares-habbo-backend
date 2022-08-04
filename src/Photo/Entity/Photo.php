@@ -120,42 +120,6 @@ class Photo extends DataObject implements PhotoInterface
     }
 
     /**
-     * @return int
-     */
-    public function getLikes(): int
-    {
-        return $this->getData(PhotoInterface::COLUMN_LIKES);
-    }
-
-    /**
-     * @param int $likes
-     *
-     * @return Photo
-     */
-    public function setLikes(int $likes): Photo
-    {
-        return $this->setData(PhotoInterface::COLUMN_LIKES, $likes);
-    }
-
-    /**
-     * @return int
-     */
-    public function getDislikes(): int
-    {
-        return $this->getData(PhotoInterface::COLUMN_DISLIKES);
-    }
-
-    /**
-     * @param int $dislikes
-     *
-     * @return Photo
-     */
-    public function setDislikes(int $dislikes): Photo
-    {
-        return $this->setData(PhotoInterface::COLUMN_DISLIKES, $dislikes);
-    }
-
-    /**
      * @return User|null
      *
      * @throws DataObjectManagerException

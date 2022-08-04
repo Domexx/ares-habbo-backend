@@ -121,29 +121,20 @@ class GuestbookController extends BaseController
      * @return Response
      * @throws DataObjectManagerException
      */
-    public function profileList(Request $request, Response $response, array $args): Response
+    public function getProfileGuestbookEntries(Request $request, Response $response, array $args): Response
     {
+        /** @var int $profileId */
+        $profileId = $args['id'];
+
         /** @var int $page */
         $page = $args['page'];
 
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        /** @var int $profileId */
-        $profileId = $args['profile_id'];
+        $entries = $this->guestbookRepository->getPaginatedProfileEntries($profileId, $page, $resultPerPage);
 
-        $entries = $this->guestbookRepository
-            ->getPaginatedProfileEntries(
-                $profileId,
-                $page,
-                $resultPerPage
-            );
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($entries)
-        );
+        return $this->respond($response, response()->setData($entries));
     }
 
     /**
@@ -154,7 +145,7 @@ class GuestbookController extends BaseController
      * @return Response
      * @throws DataObjectManagerException
      */
-    public function guildList(Request $request, Response $response, array $args): Response
+    public function getGuildGuestbookEntries(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -163,20 +154,11 @@ class GuestbookController extends BaseController
         $resultPerPage = $args['rpp'];
 
         /** @var int $guildId */
-        $guildId = $args['guild_id'];
+        $guildId = $args['id'];
 
-        $entries = $this->guestbookRepository
-            ->getPaginatedGuildEntries(
-                $guildId,
-                $page,
-                $resultPerPage
-            );
+        $entries = $this->guestbookRepository->getPaginatedGuildEntries($guildId, $page, $resultPerPage);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($entries)
-        );
+        return $this->respond($response,response()->setData($entries));
     }
 
     /**

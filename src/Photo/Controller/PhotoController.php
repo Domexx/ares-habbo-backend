@@ -109,7 +109,7 @@ class PhotoController extends BaseController
      * @return Response
      * @throws DataObjectManagerException
      */
-    public function list(Request $request, Response $response, array $args): Response
+    public function getAllPhotos(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -117,17 +117,9 @@ class PhotoController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $photos = $this->photoRepository
-            ->getPaginatedPhotoList(
-                $page,
-                $resultPerPage
-            );
+        $photos = $this->photoRepository->getPaginatedPhotoList($page, $resultPerPage);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($photos)
-        );
+        return $this->respond($response, response()->setData($photos));
     }
 
     /**

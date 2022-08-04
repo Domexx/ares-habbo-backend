@@ -14,8 +14,6 @@ use Ares\Framework\Exception\NoSuchEntityException;
 use Ares\Framework\Exception\ValidationException;
 use Ares\Framework\Service\ValidationService;
 use Ares\Role\Entity\Contract\PermissionInterface;
-use Ares\Role\Entity\Contract\RolePermissionInterface;
-use Ares\Role\Entity\RolePermission;
 use Ares\Role\Exception\RoleException;
 use Ares\Role\Repository\PermissionRepository;
 use Ares\Role\Service\CreatePermissionService;
@@ -61,7 +59,20 @@ class RolePermissionController extends BaseController
      * @return Response
      * @throws DataObjectManagerException
      */
-    public function list(Request $request, Response $response, array $args): Response
+    public function getAllRolePermissions(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $permissions = $this->permissionRepository->getPaginatedPermissionList($page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($permissions));
+    }
+
+    public function getRolePermissionsList(Request $request, Response $response, array $args): Response
     {
         $permissions = $this->permissionRepository->getPermissionList();
 
@@ -124,16 +135,13 @@ class RolePermissionController extends BaseController
      * @throws RoleException
      * @throws DataObjectManagerException
      */
-    public function toggleRolePermission(Request $request, Response $response) {
-        /** @var array $parsedData */
-        $parsedData = $request->getParsedBody();
+    public function toggleRolePermission(Request $request, Response $response, array $args) {
+        /** @var int $id */
+        $roleId = $args['id'];
 
-        $this->validationService->validate($parsedData, [
-            RolePermissionInterface::COLUMN_ROLE_ID => 'numeric|required',
-            RolePermissionInterface::COLUMN_PERMISSION_ID => 'numeric|required'
-        ]);
+        $permissionId = $args['role_permission_id'];
 
-        $customResponse = $this->toggleRolePermissionService->execute($parsedData);
+        $customResponse = $this->toggleRolePermissionService->execute($roleId, $permissionId);
         
         return $this->respond($response, $customResponse);
     }
@@ -146,7 +154,7 @@ class RolePermissionController extends BaseController
      * @return Response
      * 
      */
-    public function deleteAllRolePermissions(Request $request, Response $response, array $args) {
+    public function clearRolePermissions(Request $request, Response $response, array $args) {
         /** @var int $id */
         $id = $args['id'];
 

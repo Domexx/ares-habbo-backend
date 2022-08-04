@@ -80,7 +80,7 @@ class RoleController extends BaseController
      * @return Response
      * @throws DataObjectManagerException
      */
-    public function list(Request $request, Response $response, array $args): Response
+    public function getAllRoles(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -88,42 +88,52 @@ class RoleController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $roles = $this->roleRepository
-            ->getPaginatedRoles(
-                $page,
-                $resultPerPage
-            );
+        $roles = $this->roleRepository->getPaginatedRoles($page, $resultPerPage, true);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($roles)
-        );
+        return $this->respond($response, response()->setData($roles));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function getAvailableRoles(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $roles = $this->roleRepository->getPaginatedRoles($page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($roles));
     }
     
     /**
      * 
      * Retrieves all Role Hierarchy Tree by setting a root Role on Database.
      * Role Tree is made up of 3 levels: Root > Categories > Normal Roles (These are attached to a Rank)
-     * Normal Roles are retrieved with their corresponding Rank and Users.
+     * Normal Roles are retrieved with their corresponding Rank.
      * 
      * @param Request  $request
      * @param Response $response
      *
      * @return Response
      * @throws DataObjectManagerException
-     */
-    public function treeView(Request $request, Response $response): Response
+    */
+    public function getRoleTree(Request $request, Response $response): Response
     {
         /** @var Role $rootRole */
         $rootRole = $this->roleRepository->getRootRole();
 
-        $customResponse = $this->fetchRoleTreeService->execute($rootRole, false);
+        $customResponse = $this->fetchRoleTreeService->execute($rootRole, true, false);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 
     /**
@@ -137,18 +147,15 @@ class RoleController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
-     */
-    public function hiddenTreeView(Request $request, Response $response): Response
+    */
+    public function getAvailableRoleTree(Request $request, Response $response): Response
     {
         /** @var Role $rootRole */
         $rootRole = $this->roleRepository->getRootRole();
 
-        $customResponse = $this->fetchRoleTreeService->execute($rootRole, true);
+        $customResponse = $this->fetchRoleTreeService->execute($rootRole);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 
     /**
@@ -159,16 +166,13 @@ class RoleController extends BaseController
      * @throws DataObjectManagerException
      * @throws NoSuchEntityException
     */
-    public function roleById(Request $request, Response $response, array $args): Response
+    public function getRoleById(Request $request, Response $response, array $args): Response
     {
         /** @var int $roleId */
         $roleId = $args['id'];
 
         /** @var Role $role */
-        $role = $this->roleRepository->get($roleId);
-
-        $role->getRolePermissions();
-        $role->getPermission();
+        $role = $this->roleRepository->getRoleById($roleId);
 
         return $this->respond($response, response()->setData($role));
     }
@@ -181,7 +185,7 @@ class RoleController extends BaseController
      * @throws DataObjectManagerException
      * @throws RoleException
      * @throws ValidationException|NoSuchEntityException
-     */
+    */
     public function createRole(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
@@ -194,10 +198,7 @@ class RoleController extends BaseController
 
         $customResponse = $this->createRoleService->execute($parsedData);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 
     /**
@@ -210,7 +211,7 @@ class RoleController extends BaseController
      * @throws ValidationException
      * @throws NoSuchEntityException
      */
-    public function createChildRole(Request $request, Response $response): Response
+    public function createRoleHierarchy(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -223,10 +224,7 @@ class RoleController extends BaseController
 
         $customResponse = $this->createChildRoleService->execute($parsedData);
 
-        return $this->respond(
-            $response,
-            $customResponse
-        );
+        return $this->respond($response, $customResponse);
     }
 
     /**
@@ -324,7 +322,7 @@ class RoleController extends BaseController
      * @throws RoleException
      * @throws ValidationException
     */
-    public function updateChildRoleParent(Request $request, Response $response): Response
+    public function editRoleHierarchy(Request $request, Response $response): Response
     {
         /** @var array $parsedData */
         $parsedData = $request->getParsedBody();
@@ -336,6 +334,8 @@ class RoleController extends BaseController
         ]);
 
         $customResponse = $this->updateChildRoleParentService->execute($parsedData);
+
+        //$customResponse = $this->updateChildRoleOrderService->execute($parsedData);
 
         return $this->respond(
             $response,
@@ -402,7 +402,7 @@ class RoleController extends BaseController
      * @throws RoleException
      * @throws DataObjectManagerException
      */
-    public function deleteChildRole(Request $request, Response $response, array $args): Response
+    public function deleteRoleHierarchy(Request $request, Response $response, array $args): Response
     {
         /** @var int $id */
         $id = $args['id'];

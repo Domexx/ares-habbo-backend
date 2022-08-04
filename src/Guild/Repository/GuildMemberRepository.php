@@ -39,7 +39,7 @@ class GuildMemberRepository extends BaseRepository
     public function getPaginatedProfileGuilds(int $profileId, int $page, int $resultPerPage): PaginatedCollection
     {
         $searchCriteria = $this->getDataObjectManager()
-            ->select(['user_id', 'guild_id'])
+            ->select(['guilds_members.user_id', 'guilds_members.guild_id'])
             ->leftJoin(
                 'guilds',
                 'guilds_members.guild_id',

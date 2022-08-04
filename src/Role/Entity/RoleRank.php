@@ -6,11 +6,8 @@
  */
 namespace Ares\Role\Entity;
 
-use Ares\Framework\Exception\DataObjectManagerException;
 use Ares\Framework\Model\DataObject;
 use Ares\Role\Entity\Contract\RoleRankInterface;
-use Ares\Permission\Repository\PermissionRepository;
-use Ares\Permission\Entity\Permission;
 use DateTime;
 
 /**

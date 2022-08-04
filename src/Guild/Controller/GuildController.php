@@ -37,36 +37,13 @@ class GuildController extends BaseController
     /**
      * @param Request     $request
      * @param Response    $response
-     * @param             $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException|NoSuchEntityException
-     */
-    public function guild(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $id */
-        $id = $args['id'];
-
-        /** @var Guild $guild */
-        $guild = $this->guildRepository->getGuild($id);
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($guild)
-        );
-    }
-
-    /**
-     * @param Request     $request
-     * @param Response    $response
      *
      * @param             $args
      *
      * @return Response
      * @throws DataObjectManagerException
-     */
-    public function list(Request $request, Response $response, array $args): Response
+    */
+    public function getAllGuilds(Request $request, Response $response, array $args): Response
     {
         /** @var int $page */
         $page = $args['page'];
@@ -74,17 +51,54 @@ class GuildController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $guilds = $this->guildRepository
-            ->getPaginatedGuildList(
-                $page,
-                $resultPerPage
-            );
+        $guilds = $this->guildRepository->getPaginatedGuildList($page, $resultPerPage);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($guilds)
-        );
+        return $this->respond($response, response()->setData($guilds));
+    }
+
+    /**
+     * Searches with term in groups, rooms and news.
+     *
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+    */
+    public function searchGuilds(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $term */
+        $term = $args['term'];
+
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        $guilds = $this->guildRepository->searchGuilds($term, $page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($guilds));
+    }
+
+    /**
+     * @param Request     $request
+     * @param Response    $response
+     * @param             $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException|NoSuchEntityException
+     */
+    public function getGuildById(Request $request, Response $response, array $args): Response
+    {
+        /** @var int $id */
+        $id = $args['id'];
+
+        /** @var Guild $guild */
+        $guild = $this->guildRepository->getGuild($id);
+
+        return $this->respond($response, response()->setData($guild));
     }
 
     /**
@@ -95,11 +109,11 @@ class GuildController extends BaseController
      *
      * @return Response
      * @throws DataObjectManagerException
-     */
-    public function members(Request $request, Response $response, array $args): Response
+    */
+    public function getGuildMembers(Request $request, Response $response, array $args): Response
     {
         /** @var int $guildId */
-        $guildId = $args['guild_id'];
+        $guildId = $args['id'];
 
         /** @var int $page */
         $page = $args['page'];
@@ -107,18 +121,9 @@ class GuildController extends BaseController
         /** @var int $resultPerPage */
         $resultPerPage = $args['rpp'];
 
-        $members = $this->guildMemberRepository
-            ->getPaginatedGuildMembers(
-                $guildId,
-                $page,
-                $resultPerPage
-            );
+        $members = $this->guildMemberRepository->getPaginatedGuildMembers($guildId, $page, $resultPerPage);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($members)
-        );
+        return $this->respond($response, response()->setData($members));
     }
 
     /**
@@ -128,20 +133,15 @@ class GuildController extends BaseController
      *
      * @return Response
      * @throws NoSuchEntityException
-     */
-    public function mostMembers(Request $request, Response $response, array $args): Response
+    */
+    public function getMostMembersTop(Request $request, Response $response, array $args): Response
     {
-
-        /** @var int $count */
-        $count = $args['count'];
+        /** @var int $top */
+        $top = $args['top'];
 
         /** @var Guild $guild */
-        $guild = $this->guildRepository->getMostMemberGuild($count);
+        $guild = $this->guildRepository->getMostMemberGuild($top);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($guild)
-        );
+        return $this->respond($response, response()->setData($guild));
     }
 }

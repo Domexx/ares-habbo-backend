@@ -8,8 +8,8 @@
 namespace Ares\Role\Entity;
 
 use Ares\Framework\Model\DataObject;
-use Ares\Permission\Entity\Permission as Rank;
-use Ares\Permission\Repository\PermissionRepository;
+use Ares\Rank\Entity\Rank;
+use Ares\Rank\Repository\RankRepository;
 use Ares\Role\Entity\Contract\RoleInterface;
 use Ares\Role\Entity\Contract\RoleRankInterface;
 use Ares\Role\Repository\RolePermissionRepository;
@@ -27,8 +27,8 @@ class Role extends DataObject implements RoleInterface
 
     /** @var array **/
     public const RELATIONS = [
-        'permission' => 'getPermission',
-        'permissionWithUsers' => 'getPermissionWithUsers',
+        'rank' => 'getRank',
+        'rankWithUsers' => 'getRankWithUsers',
         'rolePermissions' => 'getRolePermissions'
     ];
 
@@ -201,14 +201,14 @@ class Role extends DataObject implements RoleInterface
      *
      * @throws DataObjectManagerException
      */
-    public function getPermission(bool $appendUsers = false, $isCached = true): ?Rank
+    public function getRank(bool $appendUsers = false, $isCached = true): ?Rank
     {
         if(!isset($this)) {
             return null;
         }
 
         /** @var Rank $rank */
-        $rank = $this->getData('permission');
+        $rank = $this->getData('rank');
 
         if ($rank && $isCached) {
             if($appendUsers) {
@@ -221,13 +221,13 @@ class Role extends DataObject implements RoleInterface
         /** @var RoleRepository $roleRepository */
         $roleRepository = repository(RoleRepository::class);
 
-        /** @var PermissionRepository $permissionRepository */
-        $permissionRepository = repository(PermissionRepository::class);
+        /** @var RankRepository $rankRepository */
+        $rankRepository = repository(RankRepository::class);
 
         /** @var Rank $rank */
         $rank = $roleRepository->getManyToMany(
-            $permissionRepository, 
-            $this->getId(), 
+            $rankRepository, 
+            $this->getId(),
             'ares_roles_rank', 
             RoleRankInterface::COLUMN_ROLE_ID,
             RoleRankInterface::COLUMN_RANK_ID,
@@ -242,7 +242,7 @@ class Role extends DataObject implements RoleInterface
             $rank->getUsers($isCached);
         }
 
-        $this->setPermission($rank);
+        $this->setRank($rank);
 
         return $rank;
     }
@@ -252,10 +252,10 @@ class Role extends DataObject implements RoleInterface
      *
      * @throws DataObjectManagerException
      */
-    public function getPermissionWithUsers($isCached = true): ?Rank
+    public function getRankWithUsers($isCached = true): ?Rank
     {
         /** @var Rank $rank */
-        $rank = $this->getPermission(true, $isCached);
+        $rank = $this->getRank(true, $isCached);
 
         return $rank;
     }
@@ -265,8 +265,8 @@ class Role extends DataObject implements RoleInterface
      *
      * @return Role
      */
-    public function setPermission(Rank $rank): Role
+    public function setRank(Rank $rank): Role
     {
-        return $this->setData('permission', $rank);
+        return $this->setData('rank', $rank);
     }
 }

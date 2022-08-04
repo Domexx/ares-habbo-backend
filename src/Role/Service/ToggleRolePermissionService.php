@@ -45,14 +45,8 @@ class ToggleRolePermissionService
      * @throws RoleException
      * @throws DataObjectManagerException
      */
-    public function execute(array $data): CustomResponseInterface
+    public function execute(int $roleId, int $permissionId): CustomResponseInterface
     {
-        /** @var int $roleId */
-        $roleId = $data['role_id'];
-
-        /** @var int $permissionId */
-        $permissionId = $data['permission_id'];
-
         /** @var Role $role */
         $role = $this->roleRepository->get($roleId);
 

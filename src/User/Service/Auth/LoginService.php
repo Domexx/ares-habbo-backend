@@ -59,7 +59,7 @@ class LoginService
     public function login(array $data): CustomResponseInterface
     {
         /** @var User $user */
-        $user = $this->userRepository->get($data['username'], 'username', true);
+        $user = $this->userRepository->get($data['username'], 'username', true, false);
 
         if (!$user || !password_verify($data['password'], $user->getPassword())) {
             throw new LoginException(

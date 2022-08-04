@@ -53,25 +53,121 @@ class ProfileController extends BaseController
      *
      * @return Response
      * @throws NoSuchEntityException
-     */
-    public function slotBadges(Request $request, Response $response, array $args): Response
+    */
+    public function getProfile(Request $request, Response $response, array $args): Response
     {
-        /** @var int $profileId */
-        $profileId = $args['profile_id'];
+        /** @var string $profileName */
+        $profileName = $args['username'];
 
         /** @var User $profile */
-        $profile = $this->userRepository->get($profileId);
+        $profile = $this->userRepository->getUser($profileName);
 
-        $badges = $this->userBadgeRepository
-            ->getListOfSlottedUserBadges(
-                $profile->getId()
-            );
+        return $this->respond($response, response()->setData($profile));
+    }
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($badges)
-        );
+    /**
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws NoSuchEntityException
+    */
+    public function getBadgeSlots(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $profileName */
+        $profileName = $args['username'];
+
+        /** @var User $profile */
+        $profile = $this->userRepository->getUser($profileName);
+
+        $badges = $this->userBadgeRepository->getListOfSlottedUserBadges($profile->getId());
+
+        return $this->respond($response, response()->setData($badges));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+    */
+    public function getBadges(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $profileName */
+        $profileName = $args['username'];
+
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        /** @var User $profile */
+        $profile = $this->userRepository->getUser($profileName);
+
+        $badges = $this->userBadgeRepository->getPaginatedBadgeList($profile->getId(), $page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($badges));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+    */
+    public function getProfileFriends(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $profileName */
+        $profileName = $args['username'];
+
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        /** @var User $profile */
+        $profile = $this->userRepository->getUser($profileName);
+
+        $friends = $this->messengerRepository->getPaginatedMessengerFriends($profile->getId(), $page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($friends));
+    }
+
+    /**
+     * @param Request  $request
+     * @param Response $response
+     * @param array    $args
+     *
+     * @return Response
+     * @throws DataObjectManagerException
+     * @throws NoSuchEntityException
+    */
+    public function getProfileRooms(Request $request, Response $response, array $args): Response
+    {
+        /** @var string $profileName */
+        $profileName = $args['username'];
+
+        /** @var int $page */
+        $page = $args['page'];
+
+        /** @var int $resultPerPage */
+        $resultPerPage = $args['rpp'];
+
+        /** @var User $profile */
+        $profile = $this->userRepository->getUser($profileName);
+
+        $rooms = $this->roomRepository->getUserRoomsPaginatedList($profile->getId(), $page, $resultPerPage);
+
+        return $this->respond($response, response()->setData($rooms));
     }
 
     /**
@@ -83,10 +179,10 @@ class ProfileController extends BaseController
      * @throws DataObjectManagerException
      * @throws NoSuchEntityException
      */
-    public function badgeList(Request $request, Response $response, array $args): Response
+    public function getProfileGuilds(Request $request, Response $response, array $args): Response
     {
-        /** @var int $profileId */
-        $profileId = $args['profile_id'];
+        /** @var string $profileName */
+        $profileName = $args['username'];
 
         /** @var int $page */
         $page = $args['page'];
@@ -95,20 +191,11 @@ class ProfileController extends BaseController
         $resultPerPage = $args['rpp'];
 
         /** @var User $profile */
-        $profile = $this->userRepository->get($profileId);
+        $profile = $this->userRepository->getUser($profileName);
 
-        $badges = $this->userBadgeRepository
-            ->getPaginatedBadgeList(
-                $profile->getId(),
-                $page,
-                $resultPerPage
-            );
+        $guilds = $this->guildMemberRepository->getPaginatedProfileGuilds($profile->getId(), $page, $resultPerPage);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($badges)
-        );
+        return $this->respond($response, response()->setData($guilds));
     }
 
     /**
@@ -120,10 +207,10 @@ class ProfileController extends BaseController
      * @throws DataObjectManagerException
      * @throws NoSuchEntityException
      */
-    public function friendList(Request $request, Response $response, array $args): Response
+    public function getPhotos(Request $request, Response $response, array $args): Response
     {
-        /** @var int $profileId */
-        $profileId = $args['profile_id'];
+        /** @var string $profileName */
+        $profileName = $args['username'];
 
         /** @var int $page */
         $page = $args['page'];
@@ -132,130 +219,10 @@ class ProfileController extends BaseController
         $resultPerPage = $args['rpp'];
 
         /** @var User $profile */
-        $profile = $this->userRepository->get($profileId);
+        $profile = $this->userRepository->getUser($profileName);
 
-        $friends = $this->messengerRepository
-            ->getPaginatedMessengerFriends(
-                $profile->getId(),
-                $page,
-                $resultPerPage
-            );
+        $photos = $this->photoRepository->getPaginatedUserPhotoList($profile->getId(), $page, $resultPerPage);
 
-        return $this->respond(
-            $response,
-            response()
-                ->setData($friends)
-        );
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
-     * @param array    $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     * @throws NoSuchEntityException
-     */
-    public function roomList(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $profileId */
-        $profileId = $args['profile_id'];
-
-        /** @var int $page */
-        $page = $args['page'];
-
-        /** @var int $resultPerPage */
-        $resultPerPage = $args['rpp'];
-
-        /** @var User $profile */
-        $profile = $this->userRepository->get($profileId);
-
-        $rooms = $this->roomRepository
-            ->getUserRoomsPaginatedList(
-                $profile->getId(),
-                $page,
-                $resultPerPage
-            );
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($rooms)
-        );
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
-     * @param array    $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     * @throws NoSuchEntityException
-     */
-    public function guildList(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $profileId */
-        $profileId = $args['profile_id'];
-
-        /** @var int $page */
-        $page = $args['page'];
-
-        /** @var int $resultPerPage */
-        $resultPerPage = $args['rpp'];
-
-        /** @var User $profile */
-        $profile = $this->userRepository->get($profileId);
-
-        $guilds = $this->guildMemberRepository
-            ->getPaginatedProfileGuilds(
-                $profile->getId(),
-                $page,
-                $resultPerPage
-            );
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($guilds)
-        );
-    }
-
-    /**
-     * @param Request  $request
-     * @param Response $response
-     * @param array    $args
-     *
-     * @return Response
-     * @throws DataObjectManagerException
-     * @throws NoSuchEntityException
-     */
-    public function photoList(Request $request, Response $response, array $args): Response
-    {
-        /** @var int $profileId */
-        $profileId = $args['profile_id'];
-
-        /** @var int $page */
-        $page = $args['page'];
-
-        /** @var int $resultPerPage */
-        $resultPerPage = $args['rpp'];
-
-        /** @var User $profile */
-        $profile = $this->userRepository->get($profileId);
-
-        $photos = $this->photoRepository
-            ->getPaginatedUserPhotoList(
-                $profile->getId(),
-                $page,
-                $resultPerPage
-            );
-
-        return $this->respond(
-            $response,
-            response()
-                ->setData($photos)
-        );
+        return $this->respond($response, response()->setData($photos));
     }
 }
